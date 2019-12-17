@@ -23,7 +23,7 @@
     <PackageReference Include="Docker.DotNet" Version="3.125.2" />
     <PackageReference Include="Material.Avalonia" Version="0.1.0-preview3" />
     <PackageReference Include="MessageBox.Avalonia" Version="0.9.0-preview5" />
-    <PackageReference Include="MetadataExtractor" Version="2.1.0" />
+    <PackageReference Include="MetadataExtractor" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="3.0.0" />
     <PackageReference Include="NewtonSoft.Json" Version="12.0.2" />
     <PackageReference Include="ReactiveUI.Fody" Version="9.16.3" />
