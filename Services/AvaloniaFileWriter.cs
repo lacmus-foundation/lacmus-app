@@ -7,10 +7,15 @@ namespace RescuerLaApp.Services
     public class AvaloniaFileWriter : Interfaces.IFileWriter
     {
         private readonly Window _window;
-        
-        public Task<Stream> Write(string name)
+
+        public AvaloniaFileWriter(Window window)  => _window = window;
+
+        public async Task<Stream> Write(string name)
         {
-            throw new System.NotImplementedException();
+            var fileDialog = new OpenFolderDialog();
+            var folder = await fileDialog.ShowAsync(_window);
+            var path = Path.Combine(folder, name);
+            return File.Create(path);
         }
     }
 }

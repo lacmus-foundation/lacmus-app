@@ -10,7 +10,9 @@ namespace RescuerLaApp.Services
     public class AvaloniaFileReader : Interfaces.IFileReader
     {
         private readonly Window _window;
-        
+
+        public AvaloniaFileReader(Window window) => _window = window;
+
         public async Task<(string Name, Stream Stream)> Read()
         {
             var fileDialog = new OpenFileDialog {AllowMultiple = false};
