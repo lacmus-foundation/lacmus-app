@@ -23,9 +23,9 @@
         <MenuItem Name="mFile" Header="File">
           <MenuItem Name="mFileOpen" Header="Open directory..." Command="{Binding OpenFileCommand}"/>
           <MenuItem Name="mFileExportAll" Header="Import all from XML..." Command="{Binding ImportAllCommand}"/>
-          <MenuItem Name="mFileSave" Header="Save all" Command="{Binding SaveAllCommand}"/>
-          <MenuItem Name="mFileSaveAllImagesWithObjects" Header="Save only images with pedestrians" Command="{Binding SaveAllImagesWithObjectsCommand}"/>
-          <MenuItem Name="mFileSaveFavorites" Header="Save favorites images" Command="{Binding SaveFavoritesImagesCommand}"/>
+          <MenuItem Name="mFileSave" Header="Export to XML..." Command="{Binding SaveAllCommand}"/>
+          <!-- <MenuItem Name="mFileSaveAllImagesWithObjects" Header="Save only images with pedestrians" Command="{Binding SaveAllImagesWithObjectsCommand}"/> -->
+          <MenuItem Name="mFileSaveFavorites" Header="Export favorites to XML..." Command="{Binding SaveFavoritesImagesCommand}"/>
           <Separator></Separator>
           <MenuItem Name="mSIgnIn" Header="Sign in" Command="{Binding SignInCommand}"/>
           <MenuItem Name="mSignUp" Header="Sign up" Command="{Binding SignUpCommand}"/>

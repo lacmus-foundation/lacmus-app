@@ -1,12 +1,13 @@
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 
 namespace RescuerLaApp.Interfaces
 {
     public interface IFileReader
     {
-        Task<(string Name, Stream Stream)> Read();
-        Task<(string Name, Stream Stream)[]> ReadMultiple();
-        Task<(string Name, Stream Stream)[]> ReadAllFromDir(bool isRecursive = false);
+        Task<(string Name, Stream Stream)> Read(OpenFileDialog fileDialog);
+        Task<(string Name, Stream Stream)[]> ReadMultiple(OpenFileDialog fileDialog);
+        Task<(string Name, Stream Stream)[]> ReadAllFromDir(OpenFileDialog fileDialog, bool isRecursive = false);
     }
 }
