@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
@@ -19,6 +20,7 @@ using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using RescuerLaApp.Models;
+using RescuerLaApp.Services;
 using RescuerLaApp.Views;
 using Directory = System.IO.Directory;
 using Object = RescuerLaApp.Models.Object;
@@ -396,7 +398,7 @@ namespace RescuerLaApp.ViewModels
             }
         }
 
-        private void SaveAll()
+        private async void SaveAll()
         {
             try
             {
@@ -406,20 +408,14 @@ namespace RescuerLaApp.ViewModels
                     return;
                 }
                 Status = new AppStatusInfo {Status = Enums.Status.Working};
-                var dirName = Path.GetDirectoryName(Frames.First().Path);
-                if (string.IsNullOrEmpty(dirName) || !Directory.Exists(dirName))
-                {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
-                    return;
-                }
-                
+                var annotations = new List<Annotation>();
                 foreach (var frame in Frames)
                 {
                     if (frame.Rectangles == null || !frame.Rectangles.Any())
                         continue;
                     var annotation = new Annotation();
                     annotation.Filename = Path.GetFileName(frame.Path);
-                    annotation.Folder = Path.GetRelativePath(dirName, Path.GetDirectoryName(frame.Path));
+                    annotation.Folder = Path.GetFullPath(Path.GetDirectoryName(frame.Path));
                     annotation.Segmented = 0;
                     annotation.Size = new Size
                     {
@@ -441,14 +437,15 @@ namespace RescuerLaApp.ViewModels
                             }
                         });
                     }
-
-                    annotation.SaveToXml(Path.Join(dirName,$"{annotation.Filename}.xml"));
+                    annotations.Add(annotation);
                 }
-                Console.WriteLine($"Saved to {dirName}");
-                Status = new AppStatusInfo {Status = Enums.Status.Ready, StringStatus = $"Success | saved to {dirName}"};
+                var annotationWriter = new AvaloniaAnnotationFileWriter(_window);
+                await annotationWriter.WriteMany(annotations);
+                Status = new AppStatusInfo {Status = Enums.Status.Ready, StringStatus = $"Success | saved"};
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 Status = new AppStatusInfo
                 {
                     Status = Enums.Status.Error, 
@@ -508,20 +505,8 @@ namespace RescuerLaApp.ViewModels
                     return;
                 }
                 Status = new AppStatusInfo {Status = Enums.Status.Working};
-
-                var openDig = new OpenFolderDialog
-                {
-                    Title = "Choose a directory to save images with objects"
-                };
-                var dirName = await openDig.ShowAsync(new Window());
-
-                
-                if (string.IsNullOrEmpty(dirName) || !Directory.Exists(dirName))
-                {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
-                    return;
-                }
-                
+                var annotations = new List<Annotation>();
+                var annotationWriter = new AvaloniaAnnotationFileWriter(_window);
                 foreach (var frame in Frames)
                 {
                     if (!frame.IsFavorite)
@@ -530,7 +515,7 @@ namespace RescuerLaApp.ViewModels
                     var annotation = new Annotation
                     {
                         Filename = Path.GetFileName(frame.Path),
-                        Folder = Path.GetRelativePath(dirName, Path.GetDirectoryName(frame.Path)),
+                        Folder = Path.GetFullPath(Path.GetDirectoryName(frame.Path)),
                         Segmented = 0,
                         Size = new Size {Depth = 3, Height = frame.Height, Width = frame.Width}
                     };
@@ -538,7 +523,9 @@ namespace RescuerLaApp.ViewModels
                     {
                         frame.Rectangles = new List<BoundBox>();
                     }
-                    foreach (var rectangle in frame.Rectangles)
+
+                    var frameRectangles = frame.Rectangles as BoundBox[] ?? frame.Rectangles.ToArray();
+                    foreach (var rectangle in frameRectangles)
                     {
                         annotation.Objects.Add(new Object
                         {
@@ -552,21 +539,18 @@ namespace RescuerLaApp.ViewModels
                             }
                         });
                     }
-
-                    annotation.SaveToXml(Path.Join(dirName,$"{annotation.Filename}.xml"));
-                    
-                    if (!frame.Rectangles.Any())
+                    annotations.Add(annotation);
+                    if (!frameRectangles.Any())
                     {
                         frame.Rectangles = null;
                     }
-                    
-                    File.Copy(frame.Path, Path.Combine(dirName, Path.GetFileName(frame.Path)));
                 }
-                Console.WriteLine($"Saved to {dirName}");
-                Status = new AppStatusInfo {Status = Enums.Status.Ready, StringStatus = $"Success | saved to {dirName}"};
+                await annotationWriter.WriteMany(annotations);
+                Status = new AppStatusInfo {Status = Enums.Status.Ready, StringStatus = $"Success | saved"};
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 Status = new AppStatusInfo
                 {
                     Status = Enums.Status.Error, 

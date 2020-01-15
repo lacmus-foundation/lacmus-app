@@ -10,10 +10,11 @@ namespace RescuerLaApp.Services
 
         public AvaloniaFileWriter(Window window)  => _window = window;
 
-        public async Task<Stream> Write(string name)
+        public async Task<Stream> Write(string name, OpenFolderDialog folderDialog = null)
         {
-            var fileDialog = new OpenFolderDialog();
-            var folder = await fileDialog.ShowAsync(_window);
+            if(folderDialog == null)
+                folderDialog = new OpenFolderDialog();
+            var folder = await folderDialog.ShowAsync(_window);
             var path = Path.Combine(folder, name);
             return File.Create(path);
         }

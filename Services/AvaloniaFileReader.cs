@@ -13,9 +13,11 @@ namespace RescuerLaApp.Services
 
         public AvaloniaFileReader(Window window) => _window = window;
 
-        public async Task<(string Name, Stream Stream)> Read()
+        public async Task<(string Name, Stream Stream)> Read(OpenFileDialog fileDialog = null)
         {
-            var fileDialog = new OpenFileDialog {AllowMultiple = false};
+            if (fileDialog == null)
+                fileDialog = new OpenFileDialog();
+            fileDialog.AllowMultiple = false;
             var files = await fileDialog.ShowAsync(_window);
             var path = files.First();
             
@@ -28,9 +30,11 @@ namespace RescuerLaApp.Services
             return (name, stream);
         }
 
-        public async Task<(string Name, Stream Stream)[]> ReadMultiple()
+        public async Task<(string Name, Stream Stream)[]> ReadMultiple(OpenFileDialog fileDialog = null)
         {
-            var fileDialog = new OpenFileDialog {AllowMultiple = true};
+            if (fileDialog == null)
+                fileDialog = new OpenFileDialog();
+            fileDialog.AllowMultiple = true;
             var files = await fileDialog.ShowAsync(_window);
             var result = new List<(string Name, Stream Stream)>();
             foreach (var file in files)
@@ -45,9 +49,11 @@ namespace RescuerLaApp.Services
             return  result.ToArray();
         }
 
-        public async Task<(string Name, Stream Stream)[]> ReadAllFromDir(bool isRecursive = false)
+        public async Task<(string Name, Stream Stream)[]> ReadAllFromDir(OpenFileDialog fileDialog = null, bool isRecursive = false)
         {
-            var fileDialog = new OpenFileDialog {AllowMultiple = false};
+            if (fileDialog == null)
+                fileDialog = new OpenFileDialog();
+            fileDialog.AllowMultiple = false;
             var dirPaths = await fileDialog.ShowAsync(_window);
             var dirPath = dirPaths.First();
             
