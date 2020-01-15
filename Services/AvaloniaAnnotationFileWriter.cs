@@ -28,7 +28,7 @@ namespace RescuerLaApp.Services
             {
                 using (var fs = await writer.Write($"{annotation.Filename}.xml", folderDialog))
                 {
-                    formatter.Serialize(fs, this);
+                    formatter.Serialize(fs, annotation);
                 }
             }
             catch (Exception e)
@@ -53,7 +53,7 @@ namespace RescuerLaApp.Services
                 {
                     using (var fs = new FileStream(path, FileMode.Create))
                     {
-                        formatter.Serialize(fs, this);
+                        formatter.Serialize(fs, annotation);
                     }
                 }
                 catch (Exception e)
