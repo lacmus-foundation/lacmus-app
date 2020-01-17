@@ -5,9 +5,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 
-namespace RescuerLaApp.Services
+namespace RescuerLaApp.Services.Files
 {
-    public class AvaloniaFileReader : Interfaces.IFileReader
+    public class AvaloniaFileReader : IFileReader
     {
         private readonly Window _window;
 

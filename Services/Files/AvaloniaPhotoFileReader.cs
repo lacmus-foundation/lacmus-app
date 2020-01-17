@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using RescuerLaApp.Interfaces;
 
-namespace RescuerLaApp.Services
+namespace RescuerLaApp.Services.Files
 {
-    public class AvaloniaImageFileReader : IFileReader
+    public class AvaloniaPhotoFileReader : IFileReader
     {
         public Task<(string Name, Stream Stream)> Read()
         {

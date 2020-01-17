@@ -6,9 +6,8 @@ using System.Xml.Serialization;
 using Avalonia.Controls;
 using RescuerLaApp.Interfaces;
 using RescuerLaApp.Models;
-using RescuerLaApp.Models.Exceptions;
 
-namespace RescuerLaApp.Services
+namespace RescuerLaApp.Services.Files
 {
     public class AvaloniaAnnotationFileReader : IAnnotationFileReader
     {

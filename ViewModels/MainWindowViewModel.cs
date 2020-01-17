@@ -21,6 +21,7 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using RescuerLaApp.Models;
 using RescuerLaApp.Services;
+using RescuerLaApp.Services.Files;
 using RescuerLaApp.Views;
 using Directory = System.IO.Directory;
 using Object = RescuerLaApp.Models.Object;
