@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using Avalonia.Controls;
 using RescuerLaApp.Interfaces;
 
-namespace RescuerLaApp.Services
+namespace RescuerLaApp.Services.Files
 {
-    public class AvaloniaImageFileWriter : IFileWriter
+    public class AvaloniaPhotoFileWriter : IFileWriter
     {
         public Task<Stream> Write(string name, OpenFolderDialog folderDialog)
         {

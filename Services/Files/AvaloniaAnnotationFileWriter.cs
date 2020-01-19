@@ -7,7 +7,7 @@ using Avalonia.Controls;
 using RescuerLaApp.Interfaces;
 using RescuerLaApp.Models;
 
-namespace RescuerLaApp.Services
+namespace RescuerLaApp.Services.Files
 {
     public class AvaloniaAnnotationFileWriter : IAnnotationFileWriter
     {

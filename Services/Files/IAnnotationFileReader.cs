@@ -1,8 +1,7 @@
 using System.Threading.Tasks;
-using Avalonia.Controls;
 using RescuerLaApp.Models;
 
-namespace RescuerLaApp.Interfaces
+namespace RescuerLaApp.Services.Files
 {
     public interface IAnnotationFileReader
     {
