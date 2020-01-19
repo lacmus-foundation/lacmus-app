@@ -26,7 +26,10 @@ namespace RescuerLaApp.Services.Files
             var (path, stream) = await _reader.Read(dig);
             try
             {
-                return (Annotation)formatter.Deserialize(stream);
+                using (stream)
+                {
+                    return (Annotation)formatter.Deserialize(stream);
+                }
             }
             catch (Exception e)
             {
@@ -64,11 +67,14 @@ namespace RescuerLaApp.Services.Files
             {
                 try
                 {
-                    annotations.Add((Annotation)formatter.Deserialize(stream));
+                    using (stream)
+                    {
+                        annotations.Add((Annotation)formatter.Deserialize(stream));
+                    }
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"unable serialize xml annotation {path}");
+                    throw new Exception($"unable serialize xml annotation {path}", e);
                 }
             }
             return annotations.ToArray();
