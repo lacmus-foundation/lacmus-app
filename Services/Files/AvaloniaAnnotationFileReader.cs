@@ -6,9 +6,8 @@ using System.Xml.Serialization;
 using Avalonia.Controls;
 using RescuerLaApp.Interfaces;
 using RescuerLaApp.Models;
-using RescuerLaApp.Models.Exceptions;
 
-namespace RescuerLaApp.Services
+namespace RescuerLaApp.Services.Files
 {
     public class AvaloniaAnnotationFileReader : IAnnotationFileReader
     {
@@ -24,14 +23,17 @@ namespace RescuerLaApp.Services
                 //TODO: Multi language support
                 Title = "Chose xml annotation file"
             };
-            var (name, stream) = await _reader.Read(dig);
+            var (path, stream) = await _reader.Read(dig);
             try
             {
-                return (Annotation)formatter.Deserialize(stream);
+                using (stream)
+                {
+                    return (Annotation)formatter.Deserialize(stream);
+                }
             }
             catch (Exception e)
             {
-                throw new Exception($"unable serialize xml annotation {name}");
+                throw new Exception($"unable serialize xml annotation {path}");
             }
         }
 
@@ -57,19 +59,22 @@ namespace RescuerLaApp.Services
             return GetAnnotationsFromFiles(multipleFiles);
         }
 
-        private Annotation[] GetAnnotationsFromFiles((string Name, Stream Stream)[] multipleFiles)
+        private Annotation[] GetAnnotationsFromFiles(IEnumerable<(string Path, Stream Stream)> multipleFiles)
         {
             var formatter = new XmlSerializer(type:typeof(Annotation));
             var annotations = new List<Annotation>();
-            foreach (var (name, stream) in multipleFiles)
+            foreach (var (path, stream) in multipleFiles)
             {
                 try
                 {
-                    annotations.Add((Annotation)formatter.Deserialize(stream));
+                    using (stream)
+                    {
+                        annotations.Add((Annotation)formatter.Deserialize(stream));
+                    }
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"unable serialize xml annotation {name}");
+                    throw new Exception($"unable serialize xml annotation {path}", e);
                 }
             }
             return annotations.ToArray();

@@ -2,9 +2,9 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 
-namespace RescuerLaApp.Services
+namespace RescuerLaApp.Services.Files
 {
-    public class AvaloniaFileWriter : Interfaces.IFileWriter
+    public class AvaloniaFileWriter : IFileWriter
     {
         private readonly Window _window;
 
