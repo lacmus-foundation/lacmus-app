@@ -23,14 +23,14 @@ namespace RescuerLaApp.Services.Files
                 //TODO: Multi language support
                 Title = "Chose xml annotation file"
             };
-            var (name, stream) = await _reader.Read(dig);
+            var (path, stream) = await _reader.Read(dig);
             try
             {
                 return (Annotation)formatter.Deserialize(stream);
             }
             catch (Exception e)
             {
-                throw new Exception($"unable serialize xml annotation {name}");
+                throw new Exception($"unable serialize xml annotation {path}");
             }
         }
 
@@ -56,11 +56,11 @@ namespace RescuerLaApp.Services.Files
             return GetAnnotationsFromFiles(multipleFiles);
         }
 
-        private Annotation[] GetAnnotationsFromFiles((string Name, Stream Stream)[] multipleFiles)
+        private Annotation[] GetAnnotationsFromFiles(IEnumerable<(string Path, Stream Stream)> multipleFiles)
         {
             var formatter = new XmlSerializer(type:typeof(Annotation));
             var annotations = new List<Annotation>();
-            foreach (var (name, stream) in multipleFiles)
+            foreach (var (path, stream) in multipleFiles)
             {
                 try
                 {
@@ -68,7 +68,7 @@ namespace RescuerLaApp.Services.Files
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"unable serialize xml annotation {name}");
+                    throw new Exception($"unable serialize xml annotation {path}");
                 }
             }
             return annotations.ToArray();

@@ -1,40 +1,155 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Skia;
+using MetadataExtractor;
 using RescuerLaApp.Interfaces;
+using RescuerLaApp.Models.Photo;
+using SkiaSharp;
+using Attribute = RescuerLaApp.Models.Photo.Attribute;
 
 namespace RescuerLaApp.Services.Files
 {
-    public class AvaloniaPhotoFileReader : IFileReader
+    public class AvaloniaPhotoFileReader : IPhotoReader
     {
-        public Task<(string Name, Stream Stream)> Read()
+        private readonly AvaloniaFileReader _reader;
+
+        public AvaloniaPhotoFileReader(Window window)  => _reader = new AvaloniaFileReader(window);
+        public async Task<Photo> Read(PhotoLoadType loadType = PhotoLoadType.Miniature)
         {
-            throw new System.NotImplementedException();
+            var dig = new OpenFileDialog()
+            {
+                //TODO: Multi language support
+                Title = "Chose the image file"
+            };
+            var (path, stream) = await _reader.Read(dig);
+            try
+            {
+                var imageBrush = ReadImageBrushFromFile(stream, loadType);
+                var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
+                var photo = new Photo
+                {
+                    ImageBrush = imageBrush,
+                    Attribute = Attribute.NotProcessed,
+                    Caption = GetCaptionFromPath(path),
+                    MetaDataDirectories = metaDataDirectories
+                };
+                return photo;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"unable to read image from {path}");
+            }
         }
 
-        public Task<(string Name, Stream Stream)[]> ReadMultiple()
+        public async Task<Photo[]> ReadMultiple(PhotoLoadType loadType = PhotoLoadType.Miniature)
         {
-            throw new System.NotImplementedException();
+            var dig = new OpenFileDialog()
+            {
+                //TODO: Multi language support
+                Title = "Chose image files"
+            };
+            var multipleFiles = await _reader.ReadMultiple(dig);
+            var photoList = new List<Photo>();
+            foreach (var (path,stream) in multipleFiles)
+            {
+                try
+                {
+                    var imageBrush = ReadImageBrushFromFile(stream, loadType);
+                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
+                    var photo = new Photo
+                    {
+                        ImageBrush = imageBrush,
+                        Attribute = Attribute.NotProcessed,
+                        Caption = GetCaptionFromPath(path),
+                        MetaDataDirectories = metaDataDirectories
+                    };
+                    photoList.Add(photo);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"unable to read image from {path}");
+                }
+            }
+            return photoList.ToArray();
         }
 
-        public Task<(string Name, Stream Stream)> Read(OpenFileDialog fileDialog)
+        public async Task<Photo[]> ReadAllFromDir(PhotoLoadType loadType = PhotoLoadType.Miniature, bool isRecursive = false)
         {
-            throw new System.NotImplementedException();
+            var dig = new OpenFileDialog()
+            {
+                //TODO: Multi language support
+                Title = "Chose directory image files"
+            };
+            var multipleFiles = await _reader.ReadAllFromDir(dig, isRecursive);
+            var photoList = new List<Photo>();
+            foreach (var (path,stream) in multipleFiles)
+            {
+                try
+                {
+                    var imageBrush = ReadImageBrushFromFile(stream, loadType);
+                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
+                    var photo = new Photo
+                    {
+                        ImageBrush = imageBrush,
+                        Attribute = Attribute.NotProcessed,
+                        Caption = GetCaptionFromPath(path),
+                        MetaDataDirectories = metaDataDirectories
+                    };
+                    photoList.Add(photo);
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"unable to read image from {path}");
+                }
+            }
+            return photoList.ToArray();
         }
 
-        public Task<(string Name, Stream Stream)[]> ReadMultiple(OpenFileDialog fileDialog)
+        private static string GetCaptionFromPath(string path)
         {
-            throw new System.NotImplementedException();
+            var name = System.IO.Path.GetFileName(path);
+            if (name.Length > 10)
+            {
+                name = name.Substring(0, 3) + "{~}" + name.Substring(name.Length - 5);
+            }
+            return name;
         }
-
-        public Task<(string Name, Stream Stream)[]> ReadAllFromDir(OpenFileDialog fileDialog, bool isRecursive = false)
+        
+        private static ImageBrush ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)
         {
-            throw new System.NotImplementedException();
-        }
-
-        public Task<(string Name, Stream Stream)[]> ReadAllFromDir(bool isRecursive = false)
-        {
-            throw new System.NotImplementedException();
+            switch (loadType)
+            {
+                case PhotoLoadType.Miniature:
+                    using (var src = SKBitmap.Decode(stream))
+                    {
+                        var scale = 100f / src.Width;
+                        var resized = new SKBitmap(
+                            (int)(src.Width * scale),
+                            (int)(src.Height * scale), 
+                            src.ColorType, 
+                            src.AlphaType);
+                        src.ScalePixels(resized, SKFilterQuality.Low);
+                        var bitmap = new Bitmap(
+                            resized.ColorType.ToPixelFormat(),
+                            resized.GetPixels(),
+                            new PixelSize(resized.Width, resized.Height), 
+                            SkiaPlatform.DefaultDpi, 
+                            resized.RowBytes);
+                        return new ImageBrush(bitmap);
+                    }
+                    break;
+                case PhotoLoadType.Full:
+                    return new ImageBrush(new Bitmap(stream));
+                    break;
+                default:
+                    throw new Exception($"invalid ImageLoadMode:{loadType.ToString()}");
+            }
         }
     }
 }

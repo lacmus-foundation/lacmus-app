@@ -6,8 +6,8 @@ namespace RescuerLaApp.Services.Files
 {
     public interface IFileReader
     {
-        Task<(string Name, Stream Stream)> Read(OpenFileDialog fileDialog);
-        Task<(string Name, Stream Stream)[]> ReadMultiple(OpenFileDialog fileDialog);
-        Task<(string Name, Stream Stream)[]> ReadAllFromDir(OpenFileDialog fileDialog, bool isRecursive = false);
+        Task<(string Path, Stream Stream)> Read(OpenFileDialog fileDialog);
+        Task<(string Path, Stream Stream)[]> ReadMultiple(OpenFileDialog fileDialog);
+        Task<(string Path, Stream Stream)[]> ReadAllFromDir(OpenFileDialog fileDialog, bool isRecursive = false);
     }
 }

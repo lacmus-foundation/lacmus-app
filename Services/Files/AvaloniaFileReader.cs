@@ -13,7 +13,7 @@ namespace RescuerLaApp.Services.Files
 
         public AvaloniaFileReader(Window window) => _window = window;
 
-        public async Task<(string Name, Stream Stream)> Read(OpenFileDialog fileDialog = null)
+        public async Task<(string Path, Stream Stream)> Read(OpenFileDialog fileDialog = null)
         {
             if (fileDialog == null)
                 fileDialog = new OpenFileDialog();
@@ -26,11 +26,10 @@ namespace RescuerLaApp.Services.Files
             if (isFolder) throw new Exception("Folders are not supported.");
 
             var stream = File.OpenRead(path);
-            var name = Path.GetFileName(path);
-            return (name, stream);
+            return (path, stream);
         }
 
-        public async Task<(string Name, Stream Stream)[]> ReadMultiple(OpenFileDialog fileDialog = null)
+        public async Task<(string Path, Stream Stream)[]> ReadMultiple(OpenFileDialog fileDialog = null)
         {
             if (fileDialog == null)
                 fileDialog = new OpenFileDialog();
@@ -43,13 +42,12 @@ namespace RescuerLaApp.Services.Files
                 var isFolder = attributes.HasFlag(FileAttributes.Directory);
                 if (isFolder) throw new Exception("Folders are not supported.");
                 var stream = File.OpenRead(file);
-                var name = Path.GetFileName(file);
-                result.Add((name, stream));
+                result.Add((file, stream));
             }
             return  result.ToArray();
         }
 
-        public async Task<(string Name, Stream Stream)[]> ReadAllFromDir(OpenFileDialog fileDialog = null, bool isRecursive = false)
+        public async Task<(string Path, Stream Stream)[]> ReadAllFromDir(OpenFileDialog fileDialog = null, bool isRecursive = false)
         {
             if (fileDialog == null)
                 fileDialog = new OpenFileDialog();
@@ -66,8 +64,7 @@ namespace RescuerLaApp.Services.Files
             foreach (var file in files)
             {
                 var stream = File.OpenRead(file);
-                var name = Path.GetFileName(file);
-                result.Add((name, stream));
+                result.Add((file, stream));
             }
             return  result.ToArray();
         }
