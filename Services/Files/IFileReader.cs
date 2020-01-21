@@ -8,6 +8,6 @@ namespace RescuerLaApp.Services.Files
     {
         Task<(string Path, Stream Stream)> Read(OpenFileDialog fileDialog);
         Task<(string Path, Stream Stream)[]> ReadMultiple(OpenFileDialog fileDialog);
-        Task<(string Path, Stream Stream)[]> ReadAllFromDir(OpenFileDialog fileDialog, bool isRecursive = false);
+        Task<(string Path, Stream Stream)[]> ReadAllFromDir(OpenFolderDialog folderDialog, bool isRecursive = false);
     }
 }

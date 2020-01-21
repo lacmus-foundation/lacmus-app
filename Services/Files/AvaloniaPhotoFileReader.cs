@@ -81,7 +81,7 @@ namespace RescuerLaApp.Services.Files
 
         public async Task<Photo[]> ReadAllFromDir(PhotoLoadType loadType = PhotoLoadType.Miniature, bool isRecursive = false)
         {
-            var dig = new OpenFileDialog()
+            var dig = new OpenFolderDialog()
             {
                 //TODO: Multi language support
                 Title = "Chose directory image files"

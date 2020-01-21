@@ -50,7 +50,7 @@ namespace RescuerLaApp.Services.Files
 
         public async Task<Annotation[]> ReadAllFromDir(bool isRecursive = false)
         {
-            var dig = new OpenFileDialog()
+            var dig = new OpenFolderDialog()
             {
                 //TODO: Multi language support
                 Title = "Chose directory xml annotation files"

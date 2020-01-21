@@ -47,13 +47,11 @@ namespace RescuerLaApp.Services.Files
             return  result.ToArray();
         }
 
-        public async Task<(string Path, Stream Stream)[]> ReadAllFromDir(OpenFileDialog fileDialog = null, bool isRecursive = false)
+        public async Task<(string Path, Stream Stream)[]> ReadAllFromDir(OpenFolderDialog fileDialog = null, bool isRecursive = false)
         {
             if (fileDialog == null)
-                fileDialog = new OpenFileDialog();
-            fileDialog.AllowMultiple = false;
-            var dirPaths = await fileDialog.ShowAsync(_window);
-            var dirPath = dirPaths.First();
+                fileDialog = new OpenFolderDialog();
+            var dirPath = await fileDialog.ShowAsync(_window);
             
             var attributes = File.GetAttributes(dirPath);
             var isFolder = attributes.HasFlag(FileAttributes.Directory);

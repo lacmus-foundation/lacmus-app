@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -20,10 +21,12 @@ using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using RescuerLaApp.Models;
+using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Services;
 using RescuerLaApp.Services.Files;
 using RescuerLaApp.Views;
 using Directory = System.IO.Directory;
+using KeyValuePair = System.Collections.Generic.KeyValuePair;
 using Object = RescuerLaApp.Models.Object;
 using Size = RescuerLaApp.Models.Size;
 
@@ -36,10 +39,12 @@ namespace RescuerLaApp.ViewModels
         private readonly Window _window;
         private int _frameLoadProgressIndex;
         private List<Frame> _frames = new List<Frame>();
-        
+
+
         public MainWindowViewModel(Window window)
         {
             _window = window;
+            PhotoCollection = new List<Photo>();
             var canGoNext = this
                 .WhenAnyValue(x => x.SelectedIndex)
                 .Select(index => index < Frames.Count - 1);
@@ -136,7 +141,8 @@ namespace RescuerLaApp.ViewModels
         [Reactive] public int SelectedIndex { get; set; }
 
         [Reactive] public List<Frame> Frames { get; set; } = new List<Frame>();
-        
+        [Reactive] public List<Photo> PhotoCollection { get; set; } = new List<Photo>();
+
         [Reactive] public AppStatusInfo Status { get; set; } = new AppStatusInfo { Status = Enums.Status.Unauthenticated };
         
         [Reactive] public ImageBrush ImageBrush { get; set; } = new ImageBrush { Stretch = Stretch.Uniform };
@@ -344,6 +350,28 @@ namespace RescuerLaApp.ViewModels
             Status = new AppStatusInfo {Status = Enums.Status.Working};
             try
             {
+                var photoFileReader = new AvaloniaPhotoFileReader(_window);
+                PhotoCollection.Clear();
+                
+                var photos = await photoFileReader.ReadAllFromDir();
+                PhotoCollection = new List<Photo>(photos);
+                SelectedIndex = 0;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                Status = new AppStatusInfo
+                {
+                    Status = Enums.Status.Error, 
+                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
+                };
+            }
+            Status = new AppStatusInfo {Status = Enums.Status.Ready};
+            
+            /*
+            Status = new AppStatusInfo {Status = Enums.Status.Working};
+            try
+            {
                 var openDig = new OpenFolderDialog
                 {
                     Title = "Choose a directory with images"
@@ -397,6 +425,7 @@ namespace RescuerLaApp.ViewModels
                     StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
                 };
             }
+            */
         }
 
         private async void SaveAll()
