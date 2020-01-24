@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Skia;
+using Avalonia.Threading;
 using MetadataExtractor;
 using RescuerLaApp.Interfaces;
 using RescuerLaApp.Models.Photo;
@@ -30,7 +31,7 @@ namespace RescuerLaApp.Services.Files
             var (path, stream) = await _reader.Read(dig);
             try
             {
-                var imageBrush = ReadImageBrushFromFile(stream, loadType);
+                var imageBrush = await ReadImageBrushFromFile(stream, loadType);
                 var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
                 var photo = new Photo
                 {
@@ -60,7 +61,7 @@ namespace RescuerLaApp.Services.Files
             {
                 try
                 {
-                    var imageBrush = ReadImageBrushFromFile(stream, loadType);
+                    var imageBrush = await ReadImageBrushFromFile(stream, loadType);
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
                     var photo = new Photo
                     {
@@ -92,8 +93,8 @@ namespace RescuerLaApp.Services.Files
             {
                 try
                 {
-                    var imageBrush = ReadImageBrushFromFile(stream, loadType);
-                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
+                    var imageBrush = await Dispatcher.UIThread.InvokeAsync(() => ReadImageBrushFromFile(stream, loadType));
+                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(path);
                     var photo = new Photo
                     {
                         ImageBrush = imageBrush,
@@ -105,7 +106,8 @@ namespace RescuerLaApp.Services.Files
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"unable to read image from {path}");
+                    //TODO: translate to rus
+                    Console.WriteLine($"ERROR: image from {path} is skipped!\nDetails: {e}");
                 }
             }
             return photoList.ToArray();
@@ -121,35 +123,39 @@ namespace RescuerLaApp.Services.Files
             return name;
         }
         
-        private static ImageBrush ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)
+        private static async Task<ImageBrush> ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)
         {
-            switch (loadType)
+            return await Task.Factory.StartNew(() =>
             {
-                case PhotoLoadType.Miniature:
-                    using (var src = SKBitmap.Decode(stream))
-                    {
-                        var scale = 100f / src.Width;
-                        var resized = new SKBitmap(
-                            (int)(src.Width * scale),
-                            (int)(src.Height * scale), 
-                            src.ColorType, 
-                            src.AlphaType);
-                        src.ScalePixels(resized, SKFilterQuality.Low);
-                        var bitmap = new Bitmap(
-                            resized.ColorType.ToPixelFormat(),
-                            resized.GetPixels(),
-                            new PixelSize(resized.Width, resized.Height), 
-                            SkiaPlatform.DefaultDpi, 
-                            resized.RowBytes);
-                        return new ImageBrush(bitmap);
-                    }
-                    break;
-                case PhotoLoadType.Full:
-                    return new ImageBrush(new Bitmap(stream));
-                    break;
-                default:
-                    throw new Exception($"invalid ImageLoadMode:{loadType.ToString()}");
-            }
+                switch (loadType)
+                {
+                    case PhotoLoadType.Miniature:
+                        using (var src = SKBitmap.Decode(stream))
+                        {
+                            var scale = 100f / src.Width;
+                            var resized = new SKBitmap(
+                                (int) (src.Width * scale),
+                                (int) (src.Height * scale),
+                                src.ColorType,
+                                src.AlphaType);
+                            src.ScalePixels(resized, SKFilterQuality.Low);
+                            var bitmap = new Bitmap(
+                                resized.ColorType.ToPixelFormat(),
+                                resized.GetPixels(),
+                                new PixelSize(resized.Width, resized.Height),
+                                SkiaPlatform.DefaultDpi,
+                                resized.RowBytes);
+                            return new ImageBrush(bitmap);
+                        }
+
+                        break;
+                    case PhotoLoadType.Full:
+                        return new ImageBrush(new Bitmap(stream));
+                        break;
+                    default:
+                        throw new Exception($"invalid ImageLoadMode:{loadType.ToString()}");
+                }
+            });
         }
     }
 }
