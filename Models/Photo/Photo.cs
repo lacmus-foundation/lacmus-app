@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Avalonia.Media;
 using MetadataExtractor;
+using ReactiveUI;
 
 namespace RescuerLaApp.Models.Photo
 {

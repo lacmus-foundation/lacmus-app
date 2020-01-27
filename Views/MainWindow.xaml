@@ -84,7 +84,7 @@
         
         <ListBox Grid.Column="0" Grid.Row="0"
                  x:Name="ImageList" 
-                 Items="{Binding PhotoCollection}"
+                 Items="{Binding PhotosCollection}"
                  SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
           <ListBox.DataTemplates>
             <DataTemplate DataType="{x:Type models_photo:Photo}">

@@ -357,7 +357,6 @@ namespace RescuerLaApp.ViewModels
             {
                 var photoFileReader = new AvaloniaPhotoFileReader(_window);
                 _photos.Clear();
-                
                 await Task.Factory.StartNew(async () =>
                 {
                     await Dispatcher.UIThread.InvokeAsync(async () =>
@@ -365,7 +364,6 @@ namespace RescuerLaApp.ViewModels
                         _photos.AddRange(await photoFileReader.ReadAllFromDir());
                     });
                 });
-                _photos.Add(new Photo());
                 SelectedIndex = 0;
             }
             catch (Exception ex)
@@ -378,65 +376,6 @@ namespace RescuerLaApp.ViewModels
                 };
             }
             Status = new AppStatusInfo {Status = Enums.Status.Ready};
-            
-            /*
-            Status = new AppStatusInfo {Status = Enums.Status.Working};
-            try
-            {
-                var openDig = new OpenFolderDialog
-                {
-                    Title = "Choose a directory with images"
-                };
-                var dirName = await openDig.ShowAsync(new Window());
-                if (string.IsNullOrEmpty(dirName) || !Directory.Exists(dirName))
-                {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
-                    return;
-                }
-                var fileNames = Directory.GetFiles(dirName);
-                _frameLoadProgressIndex = 0;
-                Frames.Clear(); _frames.Clear(); GC.Collect();
-                var loadingFrames = new List<Frame>();
-                foreach (var fileName in fileNames)
-                {
-                    // TODO: Проверка IsImage вне зависимости от расширений.
-                    if(!Path.HasExtension(fileName))
-                        continue;
-                    if (Path.GetExtension(fileName).ToLower() != ".jpg" &&
-                        Path.GetExtension(fileName).ToLower() != ".jpeg" &&
-                        Path.GetExtension(fileName).ToLower() != ".png" &&
-                        Path.GetExtension(fileName).ToLower() != ".bmp")
-                        continue;
-                    
-                    var frame = new Frame();
-                    frame.OnLoad += FrameLoadingProgressUpdate;
-                    frame.Load(fileName, Enums.ImageLoadMode.Miniature);
-                    loadingFrames.Add(frame);
-                }
-
-                if (loadingFrames.Count == 0)
-                {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
-                    return;
-                }
-                
-                Frames = loadingFrames;
-                if (SelectedIndex < 0)
-                    SelectedIndex = 0;
-                UpdateFramesRepo();
-                UpdateUi();
-                _frames = new List<Frame>(Frames);
-                Status = new AppStatusInfo {Status = Enums.Status.Ready};
-            }
-            catch (Exception ex)
-            {
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
-            }
-            */
         }
 
         private async void SaveAll()
