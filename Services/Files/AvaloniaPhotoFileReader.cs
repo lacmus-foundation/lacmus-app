@@ -31,7 +31,7 @@ namespace RescuerLaApp.Services.Files
             var (path, stream) = await _reader.Read(dig);
             try
             {
-                var imageBrush = await ReadImageBrushFromFile(stream, loadType);
+                var imageBrush = ReadImageBrushFromFile(stream, loadType);
                 var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
                 var photo = new Photo
                 {
@@ -61,7 +61,7 @@ namespace RescuerLaApp.Services.Files
             {
                 try
                 {
-                    var imageBrush = await ReadImageBrushFromFile(stream, loadType);
+                    var imageBrush = ReadImageBrushFromFile(stream, loadType);
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
                     var photo = new Photo
                     {
@@ -93,7 +93,17 @@ namespace RescuerLaApp.Services.Files
             {
                 try
                 {
-                    var imageBrush = await Dispatcher.UIThread.InvokeAsync(() => ReadImageBrushFromFile(stream, loadType));
+                    var imageBrush = new ImageBrush();
+                    /*
+                    await Task.Factory.StartNew(() =>
+                    {
+                        Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            imageBrush = await ReadImageBrushFromFile(stream, loadType);
+                        });
+                    });
+                    */
+                    imageBrush = ReadImageBrushFromFile(stream, loadType);
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(path);
                     var photo = new Photo
                     {
@@ -123,39 +133,36 @@ namespace RescuerLaApp.Services.Files
             return name;
         }
         
-        private static async Task<ImageBrush> ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)
+        private static ImageBrush ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)
         {
-            return await Task.Factory.StartNew(() =>
+            switch (loadType)
             {
-                switch (loadType)
-                {
-                    case PhotoLoadType.Miniature:
-                        using (var src = SKBitmap.Decode(stream))
-                        {
-                            var scale = 100f / src.Width;
-                            var resized = new SKBitmap(
-                                (int) (src.Width * scale),
-                                (int) (src.Height * scale),
-                                src.ColorType,
-                                src.AlphaType);
-                            src.ScalePixels(resized, SKFilterQuality.Low);
-                            var bitmap = new Bitmap(
-                                resized.ColorType.ToPixelFormat(),
-                                resized.GetPixels(),
-                                new PixelSize(resized.Width, resized.Height),
-                                SkiaPlatform.DefaultDpi,
-                                resized.RowBytes);
-                            return new ImageBrush(bitmap);
-                        }
+                case PhotoLoadType.Miniature:
+                    using (var src = SKBitmap.Decode(stream))
+                    {
+                        var scale = 100f / src.Width;
+                        var resized = new SKBitmap(
+                            (int) (src.Width * scale),
+                            (int) (src.Height * scale),
+                            src.ColorType,
+                            src.AlphaType);
+                        src.ScalePixels(resized, SKFilterQuality.Low);
+                        var bitmap = new Bitmap(
+                            resized.ColorType.ToPixelFormat(),
+                            resized.GetPixels(),
+                            new PixelSize(resized.Width, resized.Height),
+                            SkiaPlatform.DefaultDpi,
+                            resized.RowBytes);
+                        return new ImageBrush(bitmap);
+                    }
 
-                        break;
-                    case PhotoLoadType.Full:
-                        return new ImageBrush(new Bitmap(stream));
-                        break;
-                    default:
-                        throw new Exception($"invalid ImageLoadMode:{loadType.ToString()}");
-                }
-            });
+                    break;
+                case PhotoLoadType.Full:
+                    return new ImageBrush(new Bitmap(stream));
+                    break;
+                default:
+                    throw new Exception($"invalid ImageLoadMode:{loadType.ToString()}");
+            }
         }
     }
 }

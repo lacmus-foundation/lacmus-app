@@ -12,6 +12,8 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
+using DynamicData;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
@@ -39,12 +41,16 @@ namespace RescuerLaApp.ViewModels
         private readonly Window _window;
         private int _frameLoadProgressIndex;
         private List<Frame> _frames = new List<Frame>();
+        SourceList<Photo> _photos { get; set; } = new SourceList<Photo>();
+        private ReadOnlyObservableCollection<Photo> _photoCollection;
+        public ReadOnlyObservableCollection<Photo> PhotosCollection => _photoCollection;
 
 
         public MainWindowViewModel(Window window)
         {
             _window = window;
-            PhotoCollection = new List<Photo>();
+            _photos.Connect().ObserveOn(RxApp.MainThreadScheduler).Bind(out _photoCollection).Subscribe();
+            
             var canGoNext = this
                 .WhenAnyValue(x => x.SelectedIndex)
                 .Select(index => index < Frames.Count - 1);
@@ -141,7 +147,6 @@ namespace RescuerLaApp.ViewModels
         [Reactive] public int SelectedIndex { get; set; }
 
         [Reactive] public List<Frame> Frames { get; set; } = new List<Frame>();
-        [Reactive] public List<Photo> PhotoCollection { get; set; } = new List<Photo>();
 
         [Reactive] public AppStatusInfo Status { get; set; } = new AppStatusInfo { Status = Enums.Status.Unauthenticated };
         
@@ -351,10 +356,16 @@ namespace RescuerLaApp.ViewModels
             try
             {
                 var photoFileReader = new AvaloniaPhotoFileReader(_window);
-                PhotoCollection.Clear();
+                _photos.Clear();
                 
-                var photos = await photoFileReader.ReadAllFromDir();
-                PhotoCollection = new List<Photo>(photos);
+                await Task.Factory.StartNew(async () =>
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        _photos.AddRange(await photoFileReader.ReadAllFromDir());
+                    });
+                });
+                _photos.Add(new Photo());
                 SelectedIndex = 0;
             }
             catch (Exception ex)

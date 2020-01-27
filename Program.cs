@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using Avalonia;
+using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
 using Avalonia.Rendering;
 using RescuerLaApp.Models;
@@ -18,7 +19,7 @@ namespace RescuerLaApp
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
         
-        private static AppBuilder BuildAvaloniaApp()
+        /*private static AppBuilder BuildAvaloniaApp()
         {
             bool useGpuLinux = true;
 
@@ -57,14 +58,12 @@ namespace RescuerLaApp
                 .With(new X11PlatformOptions { UseGpu = useGpuLinux, WmClass = "lacmus" })
                 .With(new AvaloniaNativePlatformOptions { UseDeferredRendering = true, UseGpu = true })
                 .With(new MacOSPlatformOptions { ShowInDock = true });
-        }
+        }*/
 
-        /*
         public static AppBuilder BuildAvaloniaApp()
             => AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .UseReactiveUI()
                 .LogToDebug();
-        */
     }
 }
