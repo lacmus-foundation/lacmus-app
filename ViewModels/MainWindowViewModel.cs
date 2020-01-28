@@ -22,13 +22,12 @@ using MessageBox.Avalonia.Views;
 using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using RescuerLaApp.Managers;
 using RescuerLaApp.Models;
 using RescuerLaApp.Models.Photo;
-using RescuerLaApp.Services;
 using RescuerLaApp.Services.Files;
 using RescuerLaApp.Views;
 using Directory = System.IO.Directory;
-using KeyValuePair = System.Collections.Generic.KeyValuePair;
 using Object = RescuerLaApp.Models.Object;
 using Size = RescuerLaApp.Models.Size;
 
@@ -37,6 +36,8 @@ namespace RescuerLaApp.ViewModels
     public class MainWindowViewModel : ReactiveObject
     {
         private INeuroModel _model; // TODO : Make field readonly 
+        private readonly ApplicationStatusManager _applicationStatusManager;
+
 
         private readonly Window _window;
         private int _frameLoadProgressIndex;
@@ -49,12 +50,19 @@ namespace RescuerLaApp.ViewModels
         public MainWindowViewModel(Window window)
         {
             _window = window;
-            _photos.Connect().ObserveOn(RxApp.MainThreadScheduler).Bind(out _photoCollection).Subscribe();
+            _photos.Connect()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Bind(out _photoCollection)
+                .Subscribe();
             
+            _applicationStatusManager = new ApplicationStatusManager();
+            ApplicationStatusViewModel = new ApplicationStatusViewModel(_applicationStatusManager);
+
+
             var canGoNext = this
                 .WhenAnyValue(x => x.SelectedIndex)
                 .Select(index => index < Frames.Count - 1);
-            
+
             // The bound button will stay disabled, when
             // there is no more frames left.
             NextImageCommand = ReactiveCommand.Create(
@@ -65,32 +73,25 @@ namespace RescuerLaApp.ViewModels
                 .WhenAnyValue(x => x.SelectedIndex)
                 .Select(index => index > 0);
 
-            var canExecute = this
-                .WhenAnyValue(x => x.Status)
-                .Select(status => status.Status != Enums.Status.Working && status.Status != Enums.Status.Unauthenticated);
-            
             var canSwitchBoundBox = this
                 .WhenAnyValue(x => x.BoundBoxes)
                 .Select(count => BoundBoxes?.Count > 0);
-            
-            var canAuth = this
-                .WhenAnyValue(x => x.Status)
-                .Select(status => status.Status == Enums.Status.Unauthenticated);
-            
+
             // The bound button will stay disabled, when
             // there are no frames before the current one.
             PrevImageCommand = ReactiveCommand.Create(
-                () => { SelectedIndex--; }, 
+                () => { SelectedIndex--; },
                 canGoBack);
-            
+
             // Add here newer commands
-            SetupCommand(canExecute, canSwitchBoundBox, canAuth);
+            SetupCommand(CanSetup(), canSwitchBoundBox, CanAuth());
 
             //auto sign in
             SignIn();
         }
 
-        private void SetupCommand(IObservable<bool> canExecute, IObservable<bool> canSwitchBoundBox, IObservable<bool> canAuth)
+        private void SetupCommand(IObservable<bool> canExecute, IObservable<bool> canSwitchBoundBox,
+            IObservable<bool> canAuth)
         {
             IncreaseCanvasCommand = ReactiveCommand.Create(IncreaseCanvas);
             ShrinkCanvasCommand = ReactiveCommand.Create(ShrinkCanvas);
@@ -115,52 +116,63 @@ namespace RescuerLaApp.ViewModels
             ExitCommand = ReactiveCommand.Create(Exit);
         }
 
+        private IObservable<bool> CanSetup()
+        {
+            return _applicationStatusManager.AppStatusInfoObservable
+                .Select(status => status.Status != Enums.Status.Working && status.Status != Enums.Status.Unauthenticated);
+        }
+
+        private IObservable<bool> CanAuth()
+        {
+            return _applicationStatusManager.AppStatusInfoObservable
+                .Select(status => status.Status == Enums.Status.Unauthenticated);
+        }
+
         public void UpdateFramesRepo()
         {
             this.WhenAnyValue(x => x.SelectedIndex)
                 .Skip(1)
                 .Subscribe(x =>
                 {
-                    if (Status.Status == Enums.Status.Ready)
-                        Status = new AppStatusInfo
-                        {
-                            Status = Enums.Status.Ready, 
-                            StringStatus = $"{Enums.Status.Ready.ToString()} | {Frames[SelectedIndex].Path}"
-                        };
+                    if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
+                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
+                            $"{Enums.Status.Ready.ToString()} | {Frames[SelectedIndex].Path}");
                     SwitchBoundBoxesVisibilityToTrue();
-                    FavoritesStateString = Frames[SelectedIndex].IsFavorite ? "Remove from favorites" : "Add to favorites";
+                    FavoritesStateString =
+                        Frames[SelectedIndex].IsFavorite ? "Remove from favorites" : "Add to favorites";
                     UpdateUi();
                 });
         }
-        
+
         #region Public API
 
+        [Reactive] public ApplicationStatusViewModel ApplicationStatusViewModel { get; set; }
+
         [Reactive] public List<BoundBox> BoundBoxes { get; set; } = new List<BoundBox>();
+
         // TODO: update with locales
         [Reactive] public string BoundBoxesStateString { get; set; } = "Hide bound boxes";
         [Reactive] public string FavoritesStateString { get; set; } = "Add to favorites";
-        
+
         [Reactive] public double CanvasWidth { get; set; } = 500;
-        
+
         [Reactive] public double CanvasHeight { get; set; } = 500;
 
         [Reactive] public int SelectedIndex { get; set; }
 
         [Reactive] public List<Frame> Frames { get; set; } = new List<Frame>();
 
-        [Reactive] public AppStatusInfo Status { get; set; } = new AppStatusInfo { Status = Enums.Status.Unauthenticated };
-        
-        [Reactive] public ImageBrush ImageBrush { get; set; } = new ImageBrush { Stretch = Stretch.Uniform };
+        [Reactive] public ImageBrush ImageBrush { get; set; } = new ImageBrush {Stretch = Stretch.Uniform};
 
         [Reactive] public bool IsShowPedestrians { get; set; }
         [Reactive] public bool IsShowFavorites { get; set; }
-        
+
         public ReactiveCommand<Unit, Unit> PredictAllCommand { get; set; }
 
         public ReactiveCommand<Unit, Unit> NextImageCommand { get; }
-        
+
         public ReactiveCommand<Unit, Unit> PrevImageCommand { get; }
-        
+
         public ReactiveCommand<Unit, Unit> ShrinkCanvasCommand { get; set; }
 
         public ReactiveCommand<Unit, Unit> IncreaseCanvasCommand { get; set; }
@@ -204,8 +216,10 @@ namespace RescuerLaApp.ViewModels
                         IsShowFavorites = false;
                         ShowFavorites();
                     }
+
                     return;
                 }
+
                 IsShowFavorites = false;
                 SelectedIndex = Frames.FindIndex(x => x.IsVisible);
                 Frames = _frames.FindAll(x => x.IsVisible);
@@ -217,7 +231,7 @@ namespace RescuerLaApp.ViewModels
                 UpdateUi();
             }
         }
-        
+
         private void ShowFavorites()
         {
             if (IsShowFavorites)
@@ -229,7 +243,7 @@ namespace RescuerLaApp.ViewModels
                     ShowPedestrians();
                     return;
                 }
-                
+
                 IsShowPedestrians = false;
                 SelectedIndex = Frames.FindIndex(x => x.IsFavorite);
                 Frames = _frames.FindAll(x => x.IsFavorite);
@@ -244,55 +258,37 @@ namespace RescuerLaApp.ViewModels
 
         private async void LoadModel()
         {
-            Status = new AppStatusInfo
-            {
-                Status = Enums.Status.Working, 
-                StringStatus = "Working | loading model..."
-            };
-            
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
+
             if (_model == null)
             {
                 _model = AvaloniaLocator.Current.GetService<INeuroModel>();
             }
 
             await _model.Load();
-            
-            Status = new AppStatusInfo
-            {
-                Status = Enums.Status.Ready
-            };
+
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
-        
+
         private async void UpdateModel()
         {
-            Status = new AppStatusInfo
-            {
-                Status = Enums.Status.Working, 
-                StringStatus = "Working | updating model..."
-            };
-            
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | updating model...");
+
             if (_model == null)
             {
                 _model = AvaloniaLocator.Current.GetService<INeuroModel>();
             }
-            
+
             await _model.UpdateModel();
-            
-            Status = new AppStatusInfo
-            {
-                Status = Enums.Status.Ready
-            };
+
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         private async void PredictAll()
         {
             if (Frames == null || Frames.Count < 1) return;
-            Status = new AppStatusInfo
-            {
-                Status = Enums.Status.Working, 
-                StringStatus = "Working | loading model..."
-            };
-            
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
+
             if (_model == null)
             {
                 _model = AvaloniaLocator.Current.GetService<INeuroModel>();
@@ -300,51 +296,39 @@ namespace RescuerLaApp.ViewModels
 
             if (!await _model.Run())
             {
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = "Error: unable to load model"
-                };
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error, "Error: unable to load model");
                 _model.Dispose();
                 _model = null;
                 return;
             }
-                    
+
             var index = 0;
-            Status = new AppStatusInfo
-            {
-                Status = Enums.Status.Working, 
-                StringStatus = $"Working | processing images: {index} / {Frames.Count}"
-            };
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working,
+                $"Working | processing images: {index} / {Frames.Count}");
             foreach (var frame in Frames)
             {
                 index++;
                 frame.Rectangles = await _model.Predict(frame.Path);
-                if(index < Frames.Count)
-                    Status = new AppStatusInfo
-                    {
-                        Status = Enums.Status.Working, 
-                        StringStatus = $"Working | processing images: {index} / {Frames.Count}"
-                    };
+                if (index < Frames.Count)
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working,
+                        $"Working | processing images: {index} / {Frames.Count}");
 
                 if (frame.Rectangles.Any())
                     frame.IsVisible = true;
             }
+
             _frames = new List<Frame>(Frames);
             await _model.Stop();
             SelectedIndex = 0; //Fix bug when application stopped if index > 0
             UpdateUi();
-            Status = new AppStatusInfo
-            {
-                Status = Enums.Status.Ready
-            };
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
-        
+
         private void ShrinkCanvas()
         {
             Zoomer.Zoom(0.8);
         }
-        
+
         private void IncreaseCanvas()
         {
             Zoomer.Zoom(1.2);
@@ -352,30 +336,23 @@ namespace RescuerLaApp.ViewModels
 
         private async void OpenFile()
         {
-            Status = new AppStatusInfo {Status = Enums.Status.Working};
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
             try
             {
                 var photoFileReader = new AvaloniaPhotoFileReader(_window);
                 _photos.Clear();
-                await Task.Factory.StartNew(async () =>
-                {
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
-                    {
-                        _photos.AddRange(await photoFileReader.ReadAllFromDir());
-                    });
-                });
-                SelectedIndex = 0;
+                _photos.AddRange(await photoFileReader.ReadAllFromDir());
+                
+                 SelectedIndex = 0;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
+                    $"Error | {ex.Message.Replace('\n', ' ')}");
             }
-            Status = new AppStatusInfo {Status = Enums.Status.Ready};
+
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         private async void SaveAll()
@@ -384,10 +361,11 @@ namespace RescuerLaApp.ViewModels
             {
                 if (Frames == null || Frames.Count < 1)
                 {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     return;
                 }
-                Status = new AppStatusInfo {Status = Enums.Status.Working};
+
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 var annotations = new List<Annotation>();
                 foreach (var frame in Frames)
                 {
@@ -417,20 +395,19 @@ namespace RescuerLaApp.ViewModels
                             }
                         });
                     }
+
                     annotations.Add(annotation);
                 }
+
                 var annotationWriter = new AvaloniaAnnotationFileWriter(_window);
                 await annotationWriter.WriteMany(annotations);
-                Status = new AppStatusInfo {Status = Enums.Status.Ready, StringStatus = $"Success | saved"};
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
+                    $"Error | {ex.Message.Replace('\n', ' ')}");
             }
         }
 
@@ -440,10 +417,11 @@ namespace RescuerLaApp.ViewModels
             {
                 if (Frames == null || Frames.Count < 1)
                 {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     return;
                 }
-                Status = new AppStatusInfo {Status = Enums.Status.Working};
+
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
 
                 var openDig = new OpenFolderDialog
                 {
@@ -451,40 +429,39 @@ namespace RescuerLaApp.ViewModels
                 };
                 var dirName = await openDig.ShowAsync(new Window());
 
-                
+
                 if (string.IsNullOrEmpty(dirName) || !Directory.Exists(dirName))
                 {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     return;
                 }
-                
+
                 foreach (var frame in Frames.Where(frame => frame.Rectangles != null && frame.Rectangles.Any()))
                 {
                     File.Copy(frame.Path, Path.Combine(dirName, Path.GetFileName(frame.Path)));
                 }
+
                 Console.WriteLine($"Saved to {dirName}");
-                Status = new AppStatusInfo {Status = Enums.Status.Ready, StringStatus = $"Success | saved to {dirName}"};
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, $"Success | saved to {dirName}");
             }
             catch (Exception ex)
             {
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
+                    $"Error | {ex.Message.Replace('\n', ' ')}");
             }
         }
-        
+
         private async void SaveFavoritesImages()
         {
             try
             {
                 if (Frames == null || Frames.Count < 1)
                 {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     return;
                 }
-                Status = new AppStatusInfo {Status = Enums.Status.Working};
+
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 var annotations = new List<Annotation>();
                 var annotationWriter = new AvaloniaAnnotationFileWriter(_window);
                 foreach (var frame in Frames)
@@ -519,29 +496,28 @@ namespace RescuerLaApp.ViewModels
                             }
                         });
                     }
+
                     annotations.Add(annotation);
                     if (!frameRectangles.Any())
                     {
                         frame.Rectangles = null;
                     }
                 }
+
                 await annotationWriter.WriteMany(annotations);
-                Status = new AppStatusInfo {Status = Enums.Status.Ready, StringStatus = $"Success | saved"};
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
+                    $"Error | {ex.Message.Replace('\n', ' ')}");
             }
         }
 
         private async void ImportAll()
         {
-            Status = new AppStatusInfo {Status = Enums.Status.Working};
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
             try
             {
                 var openDig = new OpenFolderDialog
@@ -551,14 +527,16 @@ namespace RescuerLaApp.ViewModels
                 var dirName = await openDig.ShowAsync(new Window());
                 if (string.IsNullOrEmpty(dirName) || !Directory.Exists(dirName))
                 {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     return;
                 }
-                
+
                 var fileNames = Directory.GetFiles(dirName);
                 _frameLoadProgressIndex = 0;
-                Frames.Clear(); _frames.Clear(); GC.Collect();
-                
+                Frames.Clear();
+                _frames.Clear();
+                GC.Collect();
+
                 var loadingFrames = new List<Frame>();
                 var annotations = fileNames.Where(i => Path.GetExtension(i).ToLower() == ".xml")
                     .Select(Annotation.ParseFromXml).ToList();
@@ -569,68 +547,61 @@ namespace RescuerLaApp.ViewModels
                     // TODO: Проверка IsImage вне зависимости от расширений.
                     if (!File.Exists(fileName))
                         continue;
-                    if(!Path.HasExtension(fileName))
+                    if (!Path.HasExtension(fileName))
                         continue;
                     if (Path.GetExtension(fileName).ToLower() != ".jpg" &&
                         Path.GetExtension(fileName).ToLower() != ".jpeg" &&
                         Path.GetExtension(fileName).ToLower() != ".png" &&
                         Path.GetExtension(fileName).ToLower() != ".bmp")
                         continue;
-                    
+
                     var frame = new Frame();
                     frame.OnLoad += FrameLoadingProgressUpdate;
                     frame.Load(fileName, Enums.ImageLoadMode.Miniature);
-                    frame.Rectangles = ann.Objects.Select(obj => 
-                        new BoundBox(obj.Box.Xmin, obj.Box.Ymin, obj.Box.Ymax - obj.Box.Ymin, obj.Box.Xmax - obj.Box.Xmin));
+                    frame.Rectangles = ann.Objects.Select(obj =>
+                        new BoundBox(obj.Box.Xmin, obj.Box.Ymin, obj.Box.Ymax - obj.Box.Ymin,
+                            obj.Box.Xmax - obj.Box.Xmin));
 
                     if (frame.Rectangles.Any())
                     {
                         frame.IsVisible = true;
                     }
+
                     loadingFrames.Add(frame);
                 }
 
                 if (loadingFrames.Count == 0)
                 {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     return;
                 }
-                    
-                
+
+
                 Frames = loadingFrames;
                 if (SelectedIndex < 0)
                     SelectedIndex = 0;
                 UpdateFramesRepo();
                 UpdateUi();
                 _frames = new List<Frame>(Frames);
-                Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
             }
             catch (Exception ex)
             {
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
+                    $"Error | {ex.Message.Replace('\n', ' ')}");
             }
         }
-        
+
 
         private void FrameLoadingProgressUpdate()
         {
             _frameLoadProgressIndex++;
-            if(_frameLoadProgressIndex < Frames.Count)
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Working, 
-                    StringStatus = $"Working | loading images: {_frameLoadProgressIndex} / {Frames.Count}"
-                };
+            if (_frameLoadProgressIndex < Frames.Count)
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working,
+                    $"Working | loading images: {_frameLoadProgressIndex} / {Frames.Count}");
             else
             {
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Ready
-                };
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
             }
         }
 
@@ -638,7 +609,7 @@ namespace RescuerLaApp.ViewModels
         {
             OpenUrl("https://github.com/lizaalert/lacmus/wiki");
         }
-        
+
         public void ShowGeoData()
         {
             var msg = string.Empty;
@@ -690,7 +661,7 @@ namespace RescuerLaApp.ViewModels
                 tag = tag.Replace('\'', ';');
                 tag = tag.Replace('"', ';');
                 tag = tag.Replace(" ", "");
-            
+
                 var splitTag = tag.Split(';');
                 var grad = float.Parse(splitTag[0]);
                 var min = float.Parse(splitTag[1]);
@@ -711,12 +682,12 @@ namespace RescuerLaApp.ViewModels
             tb.AddRow("Group", "Tag name", "Description");
             tb.AddRow("-----", "--------", "-----------");
 
-            
+
             var directories = ImageMetadataReader.ReadMetadata(Frames[SelectedIndex].Path);
             foreach (var directory in directories)
             foreach (var tag in directory.Tags)
                 tb.AddRow(directory.Name, tag.Name, tag.Description);
-            
+
             var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
             {
                 ButtonDefinitions = ButtonEnum.Ok,
@@ -738,7 +709,7 @@ namespace RescuerLaApp.ViewModels
         public void AddToFavorites()
         {
             Frames[SelectedIndex].IsFavorite = !Frames[SelectedIndex].IsFavorite;
-            
+
             if (IsShowFavorites)
             {
                 IsShowPedestrians = false;
@@ -749,7 +720,7 @@ namespace RescuerLaApp.ViewModels
                     ShowFavorites();
                     return;
                 }
-                    
+
                 SelectedIndex = Frames.FindIndex(x => x.IsFavorite);
                 Frames = _frames.FindAll(x => x.IsFavorite);
                 UpdateUi();
@@ -759,7 +730,7 @@ namespace RescuerLaApp.ViewModels
         public void SwitchBoundBoxesVisibility()
         {
             var isVisible = true;
-            
+
             if (BoundBoxes == null) return;
             if (BoundBoxes.Count > 0)
                 isVisible = BoundBoxes[0].IsVisible;
@@ -770,18 +741,19 @@ namespace RescuerLaApp.ViewModels
             }
 
             BoundBoxesStateString = BoundBoxes[0].IsVisible ? "Hide bound boxes" : "Show bound boxes";
-            
+
             UpdateUi();
         }
 
         private void SwitchBoundBoxesVisibilityToTrue()
         {
             if (BoundBoxes == null || BoundBoxes[0].IsVisible) return;
-            
+
             foreach (var rectangle in BoundBoxes)
             {
                 rectangle.IsVisible = true;
             }
+
             BoundBoxesStateString = "Hide bound boxes";
         }
 
@@ -794,11 +766,11 @@ namespace RescuerLaApp.ViewModels
 
             var msgBoxCustomParams = new MessageBoxCustomParams
             {
-                ButtonDefinitions =  new []
+                ButtonDefinitions = new[]
                 {
-                    new ButtonDefinition{Name = "Ok", Type = ButtonType.Colored},
-                    new ButtonDefinition{Name = "License"},
-                    new ButtonDefinition{Name = "Github"}
+                    new ButtonDefinition {Name = "Ok", Type = ButtonType.Colored},
+                    new ButtonDefinition {Name = "License"},
+                    new ButtonDefinition {Name = "Github"}
                 },
                 ContentTitle = "About",
                 ContentHeader = "Lacmus desktop application. Version 0.3.3 alpha.",
@@ -818,34 +790,39 @@ namespace RescuerLaApp.ViewModels
             switch (result.ToLower())
             {
                 case "ok": return;
-                case "license": OpenUrl("https://github.com/lizaalert/lacmus/blob/master/LICENSE"); break;
-                case "github": OpenUrl("https://github.com/lizaalert/lacmus"); break;
+                case "license":
+                    OpenUrl("https://github.com/lizaalert/lacmus/blob/master/LICENSE");
+                    break;
+                case "github":
+                    OpenUrl("https://github.com/lizaalert/lacmus");
+                    break;
             }
         }
 
         public async void SignUp()
         {
             var result = await SignUpWindow.Show(null);
-            if(Status.Status == Enums.Status.Unauthenticated && result.IsSignIn)
-                Status = new AppStatusInfo {Status = Enums.Status.Ready};
+            if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Unauthenticated && result.IsSignIn)
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
+
         public async void SignIn()
         {
             var path = AppDomain.CurrentDomain.BaseDirectory + "user_info";
             if (File.Exists(path))
             {
-                if (Status.Status == Enums.Status.Unauthenticated)
+                if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Unauthenticated)
                 {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     return;
                 }
             }
-            
+
             var result = await SignInWindow.Show(null);
-            if(Status.Status == Enums.Status.Unauthenticated && result.IsSignIn)
-                Status = new AppStatusInfo {Status = Enums.Status.Ready};
+            if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Unauthenticated && result.IsSignIn)
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
-        
+
         public async void Exit()
         {
             var window = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
@@ -880,7 +857,6 @@ namespace RescuerLaApp.ViewModels
             {
                 Console.WriteLine(e);
             }
-            
         }
 
         private void UpdateUi()
