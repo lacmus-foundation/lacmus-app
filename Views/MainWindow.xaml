@@ -195,8 +195,8 @@
       </ScrollViewer>
     </Grid>
     <!-- Grid 2 -->
-    <Grid Name="Footer" Grid.Row="2" Background="{Binding Status.StatusColor}">
-      <TextBlock Foreground="White" Name="tbStatusBar" Margin="5" Text="{Binding Status.StringStatus}"></TextBlock>
+    <Grid Name="Footer" Grid.Row="2" Background="{Binding ApplicationStatusViewModel.StatusColor}">
+      <TextBlock Foreground="White" Name="tbStatusBar" Margin="5" Text="{Binding ApplicationStatusViewModel.StringStatus}"/>
     </Grid>
   </Grid>  
 </Window>

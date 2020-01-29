@@ -1,0 +1,28 @@
+using System;
+using System.Reactive.Subjects;
+using RescuerLaApp.Models;
+
+namespace RescuerLaApp.Managers
+{
+    public class ApplicationStatusManager
+    {
+        private readonly ISubject<AppStatusInfo> _appStatusInfoBehaviourSubject;
+        
+        public ApplicationStatusManager()
+        {
+            AppStatusInfo = new AppStatusInfo();
+            AppStatusInfo.ChangeCurrentStatus(Enums.Status.Unauthenticated, string.Empty);
+            _appStatusInfoBehaviourSubject = new BehaviorSubject<AppStatusInfo>(AppStatusInfo);
+        }
+
+        public IObservable<AppStatusInfo> AppStatusInfoObservable => _appStatusInfoBehaviourSubject;
+        public AppStatusInfo AppStatusInfo { get; }
+
+        public void ChangeCurrentAppStatus(Enums.Status status, string statusString)
+        {
+            AppStatusInfo.ChangeCurrentStatus(status, statusString);
+            
+            _appStatusInfoBehaviourSubject.OnNext(AppStatusInfo);
+        }
+    }
+}
