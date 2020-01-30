@@ -93,17 +93,7 @@ namespace RescuerLaApp.Services.Files
             {
                 try
                 {
-                    var imageBrush = new ImageBrush();
-                    /*
-                    await Task.Factory.StartNew(() =>
-                    {
-                        Dispatcher.UIThread.InvokeAsync(async () =>
-                        {
-                            imageBrush = await ReadImageBrushFromFile(stream, loadType);
-                        });
-                    });
-                    */
-                    imageBrush = ReadImageBrushFromFile(stream, loadType);
+                    var imageBrush = ReadImageBrushFromFile(stream, loadType);
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(path);
                     var photo = new Photo
                     {

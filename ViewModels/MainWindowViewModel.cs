@@ -147,46 +147,28 @@ namespace RescuerLaApp.ViewModels
         #region Public API
 
         [Reactive] public ApplicationStatusViewModel ApplicationStatusViewModel { get; set; }
-
         [Reactive] public List<BoundBox> BoundBoxes { get; set; } = new List<BoundBox>();
-
         // TODO: update with locales
         [Reactive] public string BoundBoxesStateString { get; set; } = "Hide bound boxes";
         [Reactive] public string FavoritesStateString { get; set; } = "Add to favorites";
-
         [Reactive] public double CanvasWidth { get; set; } = 500;
-
         [Reactive] public double CanvasHeight { get; set; } = 500;
-
         [Reactive] public int SelectedIndex { get; set; }
-
         [Reactive] public List<Frame> Frames { get; set; } = new List<Frame>();
-
         [Reactive] public ImageBrush ImageBrush { get; set; } = new ImageBrush {Stretch = Stretch.Uniform};
-
         [Reactive] public bool IsShowPedestrians { get; set; }
         [Reactive] public bool IsShowFavorites { get; set; }
 
         public ReactiveCommand<Unit, Unit> PredictAllCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> NextImageCommand { get; }
-
         public ReactiveCommand<Unit, Unit> PrevImageCommand { get; }
-
         public ReactiveCommand<Unit, Unit> ShrinkCanvasCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> IncreaseCanvasCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> OpenFileCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> SaveAllCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> UpdateModelCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> ShowPedestriansCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ShowFavoritesCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAllImagesWithObjectsCommand { get; set; }
