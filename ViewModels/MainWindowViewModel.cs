@@ -336,14 +336,21 @@ namespace RescuerLaApp.ViewModels
 
         private async void OpenFile()
         {
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+           
             try
             {
-                var photoFileReader = new AvaloniaPhotoFileReader(_window);
-                _photos.Clear();
-                _photos.AddRange(await photoFileReader.ReadAllFromDir());
-                
-                 SelectedIndex = 0;
+                await Task.Factory.StartNew(async () =>
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        var photoFileReader = new AvaloniaPhotoFileReader(_window);
+                        _photos.Clear();
+                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                        _photos.AddRange(await photoFileReader.ReadAllFromDir());
+                        SelectedIndex = 0;
+                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                    });
+                });
             }
             catch (Exception ex)
             {
@@ -351,8 +358,6 @@ namespace RescuerLaApp.ViewModels
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
                     $"Error | {ex.Message.Replace('\n', ' ')}");
             }
-
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         private async void SaveAll()
