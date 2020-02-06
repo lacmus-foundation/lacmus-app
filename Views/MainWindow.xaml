@@ -84,13 +84,13 @@
         
         <ListBox Grid.Column="0" Grid.Row="0"
                  x:Name="ImageList" 
-                 Items="{Binding PhotosCollection}"
+                 Items="{Binding PhotoCollection}"
                  SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
           <ListBox.DataTemplates>
-            <DataTemplate DataType="{x:Type models_photo:Photo}">
+            <DataTemplate DataType="{x:Type vm:PhotoViewModel}">
               <StackPanel Margin="25,5" Orientation="Vertical">
-                <Canvas Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding ImageBrush}"/>
-                <TextBlock Margin="0,5" HorizontalAlignment="Center" Text="{Binding Caption}"></TextBlock>
+                <Canvas Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding Photo.ImageBrush}"/>
+                <TextBlock Margin="0,5" HorizontalAlignment="Center" Text="{Binding Photo.Caption}"></TextBlock>
               </StackPanel>
             </DataTemplate>
           </ListBox.DataTemplates>

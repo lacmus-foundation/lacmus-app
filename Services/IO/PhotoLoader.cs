@@ -26,7 +26,6 @@ namespace RescuerLaApp.Services.IO
                     {
                         ImageBrush = imageBrush,
                         Attribute = Attribute.NotProcessed,
-                        Caption = GetCaptionFromPath(source),
                         MetaDataDirectories = metaDataDirectories
                     };
                     return photo;
@@ -37,15 +36,27 @@ namespace RescuerLaApp.Services.IO
                 }
             }
         }
-        
-        private static string GetCaptionFromPath(string path)
+        public Photo Load(string source, Stream stream, PhotoLoadType loadType)
         {
-            var name = System.IO.Path.GetFileName(path);
-            if (name.Length > 10)
+            using (stream)
             {
-                name = name.Substring(0, 3) + "{~}" + name.Substring(name.Length - 5);
+                try
+                {
+                    var imageBrush = ReadImageBrushFromFile(stream, loadType);
+                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
+                    var photo = new Photo
+                    {
+                        ImageBrush = imageBrush,
+                        Attribute = Attribute.NotProcessed,
+                        MetaDataDirectories = metaDataDirectories
+                    };
+                    return photo;
+                }
+                catch (Exception e)
+                {
+                    throw new Exception($"unable to load image from {source}", e);
+                }
             }
-            return name;
         }
         
         private static ImageBrush ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)

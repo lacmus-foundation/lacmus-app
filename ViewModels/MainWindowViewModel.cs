@@ -37,14 +37,13 @@ namespace RescuerLaApp.ViewModels
     {
         private INeuroModel _model; // TODO : Make field readonly 
         private readonly ApplicationStatusManager _applicationStatusManager;
-
-
+        
         private readonly Window _window;
         private int _frameLoadProgressIndex;
         private List<Frame> _frames = new List<Frame>();
-        SourceList<Photo> _photos { get; set; } = new SourceList<Photo>();
-        private ReadOnlyObservableCollection<Photo> _photoCollection;
-        public ReadOnlyObservableCollection<Photo> PhotosCollection => _photoCollection;
+        SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
+        private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
+        public ReadOnlyObservableCollection<PhotoViewModel> PhotoCollection => _photoCollection;
 
 
         public MainWindowViewModel(Window window)
@@ -318,7 +317,6 @@ namespace RescuerLaApp.ViewModels
 
         private async void OpenFile()
         {
-           
             try
             {
                 await Task.Factory.StartNew(async () =>
@@ -328,7 +326,10 @@ namespace RescuerLaApp.ViewModels
                         var photoFileReader = new AvaloniaPhotoFileReader(_window);
                         _photos.Clear();
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                        _photos.AddRange(await photoFileReader.ReadAllFromDir());
+                        foreach (var photo in await photoFileReader.ReadAllFromDir())
+                        {
+                            _photos.Add(new PhotoViewModel(photo, new Annotation()));
+                        }
                         SelectedIndex = 0;
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     });

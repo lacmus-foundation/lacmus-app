@@ -37,7 +37,6 @@ namespace RescuerLaApp.Services.Files
                 {
                     ImageBrush = imageBrush,
                     Attribute = Attribute.NotProcessed,
-                    Caption = GetCaptionFromPath(path),
                     MetaDataDirectories = metaDataDirectories
                 };
                 return photo;
@@ -67,7 +66,6 @@ namespace RescuerLaApp.Services.Files
                     {
                         ImageBrush = imageBrush,
                         Attribute = Attribute.NotProcessed,
-                        Caption = GetCaptionFromPath(path),
                         MetaDataDirectories = metaDataDirectories
                     };
                     photoList.Add(photo);
@@ -99,7 +97,6 @@ namespace RescuerLaApp.Services.Files
                     {
                         ImageBrush = imageBrush,
                         Attribute = Attribute.NotProcessed,
-                        Caption = GetCaptionFromPath(path),
                         MetaDataDirectories = metaDataDirectories
                     };
                     photoList.Add(photo);
