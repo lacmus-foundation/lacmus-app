@@ -57,6 +57,8 @@ namespace RescuerLaApp.Services.VM
             try
             {
                 var folder = await folderDialog.ShowAsync(_window);
+                if(!Directory.Exists(folder))
+                    return;
                 foreach (var photoViewModel in photoViewModels)
                     await Task.Run(() =>
                     {
@@ -67,13 +69,17 @@ namespace RescuerLaApp.Services.VM
                         annotation.Folder = folder;
                         var saver = new AnnotationSaver();
                         saver.Save(annotation, annotationPath);
+                        if (srcPhotoPath == dstPhotoPath)
+                        {
+                            Console.WriteLine($"WARN: photo {srcPhotoPath} skipped. File exists.");
+                            return;
+                        }
                         File.Copy(srcPhotoPath, dstPhotoPath, true);
                     });
             }
             catch (Exception e)
             {
-                //TODO: translate to rus
-                Console.WriteLine($"ERROR: con not save photo!\nDetails: {e}");
+                throw new Exception("Unable to save photo!",e);
             }
         }
     }

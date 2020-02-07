@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using MetadataExtractor;
@@ -77,17 +78,24 @@ namespace RescuerLaApp.Services.VM
             var multipleFiles = await _reader.ReadAllFromDir(dig, isRecursive);
             var photoLoader = new PhotoLoader();
             var photoList = new List<PhotoViewModel>();
-            foreach (var (path,stream) in multipleFiles)
+            foreach (var (path, stream) in multipleFiles)
             {
                 try
                 {
-                    var photo = photoLoader.Load(path, stream, loadType);
-                    var annotation = new Annotation
+                    using (stream)
                     {
-                        Filename = Path.GetFileName(path),
-                        Folder = Path.GetDirectoryName(path)
-                    };
-                    photoList.Add(new PhotoViewModel(photo, annotation));
+                        if (Path.GetExtension(path).ToLower() != ".jpg" &&
+                            Path.GetExtension(path).ToLower() != ".jpeg" &&
+                            Path.GetExtension(path).ToLower() != ".png")
+                            continue;
+                        var photo = photoLoader.Load(path, stream, loadType);
+                        var annotation = new Annotation
+                        {
+                            Filename = Path.GetFileName(path),
+                            Folder = Path.GetDirectoryName(path)
+                        };
+                        photoList.Add(new PhotoViewModel(photo, annotation));
+                    }
                 }
                 catch (Exception e)
                 {

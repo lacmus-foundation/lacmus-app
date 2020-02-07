@@ -52,6 +52,10 @@ namespace RescuerLaApp.Services.Files
             if (fileDialog == null)
                 fileDialog = new OpenFolderDialog();
             var dirPath = await fileDialog.ShowAsync(_window);
+            if (!Directory.Exists(dirPath))
+            {
+                return new List<(string Path, Stream Stream)>().ToArray();
+            }
             
             var attributes = File.GetAttributes(dirPath);
             var isFolder = attributes.HasFlag(FileAttributes.Directory);

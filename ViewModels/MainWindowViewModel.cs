@@ -326,15 +326,18 @@ namespace RescuerLaApp.ViewModels
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                         var reader = new PhotoVMReader(_window);
                         _photos.Clear();
-                        _photos.AddRange(await reader.ReadAllFromDirByPhoto());
+                        var photos = await reader.ReadAllFromDirByPhoto();
+                        if(photos.Any())
+                            _photos.AddRange(photos);
                         SelectedIndex = 0;
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                        Console.WriteLine($"INFO: loaded {_photos.Count} photos.");
                     });
                 });
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"ERROR: unable to load photos.\nDetails: {ex}");
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
                     $"Error | {ex.Message.Replace('\n', ' ')}");
             }
@@ -344,53 +347,20 @@ namespace RescuerLaApp.ViewModels
         {
             try
             {
-                if (Frames == null || Frames.Count < 1)
+                if (!_photoCollection.Any())
                 {
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                    Console.WriteLine("WARN: there is no photos to save.");
                     return;
                 }
-
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                var annotations = new List<Annotation>();
-                foreach (var frame in Frames)
-                {
-                    if (frame.Rectangles == null || !frame.Rectangles.Any())
-                        continue;
-                    var annotation = new Annotation();
-                    annotation.Filename = Path.GetFileName(frame.Path);
-                    annotation.Folder = Path.GetFullPath(Path.GetDirectoryName(frame.Path));
-                    annotation.Segmented = 0;
-                    annotation.Size = new Size
-                    {
-                        Depth = 3,
-                        Height = frame.Height,
-                        Width = frame.Width
-                    };
-                    foreach (var rectangle in frame.Rectangles)
-                    {
-                        annotation.Objects.Add(new Object
-                        {
-                            Name = "Pedestrian",
-                            Box = new Box
-                            {
-                                Xmax = rectangle.XBase + rectangle.WidthBase,
-                                Ymax = rectangle.YBase + rectangle.HeightBase,
-                                Xmin = rectangle.XBase,
-                                Ymin = rectangle.YBase
-                            }
-                        });
-                    }
-
-                    annotations.Add(annotation);
-                }
-
-                var annotationWriter = new AvaloniaAnnotationFileWriter(_window);
-                await annotationWriter.WriteMany(annotations);
+                var writer = new PhotoVMWriter(_window);
+                await writer.WriteMany(_photoCollection);
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
+                Console.WriteLine($"INFO: saved {_photoCollection.Count} photos.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"ERROR: unable to save photos.\nDetails: {ex}");
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
                     $"Error | {ex.Message.Replace('\n', ' ')}");
             }
