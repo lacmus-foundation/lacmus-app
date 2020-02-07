@@ -24,8 +24,8 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using RescuerLaApp.Managers;
 using RescuerLaApp.Models;
-using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Services.Files;
+using RescuerLaApp.Services.VM;
 using RescuerLaApp.Views;
 using Directory = System.IO.Directory;
 using Object = RescuerLaApp.Models.Object;
@@ -323,13 +323,10 @@ namespace RescuerLaApp.ViewModels
                 {
                     await Dispatcher.UIThread.InvokeAsync(async () =>
                     {
-                        var photoFileReader = new AvaloniaPhotoFileReader(_window);
-                        _photos.Clear();
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                        foreach (var photo in await photoFileReader.ReadAllFromDir())
-                        {
-                            _photos.Add(new PhotoViewModel(photo, new Annotation()));
-                        }
+                        var reader = new PhotoVMReader(_window);
+                        _photos.Clear();
+                        _photos.AddRange(await reader.ReadAllFromDirByPhoto());
                         SelectedIndex = 0;
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     });

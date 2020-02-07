@@ -1,29 +1,39 @@
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
+using RescuerLaApp.Extensions;
 using RescuerLaApp.Models;
 using RescuerLaApp.Models.Photo;
 
 namespace RescuerLaApp.ViewModels
 {
+    //TODO: add PhotoViewModelManager or something else like this
     public class PhotoViewModel : ReactiveObject
     {
+        private Annotation _annotation;
         public PhotoViewModel(Photo photo, Annotation annotation)
         {
             Photo = photo;
-            Annotation = annotation;
+            _annotation = annotation;
+            UpdatePhotoInfo(Annotation);
         }
-        public Photo Photo { get; set; }
-        public Annotation Annotation { get; set; }
-        public string Caption { get; set; }
-        public string Path { get; set; }
-        
-        private static string GetCaptionFromPath(string path)
+        [Reactive] public Photo Photo { get; set; }
+
+        [Reactive] public Annotation Annotation
         {
-            var name = System.IO.Path.GetFileName(path);
-            if (name.Length > 10)
+            get => _annotation;
+            set
             {
-                name = name.Substring(0, 3) + "{~}" + name.Substring(name.Length - 5);
+                _annotation = value;
+                UpdatePhotoInfo(_annotation);
             }
-            return name;
+        }
+        [Reactive] public string Caption { get; private set; }
+        [Reactive] public string Path { get; private set; }
+
+        private void UpdatePhotoInfo(Annotation annotation)
+        {
+            Caption = annotation.GetCaption();
+            Path = annotation.GetPhotoPath();
         }
     }
 }

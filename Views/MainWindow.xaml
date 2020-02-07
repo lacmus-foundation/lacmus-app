@@ -90,7 +90,7 @@
             <DataTemplate DataType="{x:Type vm:PhotoViewModel}">
               <StackPanel Margin="25,5" Orientation="Vertical">
                 <Canvas Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding Photo.ImageBrush}"/>
-                <TextBlock Margin="0,5" HorizontalAlignment="Center" Text="{Binding Photo.Caption}"></TextBlock>
+                <TextBlock Margin="0,5" HorizontalAlignment="Center" Text="{Binding Caption}"></TextBlock>
               </StackPanel>
             </DataTemplate>
           </ListBox.DataTemplates>

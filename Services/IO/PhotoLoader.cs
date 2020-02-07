@@ -21,7 +21,7 @@ namespace RescuerLaApp.Services.IO
                 try
                 {
                     var imageBrush = ReadImageBrushFromFile(stream, loadType);
-                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
+                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(source);
                     var photo = new Photo
                     {
                         ImageBrush = imageBrush,
@@ -43,7 +43,7 @@ namespace RescuerLaApp.Services.IO
                 try
                 {
                     var imageBrush = ReadImageBrushFromFile(stream, loadType);
-                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
+                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(source);
                     var photo = new Photo
                     {
                         ImageBrush = imageBrush,
