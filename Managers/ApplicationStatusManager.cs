@@ -11,7 +11,7 @@ namespace RescuerLaApp.Managers
         public ApplicationStatusManager()
         {
             AppStatusInfo = new AppStatusInfo();
-            AppStatusInfo.ChangeCurrentStatus(Enums.Status.Unauthenticated, string.Empty);
+            AppStatusInfo.ChangeCurrentStatus(Enums.Status.Ready, string.Empty);
             _appStatusInfoBehaviourSubject = new BehaviorSubject<AppStatusInfo>(AppStatusInfo);
         }
 

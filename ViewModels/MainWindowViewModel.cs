@@ -27,6 +27,7 @@ using RescuerLaApp.Models;
 using RescuerLaApp.Services.Files;
 using RescuerLaApp.Services.VM;
 using RescuerLaApp.Views;
+using Attribute = RescuerLaApp.Models.Photo.Attribute;
 using Directory = System.IO.Directory;
 using Object = RescuerLaApp.Models.Object;
 using Size = RescuerLaApp.Models.Size;
@@ -39,7 +40,6 @@ namespace RescuerLaApp.ViewModels
         private readonly ApplicationStatusManager _applicationStatusManager;
         
         private readonly Window _window;
-        private int _frameLoadProgressIndex;
         private List<Frame> _frames = new List<Frame>();
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
         private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
@@ -84,9 +84,6 @@ namespace RescuerLaApp.ViewModels
 
             // Add here newer commands
             SetupCommand(CanSetup(), canSwitchBoundBox, CanAuth());
-
-            //auto sign in
-            SignIn();
         }
 
         private void SetupCommand(IObservable<bool> canExecute, IObservable<bool> canSwitchBoundBox,
@@ -101,7 +98,7 @@ namespace RescuerLaApp.ViewModels
             UpdateModelCommand = ReactiveCommand.Create(UpdateModel, canExecute);
             ShowPedestriansCommand = ReactiveCommand.Create(ShowPedestrians, canExecute);
             ShowFavoritesCommand = ReactiveCommand.Create(ShowFavorites, canExecute);
-            ImportAllCommand = ReactiveCommand.Create(ImportAll, canExecute);
+            ImportAllCommand = ReactiveCommand.Create(ImportFromXml, canExecute);
             SaveAllImagesWithObjectsCommand = ReactiveCommand.Create(SaveAllImagesWithObjects, canExecute);
             SaveFavoritesImagesCommand = ReactiveCommand.Create(SaveFavoritesImages, canExecute);
             ShowAllMetadataCommand = ReactiveCommand.Create(ShowAllMetadata, canExecute);
@@ -110,8 +107,6 @@ namespace RescuerLaApp.ViewModels
             SwitchBoundBoxesVisibilityCommand = ReactiveCommand.Create(SwitchBoundBoxesVisibility, canSwitchBoundBox);
             HelpCommand = ReactiveCommand.Create(Help);
             AboutCommand = ReactiveCommand.Create(About);
-            SignUpCommand = ReactiveCommand.Create(SignUp, canAuth);
-            SignInCommand = ReactiveCommand.Create(SignIn, canAuth);
             ExitCommand = ReactiveCommand.Create(Exit);
         }
 
@@ -342,6 +337,33 @@ namespace RescuerLaApp.ViewModels
                     $"Error | {ex.Message.Replace('\n', ' ')}");
             }
         }
+        private async void ImportFromXml()
+        {
+            try
+            {
+                await Task.Factory.StartNew(async () =>
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                        var reader = new PhotoVMReader(_window);
+                        _photos.Clear();
+                        var photos = await reader.ReadAllFromDirByAnnotation();
+                        if(photos.Any())
+                            _photos.AddRange(photos);
+                        SelectedIndex = 0;
+                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                        Console.WriteLine($"INFO: loaded {_photos.Count} photos.");
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: unable to load photos.\nDetails: {ex}");
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
+                    $"Error | {ex.Message.Replace('\n', ' ')}");
+            }
+        }
 
         private async void SaveAll()
         {
@@ -370,37 +392,20 @@ namespace RescuerLaApp.ViewModels
         {
             try
             {
-                if (Frames == null || Frames.Count < 1)
+                if (!_photoCollection.Any())
                 {
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                    Console.WriteLine("WARN: there is no photos to save.");
                     return;
                 }
-
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-
-                var openDig = new OpenFolderDialog
-                {
-                    Title = "Choose a directory to save images with objects"
-                };
-                var dirName = await openDig.ShowAsync(new Window());
-
-
-                if (string.IsNullOrEmpty(dirName) || !Directory.Exists(dirName))
-                {
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                    return;
-                }
-
-                foreach (var frame in Frames.Where(frame => frame.Rectangles != null && frame.Rectangles.Any()))
-                {
-                    File.Copy(frame.Path, Path.Combine(dirName, Path.GetFileName(frame.Path)));
-                }
-
-                Console.WriteLine($"Saved to {dirName}");
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, $"Success | saved to {dirName}");
+                var writer = new PhotoVMWriter(_window);
+                await writer.WriteMany(_photoCollection.Where(x => x.Photo.Attribute == Attribute.WithObject));
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
+                Console.WriteLine($"INFO: saved {_photoCollection.Count} photos.");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"ERROR: unable to save photos.\nDetails: {ex}");
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
                     $"Error | {ex.Message.Replace('\n', ' ')}");
             }
@@ -410,153 +415,22 @@ namespace RescuerLaApp.ViewModels
         {
             try
             {
-                if (Frames == null || Frames.Count < 1)
+                if (!_photoCollection.Any())
                 {
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                    Console.WriteLine("WARN: there is no photos to save.");
                     return;
                 }
-
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                var annotations = new List<Annotation>();
-                var annotationWriter = new AvaloniaAnnotationFileWriter(_window);
-                foreach (var frame in Frames)
-                {
-                    if (!frame.IsFavorite)
-                        continue;
-
-                    var annotation = new Annotation
-                    {
-                        Filename = Path.GetFileName(frame.Path),
-                        Folder = Path.GetFullPath(Path.GetDirectoryName(frame.Path)),
-                        Segmented = 0,
-                        Size = new Size {Depth = 3, Height = frame.Height, Width = frame.Width}
-                    };
-                    if (frame.Rectangles == null)
-                    {
-                        frame.Rectangles = new List<BoundBox>();
-                    }
-
-                    var frameRectangles = frame.Rectangles as BoundBox[] ?? frame.Rectangles.ToArray();
-                    foreach (var rectangle in frameRectangles)
-                    {
-                        annotation.Objects.Add(new Object
-                        {
-                            Name = "Pedestrian",
-                            Box = new Box
-                            {
-                                Xmax = rectangle.XBase + rectangle.WidthBase,
-                                Ymax = rectangle.YBase + rectangle.HeightBase,
-                                Xmin = rectangle.XBase,
-                                Ymin = rectangle.YBase
-                            }
-                        });
-                    }
-
-                    annotations.Add(annotation);
-                    if (!frameRectangles.Any())
-                    {
-                        frame.Rectangles = null;
-                    }
-                }
-
-                await annotationWriter.WriteMany(annotations);
+                var writer = new PhotoVMWriter(_window);
+                await writer.WriteMany(_photoCollection.Where(x => x.Photo.Attribute == Attribute.Favorite));
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
+                Console.WriteLine($"INFO: saved {_photoCollection.Count} photos.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine($"ERROR: unable to save photos.\nDetails: {ex}");
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
                     $"Error | {ex.Message.Replace('\n', ' ')}");
-            }
-        }
-
-        private async void ImportAll()
-        {
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-            try
-            {
-                var openDig = new OpenFolderDialog
-                {
-                    Title = "Choose a directory with xml annotations"
-                };
-                var dirName = await openDig.ShowAsync(new Window());
-                if (string.IsNullOrEmpty(dirName) || !Directory.Exists(dirName))
-                {
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                    return;
-                }
-
-                var fileNames = Directory.GetFiles(dirName);
-                _frameLoadProgressIndex = 0;
-                Frames.Clear();
-                _frames.Clear();
-                GC.Collect();
-
-                var loadingFrames = new List<Frame>();
-                var annotations = fileNames.Where(i => Path.GetExtension(i).ToLower() == ".xml")
-                    .Select(Annotation.ParseFromXml).ToList();
-
-                foreach (var ann in annotations)
-                {
-                    var fileName = Path.Combine(dirName, ann.Filename);
-                    // TODO: Проверка IsImage вне зависимости от расширений.
-                    if (!File.Exists(fileName))
-                        continue;
-                    if (!Path.HasExtension(fileName))
-                        continue;
-                    if (Path.GetExtension(fileName).ToLower() != ".jpg" &&
-                        Path.GetExtension(fileName).ToLower() != ".jpeg" &&
-                        Path.GetExtension(fileName).ToLower() != ".png" &&
-                        Path.GetExtension(fileName).ToLower() != ".bmp")
-                        continue;
-
-                    var frame = new Frame();
-                    frame.OnLoad += FrameLoadingProgressUpdate;
-                    frame.Load(fileName, Enums.ImageLoadMode.Miniature);
-                    frame.Rectangles = ann.Objects.Select(obj =>
-                        new BoundBox(obj.Box.Xmin, obj.Box.Ymin, obj.Box.Ymax - obj.Box.Ymin,
-                            obj.Box.Xmax - obj.Box.Xmin));
-
-                    if (frame.Rectangles.Any())
-                    {
-                        frame.IsVisible = true;
-                    }
-
-                    loadingFrames.Add(frame);
-                }
-
-                if (loadingFrames.Count == 0)
-                {
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                    return;
-                }
-
-
-                Frames = loadingFrames;
-                if (SelectedIndex < 0)
-                    SelectedIndex = 0;
-                UpdateFramesRepo();
-                UpdateUi();
-                _frames = new List<Frame>(Frames);
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-            }
-            catch (Exception ex)
-            {
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
-                    $"Error | {ex.Message.Replace('\n', ' ')}");
-            }
-        }
-
-
-        private void FrameLoadingProgressUpdate()
-        {
-            _frameLoadProgressIndex++;
-            if (_frameLoadProgressIndex < Frames.Count)
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working,
-                    $"Working | loading images: {_frameLoadProgressIndex} / {Frames.Count}");
-            else
-            {
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
             }
         }
 
@@ -603,11 +477,6 @@ namespace RescuerLaApp.ViewModels
 
         private string TranslateGeoTag(string tag)
         {
-            /*
-            GPS Latitude: 55° 11' 51,44"
-            GPS Longitude: 37° 41' 39,88"
-            GPS Altitude: 124 metres
-            */
             try
             {
                 if (!tag.Contains('°'))
@@ -752,30 +621,6 @@ namespace RescuerLaApp.ViewModels
                     OpenUrl("https://github.com/lizaalert/lacmus");
                     break;
             }
-        }
-
-        public async void SignUp()
-        {
-            var result = await SignUpWindow.Show(null);
-            if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Unauthenticated && result.IsSignIn)
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-        }
-
-        public async void SignIn()
-        {
-            var path = AppDomain.CurrentDomain.BaseDirectory + "user_info";
-            if (File.Exists(path))
-            {
-                if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Unauthenticated)
-                {
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                    return;
-                }
-            }
-
-            var result = await SignInWindow.Show(null);
-            if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Unauthenticated && result.IsSignIn)
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         public async void Exit()
