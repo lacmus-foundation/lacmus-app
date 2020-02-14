@@ -24,7 +24,9 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using RescuerLaApp.Managers;
 using RescuerLaApp.Models;
+using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Services.Files;
+using RescuerLaApp.Services.IO;
 using RescuerLaApp.Services.VM;
 using RescuerLaApp.Views;
 using Attribute = RescuerLaApp.Models.Photo.Attribute;
@@ -77,6 +79,15 @@ namespace RescuerLaApp.ViewModels
             var canSwitchBoundBox = this
                 .WhenAnyValue(x => x.PhotoViewModel.Photo)
                 .Select(count => PhotoViewModel.Photo?.Attribute == Attribute.WithObject);
+            
+            // Update UI when the index changes
+            // TODO: Make photo update without index
+            this.WhenAnyValue(x => x.SelectedIndex)
+                .Skip(1)
+                .Subscribe(async x =>
+                {
+                    await UpdateUi();
+                });
 
             // Add here newer commands
             SetupCommand(CanSetup(), canSwitchBoundBox);
@@ -560,11 +571,37 @@ namespace RescuerLaApp.ViewModels
                 Console.WriteLine(e);
             }
         }
-
-        private void UpdateUi()
+        
+        private async Task UpdateUi()
         {
-            CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
-            CanvasWidth = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Width;
+            try
+            {
+                await Task.Factory.StartNew(async () =>
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        PhotoViewModel = null;
+                        var currentMiniaturePhotoViewModel = PhotoCollection[SelectedIndex];
+                        var photoLoader = new PhotoLoader();
+                        var fullPhoto = photoLoader.Load(currentMiniaturePhotoViewModel.Path, PhotoLoadType.Full);
+                        var annotation = currentMiniaturePhotoViewModel.Annotation;
+                        PhotoViewModel = new PhotoViewModel(fullPhoto, annotation);
+                
+                        CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
+                        CanvasWidth = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Width;
+                
+                        if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
+                            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
+                                $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
+                        
+                        Console.WriteLine($"DEBUG: ui updated to index {SelectedIndex}");
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ERROR: unable to update ui.\nDetails: {ex}");
+            }
         }
     }
 }
