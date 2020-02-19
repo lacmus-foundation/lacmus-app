@@ -120,7 +120,7 @@
                   Name="ShowedImage"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
-                  Background="{Binding ImageBrush}"
+                  Background="{Binding PhotoViewModel.Photo.ImageBrush}"
                   Height="{Binding CanvasHeight, Mode=TwoWay}"
                   Width="{Binding CanvasWidth, Mode=TwoWay}">
                   <Canvas.ContextMenu>

@@ -24,7 +24,9 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using RescuerLaApp.Managers;
 using RescuerLaApp.Models;
+using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Services.Files;
+using RescuerLaApp.Services.IO;
 using RescuerLaApp.Services.VM;
 using RescuerLaApp.Views;
 using Attribute = RescuerLaApp.Models.Photo.Attribute;
@@ -38,14 +40,10 @@ namespace RescuerLaApp.ViewModels
     {
         private INeuroModel _model; // TODO : Make field readonly 
         private readonly ApplicationStatusManager _applicationStatusManager;
-        
         private readonly Window _window;
-        private List<Frame> _frames = new List<Frame>();
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
         private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
-        public ReadOnlyObservableCollection<PhotoViewModel> PhotoCollection => _photoCollection;
-
-
+        
         public MainWindowViewModel(Window window)
         {
             _window = window;
@@ -60,7 +58,7 @@ namespace RescuerLaApp.ViewModels
 
             var canGoNext = this
                 .WhenAnyValue(x => x.SelectedIndex)
-                .Select(index => index < Frames.Count - 1);
+                .Select(index => index < _photos.Count - 1);
 
             // The bound button will stay disabled, when
             // there is no more frames left.
@@ -72,22 +70,30 @@ namespace RescuerLaApp.ViewModels
                 .WhenAnyValue(x => x.SelectedIndex)
                 .Select(index => index > 0);
 
-            var canSwitchBoundBox = this
-                .WhenAnyValue(x => x.BoundBoxes)
-                .Select(count => BoundBoxes?.Count > 0);
-
             // The bound button will stay disabled, when
             // there are no frames before the current one.
             PrevImageCommand = ReactiveCommand.Create(
                 () => { SelectedIndex--; },
                 canGoBack);
+            
+            var canSwitchBoundBox = this
+                .WhenAnyValue(x => x.PhotoViewModel.Photo)
+                .Select(count => PhotoViewModel.Photo?.Attribute == Attribute.WithObject);
+            
+            // Update UI when the index changes
+            // TODO: Make photo update without index
+            this.WhenAnyValue(x => x.SelectedIndex)
+                .Skip(1)
+                .Subscribe(async x =>
+                {
+                    await UpdateUi();
+                });
 
             // Add here newer commands
-            SetupCommand(CanSetup(), canSwitchBoundBox, CanAuth());
+            SetupCommand(CanSetup(), canSwitchBoundBox);
         }
 
-        private void SetupCommand(IObservable<bool> canExecute, IObservable<bool> canSwitchBoundBox,
-            IObservable<bool> canAuth)
+        private void SetupCommand(IObservable<bool> canExecute, IObservable<bool> canSwitchBoundBox)
         {
             IncreaseCanvasCommand = ReactiveCommand.Create(IncreaseCanvas);
             ShrinkCanvasCommand = ReactiveCommand.Create(ShrinkCanvas);
@@ -116,40 +122,17 @@ namespace RescuerLaApp.ViewModels
                 .Select(status => status.Status != Enums.Status.Working && status.Status != Enums.Status.Unauthenticated);
         }
 
-        private IObservable<bool> CanAuth()
-        {
-            return _applicationStatusManager.AppStatusInfoObservable
-                .Select(status => status.Status == Enums.Status.Unauthenticated);
-        }
-
-        public void UpdateFramesRepo()
-        {
-            this.WhenAnyValue(x => x.SelectedIndex)
-                .Skip(1)
-                .Subscribe(x =>
-                {
-                    if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
-                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
-                            $"{Enums.Status.Ready.ToString()} | {Frames[SelectedIndex].Path}");
-                    SwitchBoundBoxesVisibilityToTrue();
-                    FavoritesStateString =
-                        Frames[SelectedIndex].IsFavorite ? "Remove from favorites" : "Add to favorites";
-                    UpdateUi();
-                });
-        }
-
         #region Public API
 
+        public ReadOnlyObservableCollection<PhotoViewModel> PhotoCollection => _photoCollection;
+        [Reactive] public int SelectedIndex { get; set; }
+        [Reactive] public PhotoViewModel PhotoViewModel { get; set; }
         [Reactive] public ApplicationStatusViewModel ApplicationStatusViewModel { get; set; }
-        [Reactive] public List<BoundBox> BoundBoxes { get; set; } = new List<BoundBox>();
         // TODO: update with locales
         [Reactive] public string BoundBoxesStateString { get; set; } = "Hide bound boxes";
         [Reactive] public string FavoritesStateString { get; set; } = "Add to favorites";
         [Reactive] public double CanvasWidth { get; set; } = 500;
         [Reactive] public double CanvasHeight { get; set; } = 500;
-        [Reactive] public int SelectedIndex { get; set; }
-        [Reactive] public List<Frame> Frames { get; set; } = new List<Frame>();
-        [Reactive] public ImageBrush ImageBrush { get; set; } = new ImageBrush {Stretch = Stretch.Uniform};
         [Reactive] public bool IsShowPedestrians { get; set; }
         [Reactive] public bool IsShowFavorites { get; set; }
 
@@ -173,8 +156,6 @@ namespace RescuerLaApp.ViewModels
         public ReactiveCommand<Unit, Unit> SwitchBoundBoxesVisibilityCommand { get; set; }
         public ReactiveCommand<Unit, Unit> HelpCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AboutCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> SignUpCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> SignInCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ExitCommand { get; set; }
 
         #endregion
@@ -183,28 +164,11 @@ namespace RescuerLaApp.ViewModels
         {
             if (IsShowPedestrians)
             {
-                // fix bug when application stop if focus was set on image without object
-                if (!_frames.Any(x => x.IsVisible))
-                {
-                    IsShowPedestrians = false;
-                    if (IsShowFavorites)
-                    {
-                        IsShowFavorites = false;
-                        ShowFavorites();
-                    }
-
-                    return;
-                }
-
-                IsShowFavorites = false;
-                SelectedIndex = Frames.FindIndex(x => x.IsVisible);
-                Frames = _frames.FindAll(x => x.IsVisible);
-                UpdateUi();
+            
             }
             else
             {
-                Frames = new List<Frame>(_frames);
-                UpdateUi();
+                
             }
         }
 
@@ -212,23 +176,11 @@ namespace RescuerLaApp.ViewModels
         {
             if (IsShowFavorites)
             {
-                //fix bug when application stop if focus was set on image without object
-                if (!_frames.Any(x => x.IsFavorite))
-                {
-                    IsShowFavorites = false;
-                    ShowPedestrians();
-                    return;
-                }
-
-                IsShowPedestrians = false;
-                SelectedIndex = Frames.FindIndex(x => x.IsFavorite);
-                Frames = _frames.FindAll(x => x.IsFavorite);
-                UpdateUi();
+                
             }
             else
             {
-                Frames = new List<Frame>(_frames);
-                UpdateUi();
+                
             }
         }
 
@@ -262,6 +214,7 @@ namespace RescuerLaApp.ViewModels
 
         private async void PredictAll()
         {
+            /*
             if (Frames == null || Frames.Count < 1) return;
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
 
@@ -298,6 +251,7 @@ namespace RescuerLaApp.ViewModels
             SelectedIndex = 0; //Fix bug when application stopped if index > 0
             UpdateUi();
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+            */
         }
 
         private void ShrinkCanvas()
@@ -443,7 +397,7 @@ namespace RescuerLaApp.ViewModels
         {
             var msg = string.Empty;
             var rows = 0;
-            var directories = ImageMetadataReader.ReadMetadata(Frames[SelectedIndex].Path);
+            var directories = PhotoViewModel.Photo.MetaDataDirectories;
             foreach (var directory in directories)
             foreach (var tag in directory.Tags)
             {
@@ -460,7 +414,7 @@ namespace RescuerLaApp.ViewModels
             var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
             {
                 ButtonDefinitions = ButtonEnum.Ok,
-                ContentTitle = $"Geo position of {Path.GetFileName(Frames[SelectedIndex].Path)}",
+                ContentTitle = $"Geo position of {PhotoViewModel.Annotation.Filename}",
                 ContentMessage = msg,
                 Icon = Icon.Info,
                 Style = Style.None,
@@ -507,7 +461,7 @@ namespace RescuerLaApp.ViewModels
             tb.AddRow("-----", "--------", "-----------");
 
 
-            var directories = ImageMetadataReader.ReadMetadata(Frames[SelectedIndex].Path);
+            var directories = PhotoViewModel.Photo.MetaDataDirectories;
             foreach (var directory in directories)
             foreach (var tag in directory.Tags)
                 tb.AddRow(directory.Name, tag.Name, tag.Description);
@@ -515,7 +469,7 @@ namespace RescuerLaApp.ViewModels
             var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
             {
                 ButtonDefinitions = ButtonEnum.Ok,
-                ContentTitle = $"Metadata of {Path.GetFileName(Frames[SelectedIndex].Path)}",
+                ContentTitle = $"Metadata of {PhotoViewModel.Annotation.Filename}",
                 ContentMessage = tb.Output(),
                 Icon = Icon.Info,
                 Style = Style.None,
@@ -532,53 +486,12 @@ namespace RescuerLaApp.ViewModels
 
         public void AddToFavorites()
         {
-            Frames[SelectedIndex].IsFavorite = !Frames[SelectedIndex].IsFavorite;
-
-            if (IsShowFavorites)
-            {
-                IsShowPedestrians = false;
-                //fix bug when application stop if focus was set on image without object
-                if (!_frames.Any(x => x.IsFavorite))
-                {
-                    IsShowFavorites = false;
-                    ShowFavorites();
-                    return;
-                }
-
-                SelectedIndex = Frames.FindIndex(x => x.IsFavorite);
-                Frames = _frames.FindAll(x => x.IsFavorite);
-                UpdateUi();
-            }
+            
         }
 
         public void SwitchBoundBoxesVisibility()
         {
-            var isVisible = true;
-
-            if (BoundBoxes == null) return;
-            if (BoundBoxes.Count > 0)
-                isVisible = BoundBoxes[0].IsVisible;
-
-            foreach (var rectangle in BoundBoxes)
-            {
-                rectangle.IsVisible = !isVisible;
-            }
-
-            BoundBoxesStateString = BoundBoxes[0].IsVisible ? "Hide bound boxes" : "Show bound boxes";
-
-            UpdateUi();
-        }
-
-        private void SwitchBoundBoxesVisibilityToTrue()
-        {
-            if (BoundBoxes == null || BoundBoxes[0].IsVisible) return;
-
-            foreach (var rectangle in BoundBoxes)
-            {
-                rectangle.IsVisible = true;
-            }
-
-            BoundBoxesStateString = "Hide bound boxes";
+            
         }
 
         public async void About()
@@ -658,20 +571,36 @@ namespace RescuerLaApp.ViewModels
                 Console.WriteLine(e);
             }
         }
-
-        private void UpdateUi()
+        
+        private async Task UpdateUi()
         {
-            /*TODO: Вынести сюда все функции обновления UI*/
-            ImageBrush.Source = new Bitmap(Frames[SelectedIndex].Path); //replace to frame.load(...)
-            CanvasHeight = ImageBrush.Source.PixelSize.Height;
-            CanvasWidth = ImageBrush.Source.PixelSize.Width;
-            if (Frames[SelectedIndex].Rectangles != null && Frames[SelectedIndex].Rectangles.Any())
+            try
             {
-                BoundBoxes = new List<BoundBox>(Frames[SelectedIndex].Rectangles);
+                await Task.Factory.StartNew(async () =>
+                {
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        PhotoViewModel = null;
+                        var currentMiniaturePhotoViewModel = PhotoCollection[SelectedIndex];
+                        var photoLoader = new PhotoLoader();
+                        var fullPhoto = photoLoader.Load(currentMiniaturePhotoViewModel.Path, PhotoLoadType.Full);
+                        var annotation = currentMiniaturePhotoViewModel.Annotation;
+                        PhotoViewModel = new PhotoViewModel(fullPhoto, annotation);
+                
+                        CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
+                        CanvasWidth = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Width;
+                
+                        if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
+                            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
+                                $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
+                        
+                        Console.WriteLine($"DEBUG: ui updated to index {SelectedIndex}");
+                    });
+                });
             }
-            else
+            catch (Exception ex)
             {
-                BoundBoxes = null;
+                Console.WriteLine($"ERROR: unable to update ui.\nDetails: {ex}");
             }
         }
     }
