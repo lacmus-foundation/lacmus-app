@@ -9,8 +9,7 @@ namespace RescuerLaApp.Models.ML
 {
     public interface IMLModel : IDisposable
     {
-        Task Init(IMLModelConfig config);
-        IPrediction Predict(IPhoto photo);
-        IEnumerable<(int number, IPrediction prediction)> Predict(IEnumerable<IPhoto> photos);
+        Task Init();
+        Task<List<Object>> Predict(IPhoto photo);
     }
 }

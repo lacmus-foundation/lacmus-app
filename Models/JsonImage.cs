@@ -44,7 +44,6 @@ namespace RescuerLaApp.Models
     {
         [JsonProperty("objects")]
         public List<AnnObject> Objects { get; set; } = new List<AnnObject>();
-        
     }
     
     [JsonObject]
