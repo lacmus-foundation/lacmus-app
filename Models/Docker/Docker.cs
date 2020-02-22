@@ -129,7 +129,7 @@ namespace RescuerLaApp.Models.Docker
                 var containerCreateResponse = await _client.Containers.CreateContainerAsync(
                     new CreateContainerParameters
                     {
-                        Image = $"{imageName}:{tag}",
+                        Image = $"{image.Name}:{image.Tag}",
                         HostConfig = new HostConfig
                         {
                             PortBindings = new Dictionary<string, IList<PortBinding>>
@@ -250,7 +250,7 @@ namespace RescuerLaApp.Models.Docker
             }
         }
 
-        public async Task Remove(string imageName, string tag = "latest")
+        public async Task Remove(IDockerImage image)
         {
             try
             {
@@ -258,17 +258,17 @@ namespace RescuerLaApp.Models.Docker
                 var containers = await _client.Containers.ListContainersAsync(new ContainersListParameters {All = true});
                 foreach (var container in containers)
                 {
-                    if (container.Image == $"{imageName}:{tag}")
+                    if (container.Image == $"{image.Name}:{image.Tag}")
                     {
                         await Stop(container.ID);
                         await _client.Containers.RemoveContainerAsync(container.ID, new ContainerRemoveParameters {Force = true});
                     }
                 }
                 
-                var images = await _client.Images.ListImagesAsync(new ImagesListParameters {MatchName = $"{imageName}:{tag}"});
-                foreach (var image in images)
+                var images = await _client.Images.ListImagesAsync(new ImagesListParameters {MatchName = $"{image.Name}:{image.Tag}"});
+                foreach (var img in images)
                 {
-                    await _client.Images.DeleteImageAsync(image.ID, new ImageDeleteParameters {Force = true});
+                    await _client.Images.DeleteImageAsync(img.ID, new ImageDeleteParameters {Force = true});
                 }
             }
             catch (Exception e)

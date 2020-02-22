@@ -23,6 +23,8 @@ namespace RescuerLaApp.Models.ML
             _config = config;
         }
         
+        public IMLModelConfig Config => _config;
+
         public async Task Init()
         {
             try
@@ -40,7 +42,7 @@ namespace RescuerLaApp.Models.ML
                 Console.WriteLine("INFO: Creating container...");
                 _id = await _docker.CreateContainer(_config.Image);
             
-                Console.WriteLine("INFO: Running container...");
+                Console.WriteLine($"INFO: Running container {_id}...");
                 if (await _docker.Run(_id))
                 {
                     Console.WriteLine("INFO: Container runs. Loading retina-net model...");
@@ -72,7 +74,7 @@ namespace RescuerLaApp.Models.ML
                 var objects = new List<Object>();
                 var status = await _client.GetStatusAsync();
                 if (status == null || !status.Contains("server is running"))
-                    throw new Exception("server is not running");
+                    throw new Exception("ml-model is not initialize: server is not running");
             
                 var request = new MLRequest
                 {
@@ -103,9 +105,26 @@ namespace RescuerLaApp.Models.ML
                 throw new Exception("Con not predict photo", e);
             }
         }
-        
-        public void Dispose()
+
+        public async Task Stop()
         {
+            await _docker.Stop(_id);
+        }
+
+        public async Task Download()
+        {
+            await _docker.Initialize(_config.Image, _config.Accaunt);
+        }
+
+        public async Task Remove()
+        {
+            await _docker.StopAll(_config.Image.Name);
+            await _docker.Remove(_config.Image);
+        }
+
+        public async void Dispose()
+        {
+            await _docker.StopAll(_config.Image.Name);
             _docker.Dispose();
         }
         
