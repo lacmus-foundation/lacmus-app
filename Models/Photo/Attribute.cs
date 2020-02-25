@@ -1,10 +1,13 @@
+using System;
+
 namespace RescuerLaApp.Models.Photo
 {
+    [Flags]
     public enum Attribute
     {
-        NotProcessed,
-        Empty,
-        WithObject,
-        Favorite
+        Empty = 1,
+        NotProcessed = 2,
+        WithObject = 4,
+        Favorite = 8
     }
 }
