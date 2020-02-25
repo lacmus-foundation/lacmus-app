@@ -6,24 +6,25 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RescuerLaApp.Models.Photo;
+using RescuerLaApp.Extensions;
 
 namespace RescuerLaApp.Models.ML
 {
     public class MLModel : IMLModel
     {
-        private readonly IMLModelConfig _config;
+        private readonly MLModelConfig _config;
         private Docker.Docker _docker;
         private RestApiClient _client;
         private string _id;
 
-        public MLModel(IMLModelConfig config)
+        public MLModel(MLModelConfig config)
         {
             _docker = new Docker.Docker();
             _id = "";
             _config = config;
         }
         
-        public IMLModelConfig Config => _config;
+        public MLModelConfig Config => _config;
 
         public async Task Init()
         {
@@ -31,11 +32,11 @@ namespace RescuerLaApp.Models.ML
             {
                 _client = new RestApiClient(_config.Url);
             
-                Console.WriteLine("INFO: Checking retina-net service...");
+                Console.WriteLine("INFO: Checking ml model...");
                 var status = await _client.GetStatusAsync();
                 if (status != null && status.Contains("server is running",StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Console.WriteLine("INFO: Retina-net is ready.");
+                    Console.WriteLine("INFO: ml model is ready.");
                     return;
                 }
             
@@ -45,7 +46,7 @@ namespace RescuerLaApp.Models.ML
                 Console.WriteLine($"INFO: Running container {_id}...");
                 if (await _docker.Run(_id))
                 {
-                    Console.WriteLine("INFO: Container runs. Loading retina-net model...");
+                    Console.WriteLine("INFO: Container runs. Loading ml model...");
                     var startTime = DateTime.Now;
                     //wait no more then 10 min.
                     while ((DateTime.Now - startTime).TotalMinutes < 10)
@@ -55,7 +56,7 @@ namespace RescuerLaApp.Models.ML
                         status = await _client.GetStatusAsync();
                         if (status != null && status.Contains("server is running",StringComparison.InvariantCultureIgnoreCase))
                         {
-                            Console.WriteLine("INFO: Retina-net is ready.");
+                            Console.WriteLine("INFO: ml model is ready.");
                             return;
                         }   
                     }
@@ -63,7 +64,7 @@ namespace RescuerLaApp.Models.ML
             }
             catch (Exception e)
             {
-                throw new Exception("Unable to init retina-net model", e);
+                throw new Exception("Unable to init ml model", e);
             }
         }
 
@@ -74,7 +75,7 @@ namespace RescuerLaApp.Models.ML
                 var objects = new List<Object>();
                 var status = await _client.GetStatusAsync();
                 if (status == null || !status.Contains("server is running"))
-                    throw new Exception("ml-model is not initialize: server is not running");
+                    throw new Exception("ml model is not initialize: server is not running");
             
                 var request = new MLRequest
                 {
@@ -102,29 +103,125 @@ namespace RescuerLaApp.Models.ML
             }
             catch (Exception e)
             {
-                throw new Exception("Con not predict photo", e);
+                throw new Exception("Con not predict photo.", e);
             }
         }
 
         public async Task Stop()
         {
-            await _docker.Stop(_id);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_id))
+                {
+                    Console.WriteLine("WARN: the container id is not set up, so the model was not stopped. Is ml model was running manually?");
+                    return;
+                }
+                await _docker.Stop(_id);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Unable to stop ml model.", e);
+            }
         }
 
         public async Task Download()
         {
-            await _docker.Initialize(_config.Image, _config.Accaunt);
+            try
+            {
+                await _docker.Initialize(_config.Image, _config.Accaunt);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Unable to download ml model.", e);
+            }
         }
 
         public async Task Remove()
         {
-            await _docker.StopAll(_config.Image.Name);
-            await _docker.Remove(_config.Image);
+            try
+            {
+                await _docker.StopAll(_config.Image.Name);
+                await _docker.Remove(_config.Image);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Unable to remove ml model.", e);
+            }
+        }
+
+        public async Task<List<uint>> GetInstalledVersions()
+        {
+            try
+            {
+                var versions = new List<uint>();
+                var tags = await _docker.GetInstalledTags(_config.Image.Name);
+                foreach (var t in tags)
+                {
+                    try
+                    {
+                        if (!t.Contains(_config.GetDockerTag()))
+                        {
+                            Console.WriteLine($"WARN: model with tag {t} is not used.");
+                            continue;
+                        }
+                        var apiVer = uint.Parse(t.Split('.').First());
+                        if(apiVer == _config.ApiVersion)
+                            versions.Add(uint.Parse(t.Split('.').Last().Split('-').First()));
+                    }
+                    catch
+                    {
+                        Console.WriteLine($"WARN: cannot parse tag {t}.");
+                    }
+                }
+                return versions;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("unable to get installed ml model versions.", e);
+            }
+        }
+        
+        public async Task<List<uint>> GetAvailableVersionsFromRegistry()
+        {
+            try
+            {
+                var versions = new List<uint>();
+                var tags = await _docker.GetTagsFromDockerRegistry(_config.Image.Name);
+                foreach (var t in tags)
+                {
+                    try
+                    {
+                        if (!t.Contains(_config.GetDockerTag()))
+                        {
+                            continue;
+                        }
+                        var apiVer = uint.Parse(t.Split('.').First());
+                        if(apiVer == _config.ApiVersion)
+                            versions.Add(uint.Parse(t.Split('.').Last().Split('-').First()));
+                    }
+                    catch
+                    {
+                        Console.WriteLine($"WARN: cannot parse tag {t}.");
+                    }
+                }
+                return versions;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("unable to get available ml model versions from registry.", e);
+            }
         }
 
         public async void Dispose()
         {
-            await _docker.StopAll(_config.Image.Name);
+            try
+            {
+                await _docker.StopAll(_config.Image.Name);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"ERROR: Unable to stop docker containers while disposing ml model.\n\tDetails: {e}");
+            }
             _docker.Dispose();
         }
         

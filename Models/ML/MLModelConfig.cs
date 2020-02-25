@@ -9,5 +9,8 @@ namespace RescuerLaApp.Models.ML
         public string Url { get; set; }
         public IDockerImage Image { get; set; }
         public IDockerAccaunt Accaunt { get; set; }
+        public MLModelType Type { get; set; }
+        public uint ApiVersion { get; set; }
+        public uint ModelVersion { get; set; }
     }
 }
