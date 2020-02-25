@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RescuerLaApp.Models.Photo;
@@ -149,31 +150,34 @@ namespace RescuerLaApp.Models.ML
             }
         }
 
-        public async Task<List<uint>> GetInstalledVersions()
+        public static async Task<List<uint>> GetInstalledVersions(MLModelConfig config)
         {
             try
             {
-                var versions = new List<uint>();
-                var tags = await _docker.GetInstalledTags(_config.Image.Name);
-                foreach (var t in tags)
+                using (var docker = new Docker.Docker())
                 {
-                    try
+                    var versions = new List<uint>();
+                    var tags = await docker.GetInstalledTags(config.Image.Name);
+                    foreach (var t in tags)
                     {
-                        if (!t.Contains(_config.GetDockerTag()))
+                        try
                         {
-                            Console.WriteLine($"WARN: model with tag {t} is not used.");
-                            continue;
-                        }
-                        var apiVer = uint.Parse(t.Split('.').First());
-                        if(apiVer == _config.ApiVersion)
+                            var rex = new Regex($"{config.ApiVersion}\\.[0-9]+-{config.GetTagSuffix()}");
+                            if (!rex.IsMatch(t))
+                            {
+                                Console.WriteLine($"WARN: local model with tag {t} installed but not used.\n"+
+                                                  $"You can remove it by using command `docker rmi -f {config.Image.Name}:{t}`");
+                                continue;
+                            }
                             versions.Add(uint.Parse(t.Split('.').Last().Split('-').First()));
+                        }
+                        catch
+                        {
+                            Console.WriteLine($"WARN: cannot parse tag {t}.");
+                        }
                     }
-                    catch
-                    {
-                        Console.WriteLine($"WARN: cannot parse tag {t}.");
-                    }
+                    return versions;
                 }
-                return versions;
             }
             catch (Exception e)
             {
@@ -181,30 +185,32 @@ namespace RescuerLaApp.Models.ML
             }
         }
         
-        public async Task<List<uint>> GetAvailableVersionsFromRegistry()
+        public static async Task<List<uint>> GetAvailableVersionsFromRegistry(MLModelConfig config)
         {
             try
             {
-                var versions = new List<uint>();
-                var tags = await _docker.GetTagsFromDockerRegistry(_config.Image.Name);
-                foreach (var t in tags)
+                using (var docker = new Docker.Docker())
                 {
-                    try
+                    var versions = new List<uint>();
+                    var tags = await docker.GetTagsFromDockerRegistry(config.Image.Name);
+                    foreach (var t in tags)
                     {
-                        if (!t.Contains(_config.GetDockerTag()))
+                        try
                         {
-                            continue;
-                        }
-                        var apiVer = uint.Parse(t.Split('.').First());
-                        if(apiVer == _config.ApiVersion)
+                            var rex = new Regex($"{config.ApiVersion}\\.[0-9]+-{config.GetTagSuffix()}");
+                            if (!rex.IsMatch(t))
+                            {
+                                continue;
+                            }
                             versions.Add(uint.Parse(t.Split('.').Last().Split('-').First()));
+                        }
+                        catch
+                        {
+                            Console.WriteLine($"WARN: cannot parse tag {t}.");
+                        }
                     }
-                    catch
-                    {
-                        Console.WriteLine($"WARN: cannot parse tag {t}.");
-                    }
+                    return versions;
                 }
-                return versions;
             }
             catch (Exception e)
             {

@@ -22,8 +22,11 @@ using MessageBox.Avalonia.Views;
 using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using RescuerLaApp.Extensions;
 using RescuerLaApp.Managers;
 using RescuerLaApp.Models;
+using RescuerLaApp.Models.Docker;
+using RescuerLaApp.Models.ML;
 using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Services.Files;
 using RescuerLaApp.Services.IO;
@@ -38,7 +41,6 @@ namespace RescuerLaApp.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        private INeuroModel _model; // TODO : Make field readonly 
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly Window _window;
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
@@ -187,28 +189,100 @@ namespace RescuerLaApp.ViewModels
         private async void LoadModel()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
-
-            if (_model == null)
+            //get the last version of ml model with specific config
+            //TODO: load it form json
+            try
             {
-                _model = AvaloniaLocator.Current.GetService<INeuroModel>();
+                //load config
+                var config = LoadConfigMock();
+                // get local versions
+                var localVersions = await MLModel.GetInstalledVersions(config);
+                if (localVersions.Any())
+                {
+                    config.ModelVersion = localVersions.Max();
+                    Console.WriteLine($"local: {config.ModelVersion}");
+                }
+                else
+                {
+                    // if there are no local models try to download it from docker registry
+                    var netVersions = await MLModel.GetAvailableVersionsFromRegistry(config);
+                    if (netVersions.Any())
+                    {
+                        config.ModelVersion = localVersions.Max();
+                        Console.WriteLine($"net: {config.ModelVersion}");
+                        //save config
+                    }
+                    else
+                    {
+                        throw new Exception("there are no ml models to init");
+                    }
+                }
+                // init local model or download and init it from docker registry
+                using(var model = new MLModel(config))
+                    await model.Init();
             }
-
-            await _model.Load();
-
+            catch (Exception e)
+            {
+                Console.WriteLine($"ERROR: can not load model.\n\tDetails: {e}");
+            }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+
+        private MLModelConfig LoadConfigMock()
+        {
+            var config = new MLModelConfig
+            {
+                Accaunt = new DockerAccaunt
+                {
+                    Email = "lizaalertai@yandex.ru",
+                    Password = "9ny?Mh4b*qfThZ6T",
+                    Username = "lizaalertai"
+                },
+                Image = new DockerImage
+                {
+                    Name = "gosha20777/test",
+                    Tag = MLModelConfigExtension.GetDockerTag(1, 0, MLModelType.Cpu)
+                },
+                ApiVersion = 1,
+                ModelVersion = 0,
+                Type = MLModelType.Cpu,
+                Url = "http://localhost:5000"
+            };
+            return config;
         }
 
         private async void UpdateModel()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | updating model...");
-
-            if (_model == null)
+            try
             {
-                _model = AvaloniaLocator.Current.GetService<INeuroModel>();
+                var oldConfig = LoadConfigMock();
+                var localVersions = await MLModel.GetInstalledVersions(oldConfig);
+                if (localVersions.Any())
+                {
+                    oldConfig.ModelVersion = localVersions.Max();
+                }
+                else
+                {
+                    throw new Exception("Nothing ml models saved.");
+                }
+                var newConfig = LoadConfigMock();
+                var netVersions = await MLModel.GetAvailableVersionsFromRegistry(newConfig);
+                if (netVersions.Any())
+                    newConfig.ModelVersion = localVersions.Max();
+                if (newConfig.ModelVersion > oldConfig.ModelVersion)
+                {
+                    using(var newModel = new MLModel(newConfig))
+                        await newModel.Init();
+                    using(var oldModel = new MLModel(oldConfig))
+                        await oldModel.Remove();
+                    //save config
+                }
             }
-
-            await _model.UpdateModel();
-
+            catch (Exception e)
+            {
+                Console.WriteLine($"ERROR: unable to update ml model.\n\tDetails:{e}");
+            }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
