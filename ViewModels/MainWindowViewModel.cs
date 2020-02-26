@@ -219,7 +219,7 @@ namespace RescuerLaApp.ViewModels
                 }
                 // init local model or download and init it from docker registry
                 using(var model = new MLModel(config))
-                    await model.Init();
+                    await model.Download();
             }
             catch (Exception e)
             {
@@ -241,10 +241,10 @@ namespace RescuerLaApp.ViewModels
                 Image = new DockerImage
                 {
                     Name = "gosha20777/test",
-                    Tag = MLModelConfigExtension.GetDockerTag(1, 0, MLModelType.Cpu)
+                    Tag = MLModelConfigExtension.GetDockerTag(1, 3, MLModelType.Cpu)
                 },
                 ApiVersion = 1,
-                ModelVersion = 0,
+                ModelVersion = 3,
                 Type = MLModelType.Cpu,
                 Url = "http://localhost:5000"
             };
@@ -273,7 +273,7 @@ namespace RescuerLaApp.ViewModels
                 if (newConfig.ModelVersion > oldConfig.ModelVersion)
                 {
                     using(var newModel = new MLModel(newConfig))
-                        await newModel.Init();
+                        await newModel.Download();
                     using(var oldModel = new MLModel(oldConfig))
                         await oldModel.Remove();
                     //save config
@@ -288,44 +288,29 @@ namespace RescuerLaApp.ViewModels
 
         private async void PredictAll()
         {
-            /*
-            if (Frames == null || Frames.Count < 1) return;
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
-
-            if (_model == null)
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+            try
             {
-                _model = AvaloniaLocator.Current.GetService<INeuroModel>();
+                //load config
+                var config = LoadConfigMock();
+                using (var model = new MLModel(config))
+                {
+                    await model.Init();
+                    foreach (var photoViewModel in _photoCollection)
+                    {
+                        var photoLoader = new PhotoLoader();
+                        var fullPhoto = photoLoader.Load(photoViewModel.Path, PhotoLoadType.Full);
+                        photoViewModel.Annotation.Objects = await model.Predict(fullPhoto);
+                        //photoViewModel.rectaggpes = photoViewModel.getRectangles()
+                    }
+                    await model.Stop();
+                }
             }
-
-            if (!await _model.Run())
+            catch (Exception e)
             {
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error, "Error: unable to load model");
-                _model.Dispose();
-                _model = null;
-                return;
+                Console.WriteLine($"ERROR: unable to get prediction.\n\tDetails:{e}");
             }
-
-            var index = 0;
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working,
-                $"Working | processing images: {index} / {Frames.Count}");
-            foreach (var frame in Frames)
-            {
-                index++;
-                frame.Rectangles = await _model.Predict(frame.Path);
-                if (index < Frames.Count)
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working,
-                        $"Working | processing images: {index} / {Frames.Count}");
-
-                if (frame.Rectangles.Any())
-                    frame.IsVisible = true;
-            }
-
-            _frames = new List<Frame>(Frames);
-            await _model.Stop();
-            SelectedIndex = 0; //Fix bug when application stopped if index > 0
-            UpdateUi();
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-            */
         }
 
         private void ShrinkCanvas()
@@ -458,11 +443,14 @@ namespace RescuerLaApp.ViewModels
 
         public void Help()
         {
+            /*
             OpenUrl("https://github.com/lizaalert/lacmus/wiki");
+            */
         }
 
         public void ShowGeoData()
         {
+            /*
             var msg = string.Empty;
             var rows = 0;
             var directories = PhotoViewModel.Photo.MetaDataDirectories;
@@ -495,6 +483,7 @@ namespace RescuerLaApp.ViewModels
                 }
             });
             msgbox.Show();
+            */
         }
 
         private string TranslateGeoTag(string tag)
@@ -524,6 +513,7 @@ namespace RescuerLaApp.ViewModels
 
         public void ShowAllMetadata()
         {
+            /*
             var tb = new TextTableBuilder();
             tb.AddRow("Group", "Tag name", "Description");
             tb.AddRow("-----", "--------", "-----------");
@@ -550,6 +540,7 @@ namespace RescuerLaApp.ViewModels
                 }
             });
             msgbox.Show();
+            */
         }
 
         public void AddToFavorites()
@@ -564,6 +555,7 @@ namespace RescuerLaApp.ViewModels
 
         public async void About()
         {
+            /*
             var message =
                 "Copyright (c) 2019 Georgy Perevozghikov <gosha20777@live.ru>\nGithub page: https://github.com/lizaalert/lacmus/. Press `Github` button for more details.\nProvided by Yandex Cloud: https://cloud.yandex.com/." +
                 "\nThis program comes with ABSOLUTELY NO WARRANTY." +
@@ -602,6 +594,7 @@ namespace RescuerLaApp.ViewModels
                     OpenUrl("https://github.com/lizaalert/lacmus");
                     break;
             }
+            */
         }
 
         public async void Exit()
@@ -644,26 +637,23 @@ namespace RescuerLaApp.ViewModels
         {
             try
             {
-                await Task.Factory.StartNew(async () =>
+                await Dispatcher.UIThread.InvokeAsync(() =>
                 {
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
-                    {
-                        PhotoViewModel = null;
-                        var currentMiniaturePhotoViewModel = PhotoCollection[SelectedIndex];
-                        var photoLoader = new PhotoLoader();
-                        var fullPhoto = photoLoader.Load(currentMiniaturePhotoViewModel.Path, PhotoLoadType.Full);
-                        var annotation = currentMiniaturePhotoViewModel.Annotation;
-                        PhotoViewModel = new PhotoViewModel(fullPhoto, annotation);
+                    PhotoViewModel = null;
+                    var currentMiniaturePhotoViewModel = PhotoCollection[SelectedIndex];
+                    var photoLoader = new PhotoLoader();
+                    var fullPhoto = photoLoader.Load(currentMiniaturePhotoViewModel.Path, PhotoLoadType.Full);
+                    var annotation = currentMiniaturePhotoViewModel.Annotation;
+                    PhotoViewModel = new PhotoViewModel(fullPhoto, annotation);
                 
-                        CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
-                        CanvasWidth = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Width;
+                    CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
+                    CanvasWidth = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Width;
                 
-                        if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
-                            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
-                                $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
+                    if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
+                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
+                            $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
                         
-                        Console.WriteLine($"DEBUG: ui updated to index {SelectedIndex}");
-                    });
+                    Console.WriteLine($"DEBUG: ui updated to index {SelectedIndex}");
                 });
             }
             catch (Exception ex)
