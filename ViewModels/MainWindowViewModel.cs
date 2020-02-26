@@ -342,20 +342,17 @@ namespace RescuerLaApp.ViewModels
         {
             try
             {
-                await Task.Factory.StartNew(async () =>
+                await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
-                    {
-                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                        var reader = new PhotoVMReader(_window);
-                        _photos.Clear();
-                        var photos = await reader.ReadAllFromDirByPhoto();
-                        if(photos.Any())
-                            _photos.AddRange(photos);
-                        SelectedIndex = 0;
-                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                        Console.WriteLine($"INFO: loaded {_photos.Count} photos.");
-                    });
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                    var reader = new PhotoVMReader(_window);
+                    _photos.Clear();
+                    var photos = await reader.ReadAllFromDirByPhoto();
+                    if(photos.Any())
+                        _photos.AddRange(photos);
+                    SelectedIndex = 0;
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                    Console.WriteLine($"INFO: loaded {_photos.Count} photos.");
                 });
             }
             catch (Exception ex)
@@ -369,20 +366,17 @@ namespace RescuerLaApp.ViewModels
         {
             try
             {
-                await Task.Factory.StartNew(async () =>
+                await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    await Dispatcher.UIThread.InvokeAsync(async () =>
-                    {
-                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                        var reader = new PhotoVMReader(_window);
-                        _photos.Clear();
-                        var photos = await reader.ReadAllFromDirByAnnotation();
-                        if(photos.Any())
-                            _photos.AddRange(photos);
-                        SelectedIndex = 0;
-                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                        Console.WriteLine($"INFO: loaded {_photos.Count} photos.");
-                    });
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                    var reader = new PhotoVMReader(_window);
+                    _photos.Clear();
+                    var photos = await reader.ReadAllFromDirByAnnotation();
+                    if(photos.Any())
+                        _photos.AddRange(photos);
+                    SelectedIndex = 0;
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                    Console.WriteLine($"INFO: loaded {_photos.Count} photos.");
                 });
             }
             catch (Exception ex)
