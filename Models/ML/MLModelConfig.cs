@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using RescuerLaApp.Extensions;
 using RescuerLaApp.Models.Docker;
 
 namespace RescuerLaApp.Models.ML
@@ -6,11 +7,48 @@ namespace RescuerLaApp.Models.ML
     [JsonObject]
     public class MLModelConfig : IMLModelConfig
     {
-        public string Url { get; set; }
-        public IDockerImage Image { get; set; }
-        public IDockerAccaunt Accaunt { get; set; }
-        public MLModelType Type { get; set; }
-        public uint ApiVersion { get; set; }
-        public uint ModelVersion { get; set; }
+        private uint _apiVersion = 1;
+        private uint _modelVersion = 0;
+        private MLModelType _type = MLModelType.Cpu;
+        public string Url { get; set; } = "http://localhost:5000";
+        public IDockerImage Image { get; set; } = new DockerImage
+        {
+            Name = "gosha20777/lacmus",
+            Tag = MLModelConfigExtension.GetDockerTag(1, 0, MLModelType.Cpu)
+        };
+        public IDockerAccaunt Accaunt { get; set; } = new DockerAccaunt
+        {
+            Email = "lizaalertai@yandex.ru",
+            Password = "9ny?Mh4b*qfThZ6T",
+            Username = "lizaalertai"
+        };
+
+        public MLModelType Type
+        {
+            get => _type;
+            set 
+            { 
+                _type = value;
+                Image.Tag = MLModelConfigExtension.GetDockerTag(_apiVersion, _modelVersion, _type);
+            }
+        }
+        public uint ApiVersion 
+        {
+            get => _apiVersion;
+            set 
+            { 
+                _apiVersion = value;
+                Image.Tag = MLModelConfigExtension.GetDockerTag(_apiVersion, _modelVersion, _type);
+            }
+        }
+        public uint ModelVersion
+        {
+            get => _modelVersion;
+            set 
+            { 
+                _modelVersion = value;
+                Image.Tag = MLModelConfigExtension.GetDockerTag(_apiVersion, _modelVersion, _type);
+            }
+        }
     }
 }

@@ -1,4 +1,7 @@
 using System;
+using System.IO;
+using System.Threading.Tasks;
+using Newtonsoft.Json;
 using RescuerLaApp.Models.ML;
 
 namespace RescuerLaApp.Extensions
@@ -12,6 +15,38 @@ namespace RescuerLaApp.Extensions
         public static string GetDockerTag(uint apiVersion, uint modelVersion, MLModelType type)
         {
             return $"{apiVersion}.{modelVersion}-{GetTagSuffix(type)}";
+        }
+        
+        public static async Task Save(this MLModelConfig config, string path)
+        {
+            try
+            {
+                var str = JsonConvert.SerializeObject(config);
+                var dir = Path.GetDirectoryName(path);
+                if (!Directory.Exists(dir))
+                    Directory.CreateDirectory(dir);
+                await File.WriteAllTextAsync(path, str);
+                Console.WriteLine($"DEBUG: config saved to {path}.");
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"unable to save config to file {path}.", e);
+            }
+        }
+        
+        public static async Task<MLModelConfig> Load(string path)
+        {
+            try
+            {
+                if (!File.Exists(path))
+                    throw new Exception($"unable to load config file. Bo such file {path}.");
+                var str = await File.ReadAllTextAsync(path);
+                return JsonConvert.DeserializeObject<MLModelConfig>(str);
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"unable to load config from {path}.", e);
+            }
         }
         public static string GetTagSuffix(this MLModelConfig config)
         {

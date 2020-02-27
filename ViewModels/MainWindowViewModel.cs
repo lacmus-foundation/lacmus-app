@@ -43,6 +43,7 @@ namespace RescuerLaApp.ViewModels
     {
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly Window _window;
+        private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
         private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
         
@@ -193,8 +194,11 @@ namespace RescuerLaApp.ViewModels
             //TODO: load it form json
             try
             {
-                //load config
-                var config = LoadConfigMock();
+                var config = new MLModelConfig();
+                if (File.Exists(_mlConfigPath))
+                {
+                    config = await MLModelConfigExtension.Load(_mlConfigPath);
+                }
                 // get local versions
                 var localVersions = await MLModel.GetInstalledVersions(config);
                 if (localVersions.Any())
@@ -210,13 +214,13 @@ namespace RescuerLaApp.ViewModels
                     {
                         config.ModelVersion = localVersions.Max();
                         Console.WriteLine($"net: {config.ModelVersion}");
-                        //save config
                     }
                     else
                     {
-                        throw new Exception("there are no ml models to init");
+                        throw new Exception($"there are no ml models to init: {config.Image.Name}:{config.Image.Tag}");
                     }
                 }
+                await config.Save(_mlConfigPath);
                 // init local model or download and init it from docker registry
                 using(var model = new MLModel(config))
                     await model.Download();
@@ -228,35 +232,12 @@ namespace RescuerLaApp.ViewModels
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
-        private MLModelConfig LoadConfigMock()
-        {
-            var config = new MLModelConfig
-            {
-                Accaunt = new DockerAccaunt
-                {
-                    Email = "lizaalertai@yandex.ru",
-                    Password = "9ny?Mh4b*qfThZ6T",
-                    Username = "lizaalertai"
-                },
-                Image = new DockerImage
-                {
-                    Name = "gosha20777/test",
-                    Tag = MLModelConfigExtension.GetDockerTag(1, 3, MLModelType.Cpu)
-                },
-                ApiVersion = 1,
-                ModelVersion = 3,
-                Type = MLModelType.Cpu,
-                Url = "http://localhost:5000"
-            };
-            return config;
-        }
-
         private async void UpdateModel()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | updating model...");
             try
             {
-                var oldConfig = LoadConfigMock();
+                var oldConfig = await MLModelConfigExtension.Load(_mlConfigPath);
                 var localVersions = await MLModel.GetInstalledVersions(oldConfig);
                 if (localVersions.Any())
                 {
@@ -266,7 +247,7 @@ namespace RescuerLaApp.ViewModels
                 {
                     throw new Exception("Nothing ml models saved.");
                 }
-                var newConfig = LoadConfigMock();
+                var newConfig = oldConfig;
                 var netVersions = await MLModel.GetAvailableVersionsFromRegistry(newConfig);
                 if (netVersions.Any())
                     newConfig.ModelVersion = localVersions.Max();
@@ -276,7 +257,7 @@ namespace RescuerLaApp.ViewModels
                         await newModel.Download();
                     using(var oldModel = new MLModel(oldConfig))
                         await oldModel.Remove();
-                    //save config
+                    await newConfig.Save(_mlConfigPath);
                 }
             }
             catch (Exception e)
@@ -292,7 +273,7 @@ namespace RescuerLaApp.ViewModels
             try
             {
                 //load config
-                var config = LoadConfigMock();
+                var config = await MLModelConfigExtension.Load(_mlConfigPath);
                 using (var model = new MLModel(config))
                 {
                     await model.Init();

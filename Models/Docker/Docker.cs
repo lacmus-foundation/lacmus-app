@@ -43,7 +43,7 @@ namespace RescuerLaApp.Models.Docker
                 var images = await _client.Images.ListImagesAsync(new ImagesListParameters {MatchName = $"{image.Name}:{image.Tag}"});
                 if (images.Count > 0)
                 {
-                    Console.WriteLine($"such image already exists: {images.First().ID}");
+                    Console.WriteLine($"INFO: such image already exists: {images.First().ID}");
                     return;
                 }
                 
