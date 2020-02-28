@@ -35,6 +35,8 @@ namespace RescuerLaApp.Models.Docker
             }
         }
         
+        
+        
         public async Task Initialize(IDockerImage image, IDockerAccaunt accaunt)
         {
             try
@@ -47,26 +49,32 @@ namespace RescuerLaApp.Models.Docker
                     return;
                 }
                 
+                
                 var progress = new Progress<JSONMessage>();
+                var count = 0;
+                var pb1 = new ProgressBar();
+                pb1.Report(0.0, $"Downloading {count} of {progressDictionary.Count}" );
                 progress.ProgressChanged += (sender, message) =>
                 {
                     try
                     {
-                        if (progressDictionary.ContainsKey(message.ID) && message.Status.Contains("Pull complete",
-                                    StringComparison.InvariantCultureIgnoreCase))
+                        if (progressDictionary.ContainsKey(message.ID))
                         {
-                            progressDictionary[message.ID] = message.Status;
-                            var count = progressDictionary.Cast<string>().Count(value =>
-                                    value.Contains("Pull complete", StringComparison.InvariantCultureIgnoreCase));
-                            Debug.Assert(progressDictionary.Count > 1, "progressDictionary.Count > 1");
-                            Console.WriteLine($"{count}/{progressDictionary.Count - 1}");
+                            if (progressDictionary[message.ID] != "Pull complete" && message.Status == "Pull complete")
+                            {
+                                count++;
+                                progressDictionary[message.ID] = message.Status;
+                            }
+                            pb1.Report((double)count / progressDictionary.Count, $"Downloading {count} of {progressDictionary.Count}" );
                         }
-                        else
+                        else if(message.Status.Contains("Pulling fs layer") || message.Status.Contains("Waiting"))
+                        {
                             progressDictionary.Add(message.ID, message.Status);
+                        }
                     }
-                    catch(Exception e)
+                    catch
                     {
-                        Console.WriteLine(e.Message);
+                        //ignored
                     }
                 };
                 
@@ -83,6 +91,8 @@ namespace RescuerLaApp.Models.Docker
                     },
                     progress
                 );
+                pb1.Dispose();
+                Console.WriteLine($"INFO: successfully download {image.Name}:{image.Tag}.");
             }
             catch (Exception e)
             {

@@ -212,7 +212,7 @@ namespace RescuerLaApp.ViewModels
                     var netVersions = await MLModel.GetAvailableVersionsFromRegistry(config);
                     if (netVersions.Any())
                     {
-                        config.ModelVersion = localVersions.Max();
+                        config.ModelVersion = netVersions.Max();
                         Console.WriteLine($"INFO: find version in registry: {config.Image.Name}:{config.Image.Tag}");
                     }
                     else
