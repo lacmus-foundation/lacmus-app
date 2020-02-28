@@ -69,8 +69,7 @@ namespace RescuerLaApp.Models.Docker
                         Console.WriteLine(e.Message);
                     }
                 };
-
-
+                
                 await _client.Images.CreateImageAsync(
                     new ImagesCreateParameters
                     {

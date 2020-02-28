@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Extensions;
+using RescuerLaApp.ViewModels;
 
 namespace RescuerLaApp.Models.ML
 {
@@ -69,10 +70,11 @@ namespace RescuerLaApp.Models.ML
             }
         }
 
-        public async Task<List<Object>> Predict(IPhoto photo)
+        public async Task<List<Object>> Predict(PhotoViewModel photoViewModel)
         {
             try
             {
+                DateTime startTime = DateTime.Now;
                 var objects = new List<Object>();
                 var status = await _client.GetStatusAsync();
                 if (status == null || !status.Contains("server is running"))
@@ -80,12 +82,16 @@ namespace RescuerLaApp.Models.ML
             
                 var request = new MLRequest
                 {
-                    Data = PhotoToByteArray(photo)
+                    Data = await PhotoVmToByteArray(photoViewModel)
                 };
             
                 var jsonRequest = JsonConvert.SerializeObject(request);
                 var response = JsonConvert.DeserializeObject<MLResponse>(
-                    await _client.PostAsync(jsonRequest, "image"));
+                    await _client.PostAsync(jsonRequest, "/image")); 
+                
+                DateTime endTime = DateTime.Now;
+                Console.WriteLine($"INFO: file {photoViewModel.Path} processed.\n\tTime: {endTime-startTime}.\n\tObjects found: {response.Objects.Count}.");
+                
                 foreach (var responseObject in response.Objects)
                 {
                     objects.Add(new Object
@@ -231,17 +237,9 @@ namespace RescuerLaApp.Models.ML
             _docker.Dispose();
         }
         
-        byte[] PhotoToByteArray(IPhoto photo)
+        private async Task<byte[]> PhotoVmToByteArray(PhotoViewModel photo)
         {
-            if (photo == null || photo.ImageBrush == null)
-                throw new NullReferenceException("Photo is null");
-
-            BinaryFormatter bf = new BinaryFormatter();
-            using (MemoryStream ms = new MemoryStream())
-            {
-                bf.Serialize(ms, photo.ImageBrush.Source);
-                return ms.ToArray();
-            }
+            return await File.ReadAllBytesAsync(photo.Path);
         }
     }
 }

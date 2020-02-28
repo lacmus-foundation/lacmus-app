@@ -113,7 +113,7 @@
           <ItemsControl 
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Items="{Binding BoundBoxes}">
+            Items="{Binding PhotoViewModel.BoundBoxes}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <Canvas

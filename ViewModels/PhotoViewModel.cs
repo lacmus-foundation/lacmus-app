@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using RescuerLaApp.Extensions;
@@ -29,6 +30,7 @@ namespace RescuerLaApp.ViewModels
         }
         [Reactive] public string Caption { get; private set; }
         [Reactive] public string Path { get; private set; }
+        [Reactive] public IEnumerable<BoundBox> BoundBoxes { get; set; }
 
         private void UpdatePhotoInfo(Annotation annotation)
         {

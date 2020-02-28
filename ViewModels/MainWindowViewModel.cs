@@ -194,17 +194,17 @@ namespace RescuerLaApp.ViewModels
             //TODO: load it form json
             try
             {
-                var config = new MLModelConfig();
-                if (File.Exists(_mlConfigPath))
+                if (!File.Exists(_mlConfigPath))
                 {
-                    config = await MLModelConfigExtension.Load(_mlConfigPath);
+                    throw new Exception("There are no ml model config file. Please configure your model.");
                 }
+                var config = await MLModelConfigExtension.Load(_mlConfigPath);
                 // get local versions
                 var localVersions = await MLModel.GetInstalledVersions(config);
                 if (localVersions.Any())
                 {
                     config.ModelVersion = localVersions.Max();
-                    Console.WriteLine($"local: {config.ModelVersion}");
+                    Console.WriteLine($"INFO: find local version: {config.Image.Name}:{config.Image.Tag}");
                 }
                 else
                 {
@@ -213,7 +213,7 @@ namespace RescuerLaApp.ViewModels
                     if (netVersions.Any())
                     {
                         config.ModelVersion = localVersions.Max();
-                        Console.WriteLine($"net: {config.ModelVersion}");
+                        Console.WriteLine($"INFO: find version in registry: {config.Image.Name}:{config.Image.Tag}");
                     }
                     else
                     {
@@ -279,10 +279,15 @@ namespace RescuerLaApp.ViewModels
                     await model.Init();
                     foreach (var photoViewModel in _photoCollection)
                     {
-                        var photoLoader = new PhotoLoader();
-                        var fullPhoto = photoLoader.Load(photoViewModel.Path, PhotoLoadType.Full);
-                        photoViewModel.Annotation.Objects = await model.Predict(fullPhoto);
-                        //photoViewModel.rectaggpes = photoViewModel.getRectangles()
+                        try
+                        {
+                            photoViewModel.Annotation.Objects = await model.Predict(photoViewModel);
+                            photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"ERROR: unable to processed file {photoViewModel.Path}. Slipped.\n\tDetails:{e}");
+                        }
                     }
                     await model.Stop();
                 }
@@ -626,6 +631,7 @@ namespace RescuerLaApp.ViewModels
                     var fullPhoto = photoLoader.Load(currentMiniaturePhotoViewModel.Path, PhotoLoadType.Full);
                     var annotation = currentMiniaturePhotoViewModel.Annotation;
                     PhotoViewModel = new PhotoViewModel(fullPhoto, annotation);
+                    PhotoViewModel.BoundBoxes = PhotoCollection[SelectedIndex].BoundBoxes;
                 
                     CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
                     CanvasWidth = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Width;
