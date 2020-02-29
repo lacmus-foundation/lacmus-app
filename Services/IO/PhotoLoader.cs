@@ -15,8 +15,7 @@ namespace RescuerLaApp.Services.IO
     {
         public Photo Load(string source, PhotoLoadType loadType)
         {
-            var loader = new FileLoader();
-            using (var stream = loader.Load(source))
+            using (var stream = File.OpenRead(source))
             {
                 try
                 {

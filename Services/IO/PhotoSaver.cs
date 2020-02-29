@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using RescuerLaApp.Models.Photo;
 
 namespace RescuerLaApp.Services.IO
@@ -7,8 +8,7 @@ namespace RescuerLaApp.Services.IO
     {
         public void Save(Photo photo, string source)
         {
-            var saver = new FileSaver();
-            using (var stream = saver.Save(source))
+            using (var stream = File.Create(source))
             {
                 try
                 {

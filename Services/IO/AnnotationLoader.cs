@@ -9,9 +9,8 @@ namespace RescuerLaApp.Services.IO
     {
         public Annotation Load(string source)
         {
-            var loader = new FileLoader();
             var formatter = new XmlSerializer(type:typeof(Annotation));
-            using (var stream = loader.Load(source))
+            using (var stream = File.OpenRead(source))
             {
                 try
                 {
