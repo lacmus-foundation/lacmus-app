@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Skia;
+using Avalonia.Threading;
 using MetadataExtractor;
 using RescuerLaApp.Interfaces;
 using RescuerLaApp.Models.Photo;
@@ -36,7 +37,6 @@ namespace RescuerLaApp.Services.Files
                 {
                     ImageBrush = imageBrush,
                     Attribute = Attribute.NotProcessed,
-                    Caption = GetCaptionFromPath(path),
                     MetaDataDirectories = metaDataDirectories
                 };
                 return photo;
@@ -66,7 +66,6 @@ namespace RescuerLaApp.Services.Files
                     {
                         ImageBrush = imageBrush,
                         Attribute = Attribute.NotProcessed,
-                        Caption = GetCaptionFromPath(path),
                         MetaDataDirectories = metaDataDirectories
                     };
                     photoList.Add(photo);
@@ -81,7 +80,7 @@ namespace RescuerLaApp.Services.Files
 
         public async Task<Photo[]> ReadAllFromDir(PhotoLoadType loadType = PhotoLoadType.Miniature, bool isRecursive = false)
         {
-            var dig = new OpenFileDialog()
+            var dig = new OpenFolderDialog()
             {
                 //TODO: Multi language support
                 Title = "Chose directory image files"
@@ -93,19 +92,19 @@ namespace RescuerLaApp.Services.Files
                 try
                 {
                     var imageBrush = ReadImageBrushFromFile(stream, loadType);
-                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(stream);
+                    var metaDataDirectories = ImageMetadataReader.ReadMetadata(path);
                     var photo = new Photo
                     {
                         ImageBrush = imageBrush,
                         Attribute = Attribute.NotProcessed,
-                        Caption = GetCaptionFromPath(path),
                         MetaDataDirectories = metaDataDirectories
                     };
                     photoList.Add(photo);
                 }
                 catch (Exception e)
                 {
-                    throw new Exception($"unable to read image from {path}");
+                    //TODO: translate to rus
+                    Console.WriteLine($"ERROR: image from {path} is skipped!\nDetails: {e}");
                 }
             }
             return photoList.ToArray();
@@ -130,19 +129,20 @@ namespace RescuerLaApp.Services.Files
                     {
                         var scale = 100f / src.Width;
                         var resized = new SKBitmap(
-                            (int)(src.Width * scale),
-                            (int)(src.Height * scale), 
-                            src.ColorType, 
+                            (int) (src.Width * scale),
+                            (int) (src.Height * scale),
+                            src.ColorType,
                             src.AlphaType);
                         src.ScalePixels(resized, SKFilterQuality.Low);
                         var bitmap = new Bitmap(
                             resized.ColorType.ToPixelFormat(),
                             resized.GetPixels(),
-                            new PixelSize(resized.Width, resized.Height), 
-                            SkiaPlatform.DefaultDpi, 
+                            new PixelSize(resized.Width, resized.Height),
+                            SkiaPlatform.DefaultDpi,
                             resized.RowBytes);
                         return new ImageBrush(bitmap);
                     }
+
                     break;
                 case PhotoLoadType.Full:
                     return new ImageBrush(new Bitmap(stream));

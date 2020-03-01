@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Xml.Serialization;
 using RescuerLaApp.Models;
 
@@ -8,9 +9,9 @@ namespace RescuerLaApp.Services.IO
     {
         public void Save(Annotation annotation, string source)
         {
-            var saver = new FileSaver();
+          
             var formatter = new XmlSerializer(type:typeof(Annotation));
-            using (var stream = saver.Save(source))
+            using (var stream = File.Create(source))
             {
                 try
                 {

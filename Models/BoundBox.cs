@@ -47,12 +47,11 @@ namespace RescuerLaApp.Models
 
         public void Update(double scaleX, double scaleY)
         {
-            Console.WriteLine($"{XBase} {YBase}");
             X = (int)(XBase * scaleX);
             Width = (int)(WidthBase * scaleX);
             Y = (int)(YBase * scaleY);
             Height = (int)(HeightBase * scaleY);
-            Console.WriteLine($"{X} {Y}");
+            Console.WriteLine($"DEBUG: scaled from ({XBase}, {YBase}) to ({X}, {Y})");
         }
     }
 }

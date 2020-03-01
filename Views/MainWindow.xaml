@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:RescuerLaApp.ViewModels;assembly=RescuerLaApp"
         xmlns:models="clr-namespace:RescuerLaApp.Models"
+        xmlns:models_photo="clr-namespace:RescuerLaApp.Models.Photo"
         xmlns:paz="clr-namespace:Avalonia.Controls.PanAndZoom;assembly=Avalonia.Controls.PanAndZoom"
         Icon="resm:RescuerLaApp.Assets.avalonia-logo.ico"
         x:Class="RescuerLaApp.Views.MainWindow"
@@ -27,8 +28,8 @@
           <!-- <MenuItem Name="mFileSaveAllImagesWithObjects" Header="Save only images with pedestrians" Command="{Binding SaveAllImagesWithObjectsCommand}"/> -->
           <MenuItem Name="mFileSaveFavorites" Header="Export favorites to XML..." Command="{Binding SaveFavoritesImagesCommand}"/>
           <Separator></Separator>
-          <MenuItem Name="mSIgnIn" Header="Sign in" Command="{Binding SignInCommand}"/>
-          <MenuItem Name="mSignUp" Header="Sign up" Command="{Binding SignUpCommand}"/>
+          <!-- <MenuItem Name="mSIgnIn" Header="Sign in" Command="{Binding SignInCommand}"/> -->
+          <!-- <MenuItem Name="mSignUp" Header="Sign up" Command="{Binding SignUpCommand}"/> -->
           <Separator></Separator>
           <MenuItem Name="mFileExit" Header="Exit" Command="{Binding ExitCommand}"/>
         </MenuItem>
@@ -83,62 +84,17 @@
         
         <ListBox Grid.Column="0" Grid.Row="0"
                  x:Name="ImageList" 
-                 Items="{Binding Frames}"
+                 Items="{Binding PhotoCollection}"
                  SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
           <ListBox.DataTemplates>
-            <DataTemplate DataType="{x:Type models:Frame}">
+            <DataTemplate DataType="{x:Type vm:PhotoViewModel}">
               <StackPanel Margin="25,5" Orientation="Vertical">
-                <Canvas Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding ImageBrush}"/>
-                <TextBlock Margin="0,5" HorizontalAlignment="Center" Text="{Binding Name}"></TextBlock>
+                <Canvas Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding Photo.ImageBrush}"/>
+                <TextBlock Margin="0,5" HorizontalAlignment="Center" Text="{Binding Caption}"></TextBlock>
               </StackPanel>
             </DataTemplate>
           </ListBox.DataTemplates>
         </ListBox>
-        
-        <!--
-        <TabControl Grid.Column="0" Grid.Row="0">
-          <TabItem Header="All" VerticalContentAlignment="Center">
-            <ListBox x:Name="ImageList" 
-                     Items="{Binding Frames}"
-                     SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
-              <ListBox.DataTemplates>
-                <DataTemplate DataType="{x:Type models:Frame}">
-                  <StackPanel Margin="25,5" Orientation="Vertical">
-                    <Canvas Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding ImageBrush}"/>
-                    <TextBlock Margin="0,5" HorizontalAlignment="Center" Text="{Binding Name}"></TextBlock>
-                  </StackPanel>
-                </DataTemplate>
-              </ListBox.DataTemplates>
-            </ListBox>
-          </TabItem>
-          <TabItem Header="Pedestrians" VerticalContentAlignment="Center">
-            <ListBox Items="{Binding Frames}"
-                     SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
-              <ListBox.DataTemplates>
-                <DataTemplate DataType="{x:Type models:Frame}">
-                  <StackPanel Margin="25,5" Orientation="Vertical">
-                    <Canvas Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding ImageBrush}"/>
-                    <TextBlock Margin="0,5" HorizontalAlignment="Center" Text="{Binding Name}"></TextBlock>
-                  </StackPanel>
-                </DataTemplate>
-              </ListBox.DataTemplates>
-            </ListBox>
-          </TabItem>
-          <TabItem Header="Favorites" VerticalContentAlignment="Center">
-            <ListBox Items="{Binding Frames}"
-                     SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
-              <ListBox.DataTemplates>
-                <DataTemplate DataType="{x:Type models:Frame}">
-                  <StackPanel Margin="25,5" Orientation="Vertical">
-                    <Canvas Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding ImageBrush}"/>
-                    <TextBlock Margin="0,5" HorizontalAlignment="Center" Text="{Binding Name}"></TextBlock>
-                  </StackPanel>
-                </DataTemplate>
-              </ListBox.DataTemplates>
-            </ListBox>
-          </TabItem>
-        </TabControl>
-        -->
         
         <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" Background="White">
           <CheckBox Name="cbShowPedestrians" Content="Show pedestrians" Margin="5,2,2,1"
@@ -157,14 +113,14 @@
           <ItemsControl 
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Items="{Binding BoundBoxes}">
+            Items="{Binding PhotoViewModel.BoundBoxes}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <Canvas
                   Name="ShowedImage"
                   HorizontalAlignment="Stretch"
                   VerticalAlignment="Stretch"
-                  Background="{Binding ImageBrush}"
+                  Background="{Binding PhotoViewModel.Photo.ImageBrush}"
                   Height="{Binding CanvasHeight, Mode=TwoWay}"
                   Width="{Binding CanvasWidth, Mode=TwoWay}">
                   <Canvas.ContextMenu>
@@ -194,8 +150,8 @@
       </ScrollViewer>
     </Grid>
     <!-- Grid 2 -->
-    <Grid Name="Footer" Grid.Row="2" Background="{Binding Status.StatusColor}">
-      <TextBlock Foreground="White" Name="tbStatusBar" Margin="5" Text="{Binding Status.StringStatus}"></TextBlock>
+    <Grid Name="Footer" Grid.Row="2" Background="{Binding ApplicationStatusViewModel.StatusColor}">
+      <TextBlock Foreground="White" Name="tbStatusBar" Margin="5" Text="{Binding ApplicationStatusViewModel.StringStatus}"/>
     </Grid>
   </Grid>  
 </Window>

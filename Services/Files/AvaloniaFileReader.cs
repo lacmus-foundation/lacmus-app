@@ -29,7 +29,7 @@ namespace RescuerLaApp.Services.Files
             return (path, stream);
         }
 
-        public async Task<(string Path, Stream Stream)[]> ReadMultiple(OpenFileDialog fileDialog = null)
+        public async Task<IEnumerable<(string Path, Stream Stream)>> ReadMultiple(OpenFileDialog fileDialog = null)
         {
             if (fileDialog == null)
                 fileDialog = new OpenFileDialog();
@@ -47,18 +47,19 @@ namespace RescuerLaApp.Services.Files
             return  result.ToArray();
         }
 
-        public async Task<(string Path, Stream Stream)[]> ReadAllFromDir(OpenFileDialog fileDialog = null, bool isRecursive = false)
+        public async Task<IEnumerable<(string Path, Stream Stream)>> ReadAllFromDir(OpenFolderDialog fileDialog = null, bool isRecursive = false)
         {
             if (fileDialog == null)
-                fileDialog = new OpenFileDialog();
-            fileDialog.AllowMultiple = false;
-            var dirPaths = await fileDialog.ShowAsync(_window);
-            var dirPath = dirPaths.First();
+                fileDialog = new OpenFolderDialog();
+
+            var dirPath = await fileDialog.ShowAsync(_window);
             
-            var attributes = File.GetAttributes(dirPath);
-            var isFolder = attributes.HasFlag(FileAttributes.Directory);
-            if (!isFolder) throw new Exception("Files are not supported.");
-            
+            if (!Directory.Exists(dirPath))
+            {
+                //NOTE possible exception raise here instead of  empty return
+                return Enumerable.Empty<(string Path, Stream Stream)>();
+            }
+           
             var files = GetFilesFromDir(dirPath, isRecursive);
             var result = new List<(string Name, Stream Stream)>();
             foreach (var file in files)
@@ -66,13 +67,14 @@ namespace RescuerLaApp.Services.Files
                 var stream = File.OpenRead(file);
                 result.Add((file, stream));
             }
-            return  result.ToArray();
+            return  result;
         }
 
         //TODO: Create Recursive Search
         private static IEnumerable<string> GetFilesFromDir(string dirPath, bool isRecursive)
         {
-            return Directory.GetFiles(dirPath);
+            return Directory.GetFiles(dirPath, "*.*",//NOTE probably need to make  more specialized -- *.png, *.jpeg...
+                isRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
         }
     }
 }

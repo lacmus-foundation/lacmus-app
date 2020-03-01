@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Newtonsoft.Json;
+using Serilog;
 
-namespace RescuerLaApp.Models
+namespace RescuerLaApp.Models.Docker
 {
     public class Docker : IDisposable
     {
         private readonly DockerClient _client;
-        private const int API_VER = 1;
-        private const bool IS_GPU = false;
 
         public Docker()
         {
@@ -37,90 +36,105 @@ namespace RescuerLaApp.Models
             }
         }
         
-        public async Task Initialize(string imageName = "gosha20777/test", string tag = "1")
+        
+        
+        public async Task Initialize(IDockerImage image, IDockerAccaunt accaunt)
         {
-            tag = IS_GPU ? $"gpu-{API_VER}.{tag}" : $"{API_VER}.{tag}";
             try
             {
+                Log.Information($"Initializing image {image.Name}:{image.Tag}.");
                 var progressDictionary = new Dictionary<string, string>();
-                var images = await _client.Images.ListImagesAsync(new ImagesListParameters {MatchName = $"{imageName}:{tag}"});
+                var images = await _client.Images.ListImagesAsync(new ImagesListParameters {MatchName = $"{image.Name}:{image.Tag}"});
                 if (images.Count > 0)
                 {
-                    Console.WriteLine($"such image already exists: {images.First().ID}");
+                    Log.Information($"Such image already exists: {images.First().ID}.");
                     return;
                 }
                 
+                
                 var progress = new Progress<JSONMessage>();
+                var count = 0;
+                var pb = new ProgressBar();
+                pb.Report(0.0, $"Downloading {count} of {progressDictionary.Count}" );
                 progress.ProgressChanged += (sender, message) =>
                 {
                     try
                     {
-                        if (progressDictionary.ContainsKey(message.ID) && message.Status.Contains("Pull complete",
-                                    StringComparison.InvariantCultureIgnoreCase))
+                        if (progressDictionary.ContainsKey(message.ID))
                         {
-                            progressDictionary[message.ID] = message.Status;
-                            var count = progressDictionary.Cast<string>().Count(value =>
-                                    value.Contains("Pull complete", StringComparison.InvariantCultureIgnoreCase));
-                            Debug.Assert(progressDictionary.Count > 1, "progressDictionary.Count > 1");
-                            Console.WriteLine($"{count}/{progressDictionary.Count - 1}");
+                            if (progressDictionary[message.ID] != "Pull complete" && message.Status == "Pull complete")
+                            {
+                                count++;
+                                progressDictionary[message.ID] = message.Status;
+                            }
+                            pb.Report((double)count / progressDictionary.Count, $"Downloading {count} of {progressDictionary.Count}" );
                         }
-                        else
+                        else if(message.Status.Contains("Pulling fs layer") || message.Status.Contains("Waiting"))
+                        {
                             progressDictionary.Add(message.ID, message.Status);
+                        }
                     }
-                    catch(Exception e)
+                    catch
                     {
-                        Console.WriteLine(e.Message);
+                        //ignored
                     }
                 };
-
-
+                
                 await _client.Images.CreateImageAsync(
                     new ImagesCreateParameters
                     {
-                        FromImage = $"{imageName}:{tag}"
+                        FromImage = $"{image.Name}:{image.Tag}"
                     },
                     new AuthConfig
                     {
-                        Email = "lizaalertai@yandex.ru",
-                        Username = "lizaalertai",
-                        Password = "9ny?Mh4b*qfThZ6T"
+                        Email = accaunt.Email,
+                        Username = accaunt.Username,
+                        Password = accaunt.Password
                     },
                     progress
                 );
+                pb.Dispose();
+                Log.Information($"Successfully initialized image {image.Name}:{image.Tag}.");
             }
             catch (Exception e)
             {
-                throw new Exception($"Unable to create docker image: {e.Message}");
+                throw new Exception($"Unable to initialize image {image.Name}:{image.Tag}.", e);
             }
         }
 
-        public async Task<string> CreateContainer(string imageName = "gosha20777/test", string tag = "1")
+        public async Task<string> CreateContainer(IDockerImage image)
         {
-            //TODO здесь бы все это из файла конфигурировать
-            tag = IS_GPU ? $"gpu-{API_VER}.{tag}" : $"{API_VER}.{tag}";
             try
             {
+                Log.Information($"Creating container {image.Name}:{image.Tag}");
                 var containers = await _client.Containers.ListContainersAsync(new ContainersListParameters {All = true});
                 foreach (var container in containers)
                 {
-                    if (container.Image == $"{imageName}:{tag}")
+                    if (container.Image == $"{image.Name}:{image.Tag}")
                     {
-                        Console.WriteLine($"such container already exists: {container.ID} {container.Image}");
+                        Log.Information($"Such container already exists: {container.ID}.");
                         return container.ID;
                     }
                 }
+                
+                var images = await _client.Images.ListImagesAsync(new ImagesListParameters {MatchName = $"{image.Name}:{image.Tag}"});
+                if (images == null || images.Count == 0)
+                {
+                    throw new Exception($"No such image {image.Name}:{image.Tag}.");
+                }
 
-                if (IS_GPU)
+                if (image.Tag.Contains("gpu"))
                 {
                     var stdOut = "";
                     var bash = new BashCommand();
-                    stdOut = bash.Execute($"docker create --runtime=nvidia -p 5000:5000 {imageName}:{tag}", out var err);
+                    stdOut = bash.Execute($"docker create --runtime=nvidia -p 5000:5000 {image.Name}:{image.Tag}", out var err);
                     
                     await Task.Delay(800);
                     stdOut = stdOut.Replace(Environment.NewLine, String.Empty);
                     if(string.IsNullOrWhiteSpace(stdOut) || !string.IsNullOrWhiteSpace(err))
                         throw new Exception($"invalid id {err}");
-
+                    
+                    Log.Information($"Successfully created container {image.Name}:{image.Tag}.");
                     return stdOut;
                 }
 
@@ -128,7 +142,7 @@ namespace RescuerLaApp.Models
                 var containerCreateResponse = await _client.Containers.CreateContainerAsync(
                     new CreateContainerParameters
                     {
-                        Image = $"{imageName}:{tag}",
+                        Image = $"{image.Name}:{image.Tag}",
                         HostConfig = new HostConfig
                         {
                             PortBindings = new Dictionary<string, IList<PortBinding>>
@@ -146,6 +160,7 @@ namespace RescuerLaApp.Models
                     throw new Exception("invalid id");
                 }
 
+                Log.Information($"Successfully created container {image.Name}:{image.Tag}.");
                 return containerCreateResponse.ID;
             }
             catch (Exception e)
@@ -156,20 +171,25 @@ namespace RescuerLaApp.Models
 
         public async Task<bool> Run(string id)
         {
-            
             try
             {
+                Log.Information($"Running container: {id}.");
                 var containers = await _client.Containers.ListContainersAsync(new ContainersListParameters {All = true});
                 foreach (var container in containers)
                 {
                     if (container.ID == id && container.Status.Contains("Up"))
                     {
-                        Console.WriteLine($"such container already running: {container.ID} {container.Image} {container.Status}");
+                        Log.Information($"Such container already running: {container.ID}.");
                         return true;
                     }
                 }
                 
-                return await _client.Containers.StartContainerAsync(id, new ContainerStartParameters());
+                var isSuccess = await _client.Containers.StartContainerAsync(id, new ContainerStartParameters());
+                if(!isSuccess)
+                    throw new Exception("Running was not successful.");
+                
+                Log.Information($"Successfully run container {id}.");
+                return true;
             }
             catch (Exception e)
             {
@@ -177,10 +197,11 @@ namespace RescuerLaApp.Models
             }
         }
 
-        public async Task StopAll(string imageName = "gosha20777/test")
+        public async Task StopAll(string imageName)
         {
             try
             {
+                Log.Information($"Stopping all containers {imageName}");
                 var containers =
                         await _client.Containers.ListContainersAsync(new ContainersListParameters {All = true});
                 foreach (var container in containers)
@@ -190,10 +211,10 @@ namespace RescuerLaApp.Models
                         var success =
                                 await _client.Containers.StopContainerAsync(container.ID,
                                         new ContainerStopParameters());
-                        Console.Write($"stopping container: {container.ID} {container.Image} {success.ToString()}");
-                        return;
+                        Log.Information($"Successfully stop container {container.ID} {success.ToString()}.");
                     }
                 }
+                Log.Information($"All containers {imageName} was stop.");
             }
             catch(Exception e)
             {
@@ -205,19 +226,21 @@ namespace RescuerLaApp.Models
         {
             try
             {
+                Log.Information($"Stopping container {id}");
                 var containers = await _client.Containers.ListContainersAsync(new ContainersListParameters {All = true});
                 foreach (var container in containers)
                 {
                     if (container.ID == id && container.Status.Contains("Exited"))
                     {
-                        Console.WriteLine($"such container already stopped: {container.ID} {container.Image} {container.Status}");
+                        Log.Information($"Such container already stopped: {container.ID}.");
                         return;
                     }
                 }
                 
                 var success = await _client.Containers.StopContainerAsync(id, new ContainerStopParameters());
                 if(!success)
-                    throw new Exception("returns false");
+                    throw new Exception("Stopping was not successful.");
+                Log.Information($"Successfully stop container {id}.");
             }
             catch (Exception e)
             {
@@ -225,7 +248,7 @@ namespace RescuerLaApp.Models
             }
         }
 
-        public async Task<List<string>> GetTags(string imageName = "gosha20777/test")
+        public async Task<List<string>> GetTagsFromDockerRegistry(string imageName)
         {
             var baseUrl = "https://registry.hub.docker.com";
             try
@@ -240,25 +263,8 @@ namespace RescuerLaApp.Models
                     response = JsonConvert.DeserializeObject<DockerTagResponse>(jsonResp);
                     result.AddRange(response.Images.Select(image => image.Tag).ToList());
                 }
-            
-                var resTags = new List<string>();
-                foreach (var r in result)
-                {
-                    var prefix = "";
-                    if (IS_GPU)
-                    {
-                        prefix = $"gpu-{API_VER}.";
-                        if(r.Contains(prefix))
-                            resTags.Add(r.Replace(prefix, ""));
-                    }
-                    else
-                    {
-                        prefix = $"{API_VER}.";
-                        if(!r.Contains("gpu") && r.Contains(prefix))
-                            resTags.Add(r.Replace(prefix, ""));
-                    }
-                }
-                return resTags;
+                
+                return result;
             }
             catch(Exception e)
             {
@@ -266,26 +272,25 @@ namespace RescuerLaApp.Models
             }
         }
 
-        public async Task Remove(string imageName = "gosha20777/test", string tag = "1")
+        public async Task Remove(IDockerImage image)
         {
-            tag = IS_GPU ? $"gpu-{API_VER}.{tag}" : $"{API_VER}.{tag}";
             try
             {
                 //stop and remove all containers
                 var containers = await _client.Containers.ListContainersAsync(new ContainersListParameters {All = true});
                 foreach (var container in containers)
                 {
-                    if (container.Image == $"{imageName}:{tag}")
+                    if (container.Image == $"{image.Name}:{image.Tag}")
                     {
                         await Stop(container.ID);
                         await _client.Containers.RemoveContainerAsync(container.ID, new ContainerRemoveParameters {Force = true});
                     }
                 }
                 
-                var images = await _client.Images.ListImagesAsync(new ImagesListParameters {MatchName = $"{imageName}:{tag}"});
-                foreach (var image in images)
+                var images = await _client.Images.ListImagesAsync(new ImagesListParameters {MatchName = $"{image.Name}:{image.Tag}"});
+                foreach (var img in images)
                 {
-                    await _client.Images.DeleteImageAsync(image.ID, new ImageDeleteParameters {Force = true});
+                    await _client.Images.DeleteImageAsync(img.ID, new ImageDeleteParameters {Force = true});
                 }
             }
             catch (Exception e)
@@ -294,35 +299,18 @@ namespace RescuerLaApp.Models
             }
         }
 
-        public async Task<List<string>> GetInstalledVersions(string imageName = "gosha20777/test")
+        public async Task<List<string>> GetInstalledTags(string imageName)
         {
             try
             {
                 var tags = new List<string>();
-                var resTags = new List<string>();
                 var images = await _client.Images.ListImagesAsync(new ImagesListParameters {MatchName = imageName});
                 foreach (var image in images)
                 {
                     tags.AddRange(image.RepoTags);
                 }
 
-                foreach (var tag in tags)
-                {
-                    var prefix = "";
-                    if (IS_GPU)
-                    {
-                        prefix = $"gpu-{API_VER}.";
-                        if(tag.Contains($"{imageName}:{prefix}"))
-                            resTags.Add(tag.Replace($"{imageName}:{prefix}", ""));
-                    }
-                    else
-                    {
-                        prefix = $"{API_VER}.";
-                        if(!tag.Contains("gpu") && tag.Contains(prefix))
-                            resTags.Add(tag.Replace($"{imageName}:{prefix}", ""));
-                    }
-                }
-                return resTags;
+                return (from tag in tags where tag.Contains($"{imageName}:") select tag.Replace($"{imageName}:", "")).ToList();
             }
             catch(Exception e)
             {
