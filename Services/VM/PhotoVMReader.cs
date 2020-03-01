@@ -10,7 +10,9 @@ using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Services.Files;
 using RescuerLaApp.Services.IO;
 using RescuerLaApp.ViewModels;
+using Serilog;
 using Attribute = RescuerLaApp.Models.Photo.Attribute;
+using ProgressBar = Avalonia.Controls.ProgressBar;
 
 namespace RescuerLaApp.Services.VM
 {
@@ -78,29 +80,39 @@ namespace RescuerLaApp.Services.VM
             var multipleFiles = await _reader.ReadAllFromDir(dig, isRecursive);
             var photoLoader = new PhotoLoader();
             var photoList = new List<PhotoViewModel>();
-            foreach (var (path, stream) in multipleFiles)
+            var count = 0;
+            var valueTuples = multipleFiles as (string Path, Stream Stream)[] ?? multipleFiles.ToArray();
+            using (var pb = new Models.ProgressBar())
             {
-                try
+                foreach (var (path, stream) in valueTuples)
                 {
-                    using (stream)
+                    try
                     {
-                        if (Path.GetExtension(path).ToLower() != ".jpg" &&
-                            Path.GetExtension(path).ToLower() != ".jpeg" &&
-                            Path.GetExtension(path).ToLower() != ".png")
-                            continue;
-                        var photo = photoLoader.Load(path, stream, loadType);
-                        var annotation = new Annotation
+                        using (stream)
                         {
-                            Filename = Path.GetFileName(path),
-                            Folder = Path.GetDirectoryName(path)
-                        };
-                        photoList.Add(new PhotoViewModel(photo, annotation));
+                            if (Path.GetExtension(path).ToLower() != ".jpg" &&
+                                Path.GetExtension(path).ToLower() != ".jpeg" &&
+                                Path.GetExtension(path).ToLower() != ".png")
+                            {
+                                count++;
+                                continue;
+                            }
+                            
+                            var photo = photoLoader.Load(path, stream, loadType);
+                            var annotation = new Annotation
+                            {
+                                Filename = Path.GetFileName(path),
+                                Folder = Path.GetDirectoryName(path)
+                            };
+                            photoList.Add(new PhotoViewModel(photo, annotation));
+                            count++;
+                            pb.Report((double)count / valueTuples.Count(), $"Processed {count} of {valueTuples.Count()}");
+                        }
                     }
-                }
-                catch (Exception e)
-                {
-                    //TODO: translate to rus
-                    Console.WriteLine($"ERROR: image from {path} is skipped!\nDetails: {e}");
+                    catch (Exception e)
+                    {
+                        Log.Warning(e,$"image from {path} is skipped!");
+                    }
                 }
             }
             return photoList.ToArray();
@@ -117,19 +129,31 @@ namespace RescuerLaApp.Services.VM
             var photoLoader = new PhotoLoader();
             var annotationLoader = new AnnotationLoader();
             var photoList = new List<PhotoViewModel>();
-            foreach (var (path,stream) in multipleFiles)
+            var count = 0;
+            var valueTuples = multipleFiles as (string Path, Stream Stream)[] ?? multipleFiles.ToArray();
+            using (var pb = new Models.ProgressBar())
             {
-                try
+                foreach (var (path,stream) in valueTuples)
                 {
-                    var annotation = annotationLoader.Load(path, stream);
-                    var photoPath = Path.Combine(annotation.Folder, annotation.Filename);
-                    var photo = photoLoader.Load(photoPath, loadType);
-                    photoList.Add(new PhotoViewModel(photo, annotation));
-                }
-                catch (Exception e)
-                {
-                    //TODO: translate to rus
-                    Console.WriteLine($"ERROR: image from {path} is skipped!\nDetails: {e}");
+                    try
+                    {
+                        if (Path.GetExtension(path).ToLower() != ".xml")
+                        {
+                            count++;
+                            continue;
+                        }
+                        
+                        var annotation = annotationLoader.Load(path, stream);
+                        var photoPath = Path.Combine(annotation.Folder, annotation.Filename);
+                        var photo = photoLoader.Load(photoPath, loadType);
+                        photoList.Add(new PhotoViewModel(photo, annotation));
+                        count++;
+                        pb.Report((double)count / valueTuples.Count(), $"Processed {count} of {valueTuples.Count()}");
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Warning(e,$"image from {path} is skipped!");
+                    }
                 }
             }
             return photoList.ToArray();

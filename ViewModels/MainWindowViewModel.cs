@@ -197,9 +197,9 @@ namespace RescuerLaApp.ViewModels
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
             //get the last version of ml model with specific config
-            //TODO: load it form json
             try
             {
+                Log.Information("Loading ml model.");
                 if (!File.Exists(_mlConfigPath))
                 {
                     throw new Exception("There are no ml model config file. Please configure your model.");
@@ -230,6 +230,7 @@ namespace RescuerLaApp.ViewModels
                 // init local model or download and init it from docker registry
                 using(var model = new MLModel(config))
                     await model.Download();
+                Log.Information("Successfully loads ml model.");
             }
             catch (Exception e)
             {
@@ -243,6 +244,7 @@ namespace RescuerLaApp.ViewModels
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | updating model...");
             try
             {
+                Log.Information("Updating ml model.");
                 var oldConfig = await MLModelConfigExtension.Load(_mlConfigPath);
                 var localVersions = await MLModel.GetInstalledVersions(oldConfig);
                 if (localVersions.Any())
@@ -251,19 +253,29 @@ namespace RescuerLaApp.ViewModels
                 }
                 else
                 {
-                    throw new Exception("Nothing ml models saved.");
+                    throw new Exception($"Nothing ml models saved: {oldConfig.Image.Name}.");
                 }
                 var newConfig = oldConfig;
                 var netVersions = await MLModel.GetAvailableVersionsFromRegistry(newConfig);
                 if (netVersions.Any())
-                    newConfig.ModelVersion = localVersions.Max();
+                    newConfig.ModelVersion = netVersions.Max();
+                else
+                {
+                    throw new Exception($"Nothing ml models in registry: {oldConfig.Image.Name}.");
+                }
                 if (newConfig.ModelVersion > oldConfig.ModelVersion)
                 {
+                    Log.Information($"Find never version of ml model {oldConfig.Image.Name}: ver {newConfig.ModelVersion} > ver {oldConfig.ModelVersion}");
                     using(var newModel = new MLModel(newConfig))
                         await newModel.Download();
                     using(var oldModel = new MLModel(oldConfig))
                         await oldModel.Remove();
                     await newConfig.Save(_mlConfigPath);
+                    Log.Information("Successfully updates ml model.");
+                }
+                else
+                {
+                    Log.Information($"Ml model {oldConfig.Image.Name} is up to date: ver {newConfig.ModelVersion}.");
                 }
             }
             catch (Exception e)
@@ -273,6 +285,9 @@ namespace RescuerLaApp.ViewModels
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private async void PredictAll()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
@@ -283,12 +298,17 @@ namespace RescuerLaApp.ViewModels
                 using (var model = new MLModel(config))
                 {
                     await model.Init();
+                    var count = 0;
+                    var objectCount = 0;
                     foreach (var photoViewModel in _photoCollection)
                     {
                         try
                         {
                             photoViewModel.Annotation.Objects = await model.Predict(photoViewModel);
                             photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
+                            objectCount += photoViewModel.BoundBoxes.Count();
+                            count++;
+                            Console.WriteLine($"\tProgress: {(double) count / _photoCollection.Count() * 100} %");
                         }
                         catch (Exception e)
                         {
@@ -296,6 +316,7 @@ namespace RescuerLaApp.ViewModels
                         }
                     }
                     await model.Stop();
+                    Log.Information($"Successfully predict {_photoCollection.Count} photos. Find {objectCount} objects.");
                 }
             }
             catch (Exception e)
@@ -335,9 +356,8 @@ namespace RescuerLaApp.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex,"Unable to load photos.");
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
-                    $"Error | {ex.Message.Replace('\n', ' ')}");
             }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
         private async void ImportFromXml()
         {
@@ -359,9 +379,8 @@ namespace RescuerLaApp.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex,"Unable to load photos.");
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
-                    $"Error | {ex.Message.Replace('\n', ' ')}");
             }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         private async void SaveAll()
@@ -382,9 +401,8 @@ namespace RescuerLaApp.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "Unable to save photos.");
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
-                    $"Error | {ex.Message.Replace('\n', ' ')}");
             }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         private async void SaveAllImagesWithObjects()
@@ -405,9 +423,8 @@ namespace RescuerLaApp.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "Unable to save photos.");
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
-                    $"Error | {ex.Message.Replace('\n', ' ')}");
             }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         private async void SaveFavoritesImages()
@@ -428,9 +445,8 @@ namespace RescuerLaApp.ViewModels
             catch (Exception ex)
             {
                 Log.Error(ex, "Unable to save photos.");
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
-                    $"Error | {ex.Message.Replace('\n', ' ')}");
             }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         public void Help()

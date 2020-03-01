@@ -6,9 +6,12 @@ using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Services.Files;
 using RescuerLaApp.ViewModels;
 using System.IO;
+using System.Linq;
 using System.Xml.Serialization;
 using RescuerLaApp.Models;
 using RescuerLaApp.Services.IO;
+using Serilog;
+using ProgressBar = RescuerLaApp.Models.ProgressBar;
 
 namespace RescuerLaApp.Services.VM
 {
@@ -42,8 +45,7 @@ namespace RescuerLaApp.Services.VM
             }
             catch (Exception e)
             {
-                //TODO: translate to rus
-                Console.WriteLine($"ERROR: con not save photo!\nDetails: {e}");
+                throw new Exception("Unable to save photo.", e);
             }
         }
 
@@ -59,23 +61,29 @@ namespace RescuerLaApp.Services.VM
                 var folder = await folderDialog.ShowAsync(_window);
                 if(!Directory.Exists(folder))
                     return;
-                foreach (var photoViewModel in photoViewModels)
-                    await Task.Run(() =>
-                    {
-                        var srcPhotoPath = photoViewModel.Path;
-                        var dstPhotoPath = Path.Combine(folder, photoViewModel.Annotation.Filename);
-                        var annotationPath = Path.Combine(folder, $"{photoViewModel.Annotation.Filename}.xml");
-                        var annotation = photoViewModel.Annotation;
-                        annotation.Folder = folder;
-                        var saver = new AnnotationSaver();
-                        saver.Save(annotation, annotationPath);
-                        if (srcPhotoPath == dstPhotoPath)
+                var count = 0;
+                var viewModels = photoViewModels as PhotoViewModel[] ?? photoViewModels.ToArray();
+                using (var pb = new ProgressBar())
+                {
+                    foreach (var photoViewModel in viewModels)
+                        await Task.Run(() =>
                         {
-                            Console.WriteLine($"WARN: photo {srcPhotoPath} skipped. File exists.");
-                            return;
-                        }
-                        File.Copy(srcPhotoPath, dstPhotoPath, true);
-                    });
+                            var srcPhotoPath = photoViewModel.Path;
+                            var dstPhotoPath = Path.Combine(folder, photoViewModel.Annotation.Filename);
+                            var annotationPath = Path.Combine(folder, $"{photoViewModel.Annotation.Filename}.xml");
+                            var annotation = photoViewModel.Annotation;
+                            annotation.Folder = folder;
+                            var saver = new AnnotationSaver();
+                            saver.Save(annotation, annotationPath);
+                            if (srcPhotoPath == dstPhotoPath)
+                            {
+                                Log.Warning($"Photo {srcPhotoPath} skipped. File exists.");
+                                pb.Report((double)count / viewModels.Count(), $"Saving files {count} of {viewModels.Length}");
+                                return;
+                            }
+                            File.Copy(srcPhotoPath, dstPhotoPath, true);
+                        });
+                }
             }
             catch (Exception e)
             {
