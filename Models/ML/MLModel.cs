@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Extensions;
 using RescuerLaApp.ViewModels;
+using Serilog;
 
 namespace RescuerLaApp.Models.ML
 {
@@ -32,23 +33,18 @@ namespace RescuerLaApp.Models.ML
         {
             try
             {
+                Log.Information("Initializing ml model.");
                 _client = new RestApiClient(_config.Url);
-            
-                Console.WriteLine("INFO: Checking ml model...");
                 var status = await _client.GetStatusAsync();
                 if (status != null && status.Contains("server is running",StringComparison.InvariantCultureIgnoreCase))
                 {
-                    Console.WriteLine("INFO: ml model is ready.");
+                    Log.Information("Successfully initialized ml model.");
                     return;
                 }
-            
-                Console.WriteLine("INFO: Creating container...");
                 _id = await _docker.CreateContainer(_config.Image);
-            
-                Console.WriteLine($"INFO: Running container {_id}...");
                 if (await _docker.Run(_id))
                 {
-                    Console.WriteLine("INFO: Container runs. Loading ml model...");
+                    Log.Information("Waiting ml model initialization.");
                     var startTime = DateTime.Now;
                     //wait no more then 10 min.
                     while ((DateTime.Now - startTime).TotalMinutes < 10)
@@ -58,7 +54,7 @@ namespace RescuerLaApp.Models.ML
                         status = await _client.GetStatusAsync();
                         if (status != null && status.Contains("server is running",StringComparison.InvariantCultureIgnoreCase))
                         {
-                            Console.WriteLine("INFO: ml model is ready.");
+                            Log.Information("Successfully initialized ml model.");
                             return;
                         }   
                     }
@@ -66,7 +62,7 @@ namespace RescuerLaApp.Models.ML
             }
             catch (Exception e)
             {
-                throw new Exception("Unable to init ml model", e);
+                throw new Exception("Unable to initialize ml model", e);
             }
         }
 
@@ -78,7 +74,7 @@ namespace RescuerLaApp.Models.ML
                 var objects = new List<Object>();
                 var status = await _client.GetStatusAsync();
                 if (status == null || !status.Contains("server is running"))
-                    throw new Exception("ml model is not initialize: server is not running");
+                    throw new Exception("Ml model is not initialized: server is not running");
             
                 var request = new MLRequest
                 {
@@ -90,7 +86,7 @@ namespace RescuerLaApp.Models.ML
                     await _client.PostAsync(jsonRequest, "/image")); 
                 
                 DateTime endTime = DateTime.Now;
-                Console.WriteLine($"INFO: file {photoViewModel.Path} processed.\n\tTime: {endTime-startTime}.\n\tObjects found: {response.Objects.Count}.");
+                Log.Information($"File {photoViewModel.Path} processed.\n\tTime: {endTime-startTime}.\n\tObjects found: {response.Objects.Count}.");
                 
                 foreach (var responseObject in response.Objects)
                 {
@@ -120,7 +116,7 @@ namespace RescuerLaApp.Models.ML
             {
                 if (string.IsNullOrWhiteSpace(_id))
                 {
-                    Console.WriteLine("WARN: the container id is not set up, so the model was not stopped. Is ml model was running manually?");
+                    Log.Warning("WARN: the container id is not set up, so the model was not stopped. Is ml model was running manually?");
                     return;
                 }
                 await _docker.Stop(_id);
@@ -171,15 +167,15 @@ namespace RescuerLaApp.Models.ML
                             var rex = new Regex($"{config.ApiVersion}\\.[0-9]+-{config.GetTagSuffix()}");
                             if (!rex.IsMatch(t))
                             {
-                                Console.WriteLine($"WARN: local model with tag {t} installed but not used.\n"+
-                                                  $"You can remove it by using command `docker rmi -f {config.Image.Name}:{t}`");
+                                Log.Warning($"WARN: local model with tag {t} installed but not used.\n"+
+                                            $"You can remove it by using command `docker rmi -f {config.Image.Name}:{t}`");
                                 continue;
                             }
                             versions.Add(uint.Parse(t.Split('.').Last().Split('-').First()));
                         }
                         catch
                         {
-                            Console.WriteLine($"WARN: cannot parse tag {t}.");
+                            Log.Warning($"Cannot parse tag {t}.");
                         }
                     }
                     return versions;
@@ -187,7 +183,7 @@ namespace RescuerLaApp.Models.ML
             }
             catch (Exception e)
             {
-                throw new Exception("unable to get installed ml model versions.", e);
+                throw new Exception("Unable to get installed ml model versions.", e);
             }
         }
         
@@ -212,7 +208,7 @@ namespace RescuerLaApp.Models.ML
                         }
                         catch
                         {
-                            Console.WriteLine($"WARN: cannot parse tag {t}.");
+                            Log.Warning($"Cannot parse tag {t}.");
                         }
                     }
                     return versions;
@@ -220,7 +216,7 @@ namespace RescuerLaApp.Models.ML
             }
             catch (Exception e)
             {
-                throw new Exception("unable to get available ml model versions from registry.", e);
+                throw new Exception("Unable to get available ml model versions from registry.", e);
             }
         }
 
@@ -232,7 +228,7 @@ namespace RescuerLaApp.Models.ML
             }
             catch (Exception e)
             {
-                Console.WriteLine($"ERROR: Unable to stop docker containers while disposing ml model.\n\tDetails: {e}");
+                Log.Error(e,"Unable to stop docker containers while disposing ml model.");
             }
             _docker.Dispose();
         }

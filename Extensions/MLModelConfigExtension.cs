@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using RescuerLaApp.Models.ML;
+using Serilog;
 
 namespace RescuerLaApp.Extensions
 {
@@ -26,11 +27,11 @@ namespace RescuerLaApp.Extensions
                 if (!Directory.Exists(dir))
                     Directory.CreateDirectory(dir);
                 await File.WriteAllTextAsync(path, str);
-                Console.WriteLine($"DEBUG: config saved to {path}.");
+                Log.Debug($"Config saved to {path}.");
             }
             catch (Exception e)
             {
-                throw new Exception($"unable to save config to file {path}.", e);
+                throw new Exception($"Unable to save config to file {path}.", e);
             }
         }
         

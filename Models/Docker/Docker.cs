@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace RescuerLaApp.Models.Docker
 {
@@ -41,19 +42,20 @@ namespace RescuerLaApp.Models.Docker
         {
             try
             {
+                Log.Information($"Initializing image {image.Name}:{image.Tag}.");
                 var progressDictionary = new Dictionary<string, string>();
                 var images = await _client.Images.ListImagesAsync(new ImagesListParameters {MatchName = $"{image.Name}:{image.Tag}"});
                 if (images.Count > 0)
                 {
-                    Console.WriteLine($"INFO: such image already exists: {images.First().ID}");
+                    Log.Information($"Such image already exists: {images.First().ID}.");
                     return;
                 }
                 
                 
                 var progress = new Progress<JSONMessage>();
                 var count = 0;
-                var pb1 = new ProgressBar();
-                pb1.Report(0.0, $"Downloading {count} of {progressDictionary.Count}" );
+                var pb = new ProgressBar();
+                pb.Report(0.0, $"Downloading {count} of {progressDictionary.Count}" );
                 progress.ProgressChanged += (sender, message) =>
                 {
                     try
@@ -65,7 +67,7 @@ namespace RescuerLaApp.Models.Docker
                                 count++;
                                 progressDictionary[message.ID] = message.Status;
                             }
-                            pb1.Report((double)count / progressDictionary.Count, $"Downloading {count} of {progressDictionary.Count}" );
+                            pb.Report((double)count / progressDictionary.Count, $"Downloading {count} of {progressDictionary.Count}" );
                         }
                         else if(message.Status.Contains("Pulling fs layer") || message.Status.Contains("Waiting"))
                         {
@@ -91,12 +93,12 @@ namespace RescuerLaApp.Models.Docker
                     },
                     progress
                 );
-                pb1.Dispose();
-                Console.WriteLine($"INFO: successfully download {image.Name}:{image.Tag}.");
+                pb.Dispose();
+                Log.Information($"Successfully initialized image {image.Name}:{image.Tag}.");
             }
             catch (Exception e)
             {
-                throw new Exception($"Unable to create docker image: {e.Message}");
+                throw new Exception($"Unable to initialize image {image.Name}:{image.Tag}.", e);
             }
         }
 
@@ -104,12 +106,13 @@ namespace RescuerLaApp.Models.Docker
         {
             try
             {
+                Log.Information($"Creating container {image.Name}:{image.Tag}");
                 var containers = await _client.Containers.ListContainersAsync(new ContainersListParameters {All = true});
                 foreach (var container in containers)
                 {
                     if (container.Image == $"{image.Name}:{image.Tag}")
                     {
-                        Console.WriteLine($"such container already exists: {container.ID} {container.Image}");
+                        Log.Information($"Such container already exists: {container.ID}.");
                         return container.ID;
                     }
                 }
@@ -130,7 +133,8 @@ namespace RescuerLaApp.Models.Docker
                     stdOut = stdOut.Replace(Environment.NewLine, String.Empty);
                     if(string.IsNullOrWhiteSpace(stdOut) || !string.IsNullOrWhiteSpace(err))
                         throw new Exception($"invalid id {err}");
-
+                    
+                    Log.Information($"Successfully created container {image.Name}:{image.Tag}.");
                     return stdOut;
                 }
 
@@ -156,6 +160,7 @@ namespace RescuerLaApp.Models.Docker
                     throw new Exception("invalid id");
                 }
 
+                Log.Information($"Successfully created container {image.Name}:{image.Tag}.");
                 return containerCreateResponse.ID;
             }
             catch (Exception e)
@@ -166,20 +171,25 @@ namespace RescuerLaApp.Models.Docker
 
         public async Task<bool> Run(string id)
         {
-            
             try
             {
+                Log.Information($"Running container: {id}.");
                 var containers = await _client.Containers.ListContainersAsync(new ContainersListParameters {All = true});
                 foreach (var container in containers)
                 {
                     if (container.ID == id && container.Status.Contains("Up"))
                     {
-                        Console.WriteLine($"such container already running: {container.ID} {container.Image} {container.Status}");
+                        Log.Information($"Such container already running: {container.ID}.");
                         return true;
                     }
                 }
                 
-                return await _client.Containers.StartContainerAsync(id, new ContainerStartParameters());
+                var isSuccess = await _client.Containers.StartContainerAsync(id, new ContainerStartParameters());
+                if(!isSuccess)
+                    throw new Exception("Running was not successful.");
+                
+                Log.Information($"Successfully run container {id}.");
+                return true;
             }
             catch (Exception e)
             {
@@ -191,6 +201,7 @@ namespace RescuerLaApp.Models.Docker
         {
             try
             {
+                Log.Information($"Stopping all containers {imageName}");
                 var containers =
                         await _client.Containers.ListContainersAsync(new ContainersListParameters {All = true});
                 foreach (var container in containers)
@@ -200,10 +211,10 @@ namespace RescuerLaApp.Models.Docker
                         var success =
                                 await _client.Containers.StopContainerAsync(container.ID,
                                         new ContainerStopParameters());
-                        Console.Write($"stopping container: {container.ID} {container.Image} {success.ToString()}");
-                        return;
+                        Log.Information($"Successfully stop container {container.ID} {success.ToString()}.");
                     }
                 }
+                Log.Information($"All containers {imageName} was stop.");
             }
             catch(Exception e)
             {
@@ -215,19 +226,21 @@ namespace RescuerLaApp.Models.Docker
         {
             try
             {
+                Log.Information($"Stopping container {id}");
                 var containers = await _client.Containers.ListContainersAsync(new ContainersListParameters {All = true});
                 foreach (var container in containers)
                 {
                     if (container.ID == id && container.Status.Contains("Exited"))
                     {
-                        Console.WriteLine($"such container already stopped: {container.ID} {container.Image} {container.Status}");
+                        Log.Information($"Such container already stopped: {container.ID}.");
                         return;
                     }
                 }
                 
                 var success = await _client.Containers.StopContainerAsync(id, new ContainerStopParameters());
                 if(!success)
-                    throw new Exception("returns false");
+                    throw new Exception("Stopping was not successful.");
+                Log.Information($"Successfully stop container {id}.");
             }
             catch (Exception e)
             {

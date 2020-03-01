@@ -5,6 +5,7 @@ using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
 using Avalonia.Rendering;
 using RescuerLaApp.Models;
+using Serilog;
 
 namespace RescuerLaApp
 {
@@ -16,10 +17,34 @@ namespace RescuerLaApp
             Console.WriteLine("This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.");
             Console.WriteLine("This is free software, and you are welcome to redistribute it\nunder certain conditions; type `show c' for details.");
             Console.WriteLine("------------------------------------");
-            BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.File("log.txt",
+                    rollingInterval: RollingInterval.Day,
+                    rollOnFileSizeLimit: true)
+                .CreateLogger();
+            try
+            {
+                BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+            }
+            catch (Exception e)
+            {
+                Log.Fatal(e, "Exited with fatal error.");
+            }
         }
         
-        /*private static AppBuilder BuildAvaloniaApp()
+        public static AppBuilder BuildAvaloniaApp()
+        {
+            return AppBuilder.Configure<App>()
+                .UsePlatformDetect()
+                .UseReactiveUI()
+                .LogToDebug();
+        }
+        
+        /*
+        private static AppBuilder BuildAvaloniaApp()
         {
             bool useGpuLinux = true;
 
@@ -58,12 +83,7 @@ namespace RescuerLaApp
                 .With(new X11PlatformOptions { UseGpu = useGpuLinux, WmClass = "lacmus" })
                 .With(new AvaloniaNativePlatformOptions { UseDeferredRendering = true, UseGpu = true })
                 .With(new MacOSPlatformOptions { ShowInDock = true });
-        }*/
-
-        public static AppBuilder BuildAvaloniaApp()
-            => AppBuilder.Configure<App>()
-                .UsePlatformDetect()
-                .UseReactiveUI()
-                .LogToDebug();
+        }
+        */
     }
 }

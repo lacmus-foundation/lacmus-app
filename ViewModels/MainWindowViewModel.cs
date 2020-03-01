@@ -10,6 +10,8 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Logging;
+using Avalonia.Logging.Serilog;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
@@ -32,6 +34,8 @@ using RescuerLaApp.Services.Files;
 using RescuerLaApp.Services.IO;
 using RescuerLaApp.Services.VM;
 using RescuerLaApp.Views;
+using Serilog;
+using Serilog.Filters;
 using Attribute = RescuerLaApp.Models.Photo.Attribute;
 using Directory = System.IO.Directory;
 using Object = RescuerLaApp.Models.Object;
@@ -94,6 +98,8 @@ namespace RescuerLaApp.ViewModels
 
             // Add here newer commands
             SetupCommand(CanSetup(), canSwitchBoundBox);
+            
+            Log.Information("Application started.");
         }
 
         private void SetupCommand(IObservable<bool> canExecute, IObservable<bool> canSwitchBoundBox)
@@ -204,7 +210,7 @@ namespace RescuerLaApp.ViewModels
                 if (localVersions.Any())
                 {
                     config.ModelVersion = localVersions.Max();
-                    Console.WriteLine($"INFO: find local version: {config.Image.Name}:{config.Image.Tag}");
+                    Log.Information($"Find local version: {config.Image.Name}:{config.Image.Tag}.");
                 }
                 else
                 {
@@ -213,11 +219,11 @@ namespace RescuerLaApp.ViewModels
                     if (netVersions.Any())
                     {
                         config.ModelVersion = netVersions.Max();
-                        Console.WriteLine($"INFO: find version in registry: {config.Image.Name}:{config.Image.Tag}");
+                        Log.Information($"Find version in registry: {config.Image.Name}:{config.Image.Tag}.");
                     }
                     else
                     {
-                        throw new Exception($"there are no ml models to init: {config.Image.Name}:{config.Image.Tag}");
+                        throw new Exception($"There are no ml models to init: {config.Image.Name}:{config.Image.Tag}");
                     }
                 }
                 await config.Save(_mlConfigPath);
@@ -227,7 +233,7 @@ namespace RescuerLaApp.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine($"ERROR: can not load model.\n\tDetails: {e}");
+                Log.Error(e, "Unable to load model.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
@@ -262,7 +268,7 @@ namespace RescuerLaApp.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine($"ERROR: unable to update ml model.\n\tDetails:{e}");
+                Log.Error(e,"Unable to update ml model.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
@@ -286,7 +292,7 @@ namespace RescuerLaApp.ViewModels
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine($"ERROR: unable to processed file {photoViewModel.Path}. Slipped.\n\tDetails:{e}");
+                            Log.Error(e,$"Unable to process file {photoViewModel.Path}. Slipped.");
                         }
                     }
                     await model.Stop();
@@ -294,7 +300,7 @@ namespace RescuerLaApp.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine($"ERROR: unable to get prediction.\n\tDetails:{e}");
+                Log.Error(e, "Unable to get prediction.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
@@ -323,12 +329,12 @@ namespace RescuerLaApp.ViewModels
                         _photos.AddRange(photos);
                     SelectedIndex = 0;
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                    Console.WriteLine($"INFO: loaded {_photos.Count} photos.");
+                    Log.Information($"Loads {_photos.Count} photos.");
                 });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: unable to load photos.\nDetails: {ex}");
+                Log.Error(ex,"Unable to load photos.");
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
                     $"Error | {ex.Message.Replace('\n', ' ')}");
             }
@@ -347,12 +353,12 @@ namespace RescuerLaApp.ViewModels
                         _photos.AddRange(photos);
                     SelectedIndex = 0;
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                    Console.WriteLine($"INFO: loaded {_photos.Count} photos.");
+                    Log.Information($"Loads {_photos.Count} photos.");
                 });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: unable to load photos.\nDetails: {ex}");
+                Log.Error(ex,"Unable to load photos.");
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
                     $"Error | {ex.Message.Replace('\n', ' ')}");
             }
@@ -364,18 +370,18 @@ namespace RescuerLaApp.ViewModels
             {
                 if (!_photoCollection.Any())
                 {
-                    Console.WriteLine("WARN: there is no photos to save.");
+                    Log.Warning("There are no photos to save.");
                     return;
                 }
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 var writer = new PhotoVMWriter(_window);
                 await writer.WriteMany(_photoCollection);
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
-                Console.WriteLine($"INFO: saved {_photoCollection.Count} photos.");
+                Log.Information($"Saved {_photoCollection.Count} photos.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: unable to save photos.\nDetails: {ex}");
+                Log.Error(ex, "Unable to save photos.");
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
                     $"Error | {ex.Message.Replace('\n', ' ')}");
             }
@@ -387,18 +393,18 @@ namespace RescuerLaApp.ViewModels
             {
                 if (!_photoCollection.Any())
                 {
-                    Console.WriteLine("WARN: there is no photos to save.");
+                    Log.Warning("There are no photos to save.");
                     return;
                 }
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 var writer = new PhotoVMWriter(_window);
                 await writer.WriteMany(_photoCollection.Where(x => x.Photo.Attribute == Attribute.WithObject));
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
-                Console.WriteLine($"INFO: saved {_photoCollection.Count} photos.");
+                Log.Information($"Saved {_photoCollection.Count} photos.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: unable to save photos.\nDetails: {ex}");
+                Log.Error(ex, "Unable to save photos.");
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
                     $"Error | {ex.Message.Replace('\n', ' ')}");
             }
@@ -410,18 +416,18 @@ namespace RescuerLaApp.ViewModels
             {
                 if (!_photoCollection.Any())
                 {
-                    Console.WriteLine("WARN: there is no photos to save.");
+                    Log.Warning("There are no photos to save.");
                     return;
                 }
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 var writer = new PhotoVMWriter(_window);
                 await writer.WriteMany(_photoCollection.Where(x => x.Photo.Attribute == Attribute.Favorite));
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
-                Console.WriteLine($"INFO: saved {_photoCollection.Count} photos.");
+                Log.Information($"Saved {_photoCollection.Count} photos.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: unable to save photos.\nDetails: {ex}");
+                Log.Error(ex, "Unable to save photos.");
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Error,
                     $"Error | {ex.Message.Replace('\n', ' ')}");
             }
@@ -615,7 +621,7 @@ namespace RescuerLaApp.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Log.Error(e,$"Unable to ope url {url}.");
             }
         }
         
@@ -639,13 +645,13 @@ namespace RescuerLaApp.ViewModels
                     if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
                             $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
-                        
-                    Console.WriteLine($"DEBUG: ui updated to index {SelectedIndex}");
+                    
+                    Log.Debug($"Ui updated to index {SelectedIndex}");
                 });
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"ERROR: unable to update ui.\nDetails: {ex}");
+                Log.Error(ex, "Unable to update ui.");
             }
         }
     }
