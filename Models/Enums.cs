@@ -4,7 +4,7 @@
     {
         public enum Status        
         {
-            Ready,
+            Ready = 1,
             Working,
             Success,
             Unauthenticated,

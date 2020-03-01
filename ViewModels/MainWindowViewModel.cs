@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -9,8 +10,12 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Logging;
+using Avalonia.Logging.Serilog;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
+using DynamicData;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
@@ -19,10 +24,19 @@ using MessageBox.Avalonia.Views;
 using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using RescuerLaApp.Extensions;
+using RescuerLaApp.Managers;
 using RescuerLaApp.Models;
-using RescuerLaApp.Services;
+using RescuerLaApp.Models.Docker;
+using RescuerLaApp.Models.ML;
+using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Services.Files;
+using RescuerLaApp.Services.IO;
+using RescuerLaApp.Services.VM;
 using RescuerLaApp.Views;
+using Serilog;
+using Serilog.Filters;
+using Attribute = RescuerLaApp.Models.Photo.Attribute;
 using Directory = System.IO.Directory;
 using Object = RescuerLaApp.Models.Object;
 using Size = RescuerLaApp.Models.Size;
@@ -31,19 +45,28 @@ namespace RescuerLaApp.ViewModels
 {
     public class MainWindowViewModel : ReactiveObject
     {
-        private INeuroModel _model; // TODO : Make field readonly 
-
+        private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly Window _window;
-        private int _frameLoadProgressIndex;
-        private List<Frame> _frames = new List<Frame>();
+        private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
+        SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
+        private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
         
         public MainWindowViewModel(Window window)
         {
             _window = window;
+            _photos.Connect()
+                .ObserveOn(RxApp.MainThreadScheduler)
+                .Bind(out _photoCollection)
+                .Subscribe();
+            
+            _applicationStatusManager = new ApplicationStatusManager();
+            ApplicationStatusViewModel = new ApplicationStatusViewModel(_applicationStatusManager);
+
+
             var canGoNext = this
                 .WhenAnyValue(x => x.SelectedIndex)
-                .Select(index => index < Frames.Count - 1);
-            
+                .Select(index => index < _photos.Count - 1);
+
             // The bound button will stay disabled, when
             // there is no more frames left.
             NextImageCommand = ReactiveCommand.Create(
@@ -54,32 +77,32 @@ namespace RescuerLaApp.ViewModels
                 .WhenAnyValue(x => x.SelectedIndex)
                 .Select(index => index > 0);
 
-            var canExecute = this
-                .WhenAnyValue(x => x.Status)
-                .Select(status => status.Status != Enums.Status.Working && status.Status != Enums.Status.Unauthenticated);
-            
-            var canSwitchBoundBox = this
-                .WhenAnyValue(x => x.BoundBoxes)
-                .Select(count => BoundBoxes?.Count > 0);
-            
-            var canAuth = this
-                .WhenAnyValue(x => x.Status)
-                .Select(status => status.Status == Enums.Status.Unauthenticated);
-            
             // The bound button will stay disabled, when
             // there are no frames before the current one.
             PrevImageCommand = ReactiveCommand.Create(
-                () => { SelectedIndex--; }, 
+                () => { SelectedIndex--; },
                 canGoBack);
             
-            // Add here newer commands
-            SetupCommand(canExecute, canSwitchBoundBox, canAuth);
+            var canSwitchBoundBox = this
+                .WhenAnyValue(x => x.PhotoViewModel.Photo)
+                .Select(count => PhotoViewModel.Photo?.Attribute == Attribute.WithObject);
+            
+            // Update UI when the index changes
+            // TODO: Make photo update without index
+            this.WhenAnyValue(x => x.SelectedIndex)
+                .Skip(1)
+                .Subscribe(async x =>
+                {
+                    await UpdateUi();
+                });
 
-            //auto sign in
-            SignIn();
+            // Add here newer commands
+            SetupCommand(CanSetup(), canSwitchBoundBox);
+            
+            Log.Information("Application started.");
         }
 
-        private void SetupCommand(IObservable<bool> canExecute, IObservable<bool> canSwitchBoundBox, IObservable<bool> canAuth)
+        private void SetupCommand(IObservable<bool> canExecute, IObservable<bool> canSwitchBoundBox)
         {
             IncreaseCanvasCommand = ReactiveCommand.Create(IncreaseCanvas);
             ShrinkCanvasCommand = ReactiveCommand.Create(ShrinkCanvas);
@@ -90,7 +113,7 @@ namespace RescuerLaApp.ViewModels
             UpdateModelCommand = ReactiveCommand.Create(UpdateModel, canExecute);
             ShowPedestriansCommand = ReactiveCommand.Create(ShowPedestrians, canExecute);
             ShowFavoritesCommand = ReactiveCommand.Create(ShowFavorites, canExecute);
-            ImportAllCommand = ReactiveCommand.Create(ImportAll, canExecute);
+            ImportAllCommand = ReactiveCommand.Create(ImportFromXml, canExecute);
             SaveAllImagesWithObjectsCommand = ReactiveCommand.Create(SaveAllImagesWithObjects, canExecute);
             SaveFavoritesImagesCommand = ReactiveCommand.Create(SaveFavoritesImages, canExecute);
             ShowAllMetadataCommand = ReactiveCommand.Create(ShowAllMetadata, canExecute);
@@ -99,71 +122,39 @@ namespace RescuerLaApp.ViewModels
             SwitchBoundBoxesVisibilityCommand = ReactiveCommand.Create(SwitchBoundBoxesVisibility, canSwitchBoundBox);
             HelpCommand = ReactiveCommand.Create(Help);
             AboutCommand = ReactiveCommand.Create(About);
-            SignUpCommand = ReactiveCommand.Create(SignUp, canAuth);
-            SignInCommand = ReactiveCommand.Create(SignIn, canAuth);
             ExitCommand = ReactiveCommand.Create(Exit);
         }
 
-        public void UpdateFramesRepo()
+        private IObservable<bool> CanSetup()
         {
-            this.WhenAnyValue(x => x.SelectedIndex)
-                .Skip(1)
-                .Subscribe(x =>
-                {
-                    if (Status.Status == Enums.Status.Ready)
-                        Status = new AppStatusInfo
-                        {
-                            Status = Enums.Status.Ready, 
-                            StringStatus = $"{Enums.Status.Ready.ToString()} | {Frames[SelectedIndex].Path}"
-                        };
-                    SwitchBoundBoxesVisibilityToTrue();
-                    FavoritesStateString = Frames[SelectedIndex].IsFavorite ? "Remove from favorites" : "Add to favorites";
-                    UpdateUi();
-                });
+            return _applicationStatusManager.AppStatusInfoObservable
+                .Select(status => status.Status != Enums.Status.Working && status.Status != Enums.Status.Unauthenticated);
         }
-        
+
         #region Public API
 
-        [Reactive] public List<BoundBox> BoundBoxes { get; set; } = new List<BoundBox>();
+        public ReadOnlyObservableCollection<PhotoViewModel> PhotoCollection => _photoCollection;
+        [Reactive] public int SelectedIndex { get; set; }
+        [Reactive] public PhotoViewModel PhotoViewModel { get; set; }
+        [Reactive] public ApplicationStatusViewModel ApplicationStatusViewModel { get; set; }
         // TODO: update with locales
         [Reactive] public string BoundBoxesStateString { get; set; } = "Hide bound boxes";
         [Reactive] public string FavoritesStateString { get; set; } = "Add to favorites";
-        
         [Reactive] public double CanvasWidth { get; set; } = 500;
-        
         [Reactive] public double CanvasHeight { get; set; } = 500;
-
-        [Reactive] public int SelectedIndex { get; set; }
-
-        [Reactive] public List<Frame> Frames { get; set; } = new List<Frame>();
-        
-        [Reactive] public AppStatusInfo Status { get; set; } = new AppStatusInfo { Status = Enums.Status.Unauthenticated };
-        
-        [Reactive] public ImageBrush ImageBrush { get; set; } = new ImageBrush { Stretch = Stretch.Uniform };
-
         [Reactive] public bool IsShowPedestrians { get; set; }
         [Reactive] public bool IsShowFavorites { get; set; }
-        
+
         public ReactiveCommand<Unit, Unit> PredictAllCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> NextImageCommand { get; }
-        
         public ReactiveCommand<Unit, Unit> PrevImageCommand { get; }
-        
         public ReactiveCommand<Unit, Unit> ShrinkCanvasCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> IncreaseCanvasCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> OpenFileCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> SaveAllCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> UpdateModelCommand { get; set; }
-
         public ReactiveCommand<Unit, Unit> ShowPedestriansCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ShowFavoritesCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAllImagesWithObjectsCommand { get; set; }
@@ -174,8 +165,6 @@ namespace RescuerLaApp.ViewModels
         public ReactiveCommand<Unit, Unit> SwitchBoundBoxesVisibilityCommand { get; set; }
         public ReactiveCommand<Unit, Unit> HelpCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AboutCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> SignUpCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> SignInCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ExitCommand { get; set; }
 
         #endregion
@@ -184,156 +173,164 @@ namespace RescuerLaApp.ViewModels
         {
             if (IsShowPedestrians)
             {
-                // fix bug when application stop if focus was set on image without object
-                if (!_frames.Any(x => x.IsVisible))
-                {
-                    IsShowPedestrians = false;
-                    if (IsShowFavorites)
-                    {
-                        IsShowFavorites = false;
-                        ShowFavorites();
-                    }
-                    return;
-                }
-                IsShowFavorites = false;
-                SelectedIndex = Frames.FindIndex(x => x.IsVisible);
-                Frames = _frames.FindAll(x => x.IsVisible);
-                UpdateUi();
+            
             }
             else
             {
-                Frames = new List<Frame>(_frames);
-                UpdateUi();
+                
             }
         }
-        
+
         private void ShowFavorites()
         {
             if (IsShowFavorites)
             {
-                //fix bug when application stop if focus was set on image without object
-                if (!_frames.Any(x => x.IsFavorite))
-                {
-                    IsShowFavorites = false;
-                    ShowPedestrians();
-                    return;
-                }
                 
-                IsShowPedestrians = false;
-                SelectedIndex = Frames.FindIndex(x => x.IsFavorite);
-                Frames = _frames.FindAll(x => x.IsFavorite);
-                UpdateUi();
             }
             else
             {
-                Frames = new List<Frame>(_frames);
-                UpdateUi();
+                
             }
         }
 
         private async void LoadModel()
         {
-            Status = new AppStatusInfo
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
+            //get the last version of ml model with specific config
+            try
             {
-                Status = Enums.Status.Working, 
-                StringStatus = "Working | loading model..."
-            };
-            
-            if (_model == null)
-            {
-                _model = AvaloniaLocator.Current.GetService<INeuroModel>();
+                Log.Information("Loading ml model.");
+                if (!File.Exists(_mlConfigPath))
+                {
+                    throw new Exception("There are no ml model config file. Please configure your model.");
+                }
+                var config = await MLModelConfigExtension.Load(_mlConfigPath);
+                // get local versions
+                var localVersions = await MLModel.GetInstalledVersions(config);
+                if (localVersions.Any())
+                {
+                    config.ModelVersion = localVersions.Max();
+                    Log.Information($"Find local version: {config.Image.Name}:{config.Image.Tag}.");
+                }
+                else
+                {
+                    // if there are no local models try to download it from docker registry
+                    var netVersions = await MLModel.GetAvailableVersionsFromRegistry(config);
+                    if (netVersions.Any())
+                    {
+                        config.ModelVersion = netVersions.Max();
+                        Log.Information($"Find version in registry: {config.Image.Name}:{config.Image.Tag}.");
+                    }
+                    else
+                    {
+                        throw new Exception($"There are no ml models to init: {config.Image.Name}:{config.Image.Tag}");
+                    }
+                }
+                await config.Save(_mlConfigPath);
+                // init local model or download and init it from docker registry
+                using(var model = new MLModel(config))
+                    await model.Download();
+                Log.Information("Successfully loads ml model.");
             }
-
-            await _model.Load();
-            
-            Status = new AppStatusInfo
+            catch (Exception e)
             {
-                Status = Enums.Status.Ready
-            };
+                Log.Error(e, "Unable to load model.");
+            }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
-        
+
         private async void UpdateModel()
         {
-            Status = new AppStatusInfo
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | updating model...");
+            try
             {
-                Status = Enums.Status.Working, 
-                StringStatus = "Working | updating model..."
-            };
-            
-            if (_model == null)
-            {
-                _model = AvaloniaLocator.Current.GetService<INeuroModel>();
+                Log.Information("Updating ml model.");
+                var oldConfig = await MLModelConfigExtension.Load(_mlConfigPath);
+                var localVersions = await MLModel.GetInstalledVersions(oldConfig);
+                if (localVersions.Any())
+                {
+                    oldConfig.ModelVersion = localVersions.Max();
+                }
+                else
+                {
+                    throw new Exception($"Nothing ml models saved: {oldConfig.Image.Name}.");
+                }
+                var newConfig = oldConfig;
+                var netVersions = await MLModel.GetAvailableVersionsFromRegistry(newConfig);
+                if (netVersions.Any())
+                    newConfig.ModelVersion = netVersions.Max();
+                else
+                {
+                    throw new Exception($"Nothing ml models in registry: {oldConfig.Image.Name}.");
+                }
+                if (newConfig.ModelVersion > oldConfig.ModelVersion)
+                {
+                    Log.Information($"Find never version of ml model {oldConfig.Image.Name}: ver {newConfig.ModelVersion} > ver {oldConfig.ModelVersion}");
+                    using(var newModel = new MLModel(newConfig))
+                        await newModel.Download();
+                    using(var oldModel = new MLModel(oldConfig))
+                        await oldModel.Remove();
+                    await newConfig.Save(_mlConfigPath);
+                    Log.Information("Successfully updates ml model.");
+                }
+                else
+                {
+                    Log.Information($"Ml model {oldConfig.Image.Name} is up to date: ver {newConfig.ModelVersion}.");
+                }
             }
-            
-            await _model.UpdateModel();
-            
-            Status = new AppStatusInfo
+            catch (Exception e)
             {
-                Status = Enums.Status.Ready
-            };
+                Log.Error(e,"Unable to update ml model.");
+            }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private async void PredictAll()
         {
-            if (Frames == null || Frames.Count < 1) return;
-            Status = new AppStatusInfo
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+            try
             {
-                Status = Enums.Status.Working, 
-                StringStatus = "Working | loading model..."
-            };
-            
-            if (_model == null)
-            {
-                _model = AvaloniaLocator.Current.GetService<INeuroModel>();
-            }
-
-            if (!await _model.Run())
-            {
-                Status = new AppStatusInfo
+                //load config
+                var config = await MLModelConfigExtension.Load(_mlConfigPath);
+                using (var model = new MLModel(config))
                 {
-                    Status = Enums.Status.Error, 
-                    StringStatus = "Error: unable to load model"
-                };
-                _model.Dispose();
-                _model = null;
-                return;
-            }
-                    
-            var index = 0;
-            Status = new AppStatusInfo
-            {
-                Status = Enums.Status.Working, 
-                StringStatus = $"Working | processing images: {index} / {Frames.Count}"
-            };
-            foreach (var frame in Frames)
-            {
-                index++;
-                frame.Rectangles = await _model.Predict(frame.Path);
-                if(index < Frames.Count)
-                    Status = new AppStatusInfo
+                    await model.Init();
+                    var count = 0;
+                    var objectCount = 0;
+                    foreach (var photoViewModel in _photoCollection)
                     {
-                        Status = Enums.Status.Working, 
-                        StringStatus = $"Working | processing images: {index} / {Frames.Count}"
-                    };
-
-                if (frame.Rectangles.Any())
-                    frame.IsVisible = true;
+                        try
+                        {
+                            photoViewModel.Annotation.Objects = await model.Predict(photoViewModel);
+                            photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
+                            objectCount += photoViewModel.BoundBoxes.Count();
+                            count++;
+                            Console.WriteLine($"\tProgress: {(double) count / _photoCollection.Count() * 100} %");
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Error(e,$"Unable to process file {photoViewModel.Path}. Slipped.");
+                        }
+                    }
+                    await model.Stop();
+                    Log.Information($"Successfully predict {_photoCollection.Count} photos. Find {objectCount} objects.");
+                }
             }
-            _frames = new List<Frame>(Frames);
-            await _model.Stop();
-            SelectedIndex = 0; //Fix bug when application stopped if index > 0
-            UpdateUi();
-            Status = new AppStatusInfo
+            catch (Exception e)
             {
-                Status = Enums.Status.Ready
-            };
+                Log.Error(e, "Unable to get prediction.");
+            }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
-        
+
         private void ShrinkCanvas()
         {
             Zoomer.Zoom(0.8);
         }
-        
+
         private void IncreaseCanvas()
         {
             Zoomer.Zoom(1.2);
@@ -341,330 +338,130 @@ namespace RescuerLaApp.ViewModels
 
         private async void OpenFile()
         {
-            Status = new AppStatusInfo {Status = Enums.Status.Working};
             try
             {
-                var openDig = new OpenFolderDialog
+                await Dispatcher.UIThread.InvokeAsync(async () =>
                 {
-                    Title = "Choose a directory with images"
-                };
-                var dirName = await openDig.ShowAsync(new Window());
-                if (string.IsNullOrEmpty(dirName) || !Directory.Exists(dirName))
-                {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
-                    return;
-                }
-                var fileNames = Directory.GetFiles(dirName);
-                _frameLoadProgressIndex = 0;
-                Frames.Clear(); _frames.Clear(); GC.Collect();
-                var loadingFrames = new List<Frame>();
-                foreach (var fileName in fileNames)
-                {
-                    // TODO: Проверка IsImage вне зависимости от расширений.
-                    if(!Path.HasExtension(fileName))
-                        continue;
-                    if (Path.GetExtension(fileName).ToLower() != ".jpg" &&
-                        Path.GetExtension(fileName).ToLower() != ".jpeg" &&
-                        Path.GetExtension(fileName).ToLower() != ".png" &&
-                        Path.GetExtension(fileName).ToLower() != ".bmp")
-                        continue;
-                    
-                    var frame = new Frame();
-                    frame.OnLoad += FrameLoadingProgressUpdate;
-                    frame.Load(fileName, Enums.ImageLoadMode.Miniature);
-                    loadingFrames.Add(frame);
-                }
-
-                if (loadingFrames.Count == 0)
-                {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
-                    return;
-                }
-                
-                Frames = loadingFrames;
-                if (SelectedIndex < 0)
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                    var reader = new PhotoVMReader(_window);
+                    _photos.Clear();
+                    var photos = await reader.ReadAllFromDirByPhoto();
+                    if(photos.Any())
+                        _photos.AddRange(photos);
                     SelectedIndex = 0;
-                UpdateFramesRepo();
-                UpdateUi();
-                _frames = new List<Frame>(Frames);
-                Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                    Log.Information($"Loads {_photos.Count} photos.");
+                });
             }
             catch (Exception ex)
             {
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
+                Log.Error(ex,"Unable to load photos.");
             }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+        private async void ImportFromXml()
+        {
+            try
+            {
+                await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                    var reader = new PhotoVMReader(_window);
+                    _photos.Clear();
+                    var photos = await reader.ReadAllFromDirByAnnotation();
+                    if(photos.Any())
+                        _photos.AddRange(photos);
+                    SelectedIndex = 0;
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                    Log.Information($"Loads {_photos.Count} photos.");
+                });
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex,"Unable to load photos.");
+            }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         private async void SaveAll()
         {
             try
             {
-                if (Frames == null || Frames.Count < 1)
+                if (!_photoCollection.Any())
                 {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    Log.Warning("There are no photos to save.");
                     return;
                 }
-                Status = new AppStatusInfo {Status = Enums.Status.Working};
-                var annotations = new List<Annotation>();
-                foreach (var frame in Frames)
-                {
-                    if (frame.Rectangles == null || !frame.Rectangles.Any())
-                        continue;
-                    var annotation = new Annotation();
-                    annotation.Filename = Path.GetFileName(frame.Path);
-                    annotation.Folder = Path.GetFullPath(Path.GetDirectoryName(frame.Path));
-                    annotation.Segmented = 0;
-                    annotation.Size = new Size
-                    {
-                        Depth = 3,
-                        Height = frame.Height,
-                        Width = frame.Width
-                    };
-                    foreach (var rectangle in frame.Rectangles)
-                    {
-                        annotation.Objects.Add(new Object
-                        {
-                            Name = "Pedestrian",
-                            Box = new Box
-                            {
-                                Xmax = rectangle.XBase + rectangle.WidthBase,
-                                Ymax = rectangle.YBase + rectangle.HeightBase,
-                                Xmin = rectangle.XBase,
-                                Ymin = rectangle.YBase
-                            }
-                        });
-                    }
-                    annotations.Add(annotation);
-                }
-                var annotationWriter = new AvaloniaAnnotationFileWriter(_window);
-                await annotationWriter.WriteMany(annotations);
-                Status = new AppStatusInfo {Status = Enums.Status.Ready, StringStatus = $"Success | saved"};
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                var writer = new PhotoVMWriter(_window);
+                await writer.WriteMany(_photoCollection);
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
+                Log.Information($"Saved {_photoCollection.Count} photos.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
+                Log.Error(ex, "Unable to save photos.");
             }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         private async void SaveAllImagesWithObjects()
         {
             try
             {
-                if (Frames == null || Frames.Count < 1)
+                if (!_photoCollection.Any())
                 {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    Log.Warning("There are no photos to save.");
                     return;
                 }
-                Status = new AppStatusInfo {Status = Enums.Status.Working};
-
-                var openDig = new OpenFolderDialog
-                {
-                    Title = "Choose a directory to save images with objects"
-                };
-                var dirName = await openDig.ShowAsync(new Window());
-
-                
-                if (string.IsNullOrEmpty(dirName) || !Directory.Exists(dirName))
-                {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
-                    return;
-                }
-                
-                foreach (var frame in Frames.Where(frame => frame.Rectangles != null && frame.Rectangles.Any()))
-                {
-                    File.Copy(frame.Path, Path.Combine(dirName, Path.GetFileName(frame.Path)));
-                }
-                Console.WriteLine($"Saved to {dirName}");
-                Status = new AppStatusInfo {Status = Enums.Status.Ready, StringStatus = $"Success | saved to {dirName}"};
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                var writer = new PhotoVMWriter(_window);
+                await writer.WriteMany(_photoCollection.Where(x => x.Photo.Attribute == Attribute.WithObject));
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
+                Log.Information($"Saved {_photoCollection.Count} photos.");
             }
             catch (Exception ex)
             {
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
+                Log.Error(ex, "Unable to save photos.");
             }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
-        
+
         private async void SaveFavoritesImages()
         {
             try
             {
-                if (Frames == null || Frames.Count < 1)
+                if (!_photoCollection.Any())
                 {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
+                    Log.Warning("There are no photos to save.");
                     return;
                 }
-                Status = new AppStatusInfo {Status = Enums.Status.Working};
-                var annotations = new List<Annotation>();
-                var annotationWriter = new AvaloniaAnnotationFileWriter(_window);
-                foreach (var frame in Frames)
-                {
-                    if (!frame.IsFavorite)
-                        continue;
-
-                    var annotation = new Annotation
-                    {
-                        Filename = Path.GetFileName(frame.Path),
-                        Folder = Path.GetFullPath(Path.GetDirectoryName(frame.Path)),
-                        Segmented = 0,
-                        Size = new Size {Depth = 3, Height = frame.Height, Width = frame.Width}
-                    };
-                    if (frame.Rectangles == null)
-                    {
-                        frame.Rectangles = new List<BoundBox>();
-                    }
-
-                    var frameRectangles = frame.Rectangles as BoundBox[] ?? frame.Rectangles.ToArray();
-                    foreach (var rectangle in frameRectangles)
-                    {
-                        annotation.Objects.Add(new Object
-                        {
-                            Name = "Pedestrian",
-                            Box = new Box
-                            {
-                                Xmax = rectangle.XBase + rectangle.WidthBase,
-                                Ymax = rectangle.YBase + rectangle.HeightBase,
-                                Xmin = rectangle.XBase,
-                                Ymin = rectangle.YBase
-                            }
-                        });
-                    }
-                    annotations.Add(annotation);
-                    if (!frameRectangles.Any())
-                    {
-                        frame.Rectangles = null;
-                    }
-                }
-                await annotationWriter.WriteMany(annotations);
-                Status = new AppStatusInfo {Status = Enums.Status.Ready, StringStatus = $"Success | saved"};
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                var writer = new PhotoVMWriter(_window);
+                await writer.WriteMany(_photoCollection.Where(x => x.Photo.Attribute == Attribute.Favorite));
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
+                Log.Information($"Saved {_photoCollection.Count} photos.");
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
+                Log.Error(ex, "Unable to save photos.");
             }
-        }
-
-        private async void ImportAll()
-        {
-            Status = new AppStatusInfo {Status = Enums.Status.Working};
-            try
-            {
-                var openDig = new OpenFolderDialog
-                {
-                    Title = "Choose a directory with xml annotations"
-                };
-                var dirName = await openDig.ShowAsync(new Window());
-                if (string.IsNullOrEmpty(dirName) || !Directory.Exists(dirName))
-                {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
-                    return;
-                }
-                
-                var fileNames = Directory.GetFiles(dirName);
-                _frameLoadProgressIndex = 0;
-                Frames.Clear(); _frames.Clear(); GC.Collect();
-                
-                var loadingFrames = new List<Frame>();
-                var annotations = fileNames.Where(i => Path.GetExtension(i).ToLower() == ".xml")
-                    .Select(Annotation.ParseFromXml).ToList();
-
-                foreach (var ann in annotations)
-                {
-                    var fileName = Path.Combine(dirName, ann.Filename);
-                    // TODO: Проверка IsImage вне зависимости от расширений.
-                    if (!File.Exists(fileName))
-                        continue;
-                    if(!Path.HasExtension(fileName))
-                        continue;
-                    if (Path.GetExtension(fileName).ToLower() != ".jpg" &&
-                        Path.GetExtension(fileName).ToLower() != ".jpeg" &&
-                        Path.GetExtension(fileName).ToLower() != ".png" &&
-                        Path.GetExtension(fileName).ToLower() != ".bmp")
-                        continue;
-                    
-                    var frame = new Frame();
-                    frame.OnLoad += FrameLoadingProgressUpdate;
-                    frame.Load(fileName, Enums.ImageLoadMode.Miniature);
-                    frame.Rectangles = ann.Objects.Select(obj => 
-                        new BoundBox(obj.Box.Xmin, obj.Box.Ymin, obj.Box.Ymax - obj.Box.Ymin, obj.Box.Xmax - obj.Box.Xmin));
-
-                    if (frame.Rectangles.Any())
-                    {
-                        frame.IsVisible = true;
-                    }
-                    loadingFrames.Add(frame);
-                }
-
-                if (loadingFrames.Count == 0)
-                {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
-                    return;
-                }
-                    
-                
-                Frames = loadingFrames;
-                if (SelectedIndex < 0)
-                    SelectedIndex = 0;
-                UpdateFramesRepo();
-                UpdateUi();
-                _frames = new List<Frame>(Frames);
-                Status = new AppStatusInfo {Status = Enums.Status.Ready};
-            }
-            catch (Exception ex)
-            {
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Error, 
-                    StringStatus = $"Error | {ex.Message.Replace('\n', ' ')}"
-                };
-            }
-        }
-        
-
-        private void FrameLoadingProgressUpdate()
-        {
-            _frameLoadProgressIndex++;
-            if(_frameLoadProgressIndex < Frames.Count)
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Working, 
-                    StringStatus = $"Working | loading images: {_frameLoadProgressIndex} / {Frames.Count}"
-                };
-            else
-            {
-                Status = new AppStatusInfo
-                {
-                    Status = Enums.Status.Ready
-                };
-            }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
         public void Help()
         {
+            /*
             OpenUrl("https://github.com/lizaalert/lacmus/wiki");
+            */
         }
-        
+
         public void ShowGeoData()
         {
+            /*
             var msg = string.Empty;
             var rows = 0;
-            var directories = ImageMetadataReader.ReadMetadata(Frames[SelectedIndex].Path);
+            var directories = PhotoViewModel.Photo.MetaDataDirectories;
             foreach (var directory in directories)
             foreach (var tag in directory.Tags)
             {
@@ -681,7 +478,7 @@ namespace RescuerLaApp.ViewModels
             var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
             {
                 ButtonDefinitions = ButtonEnum.Ok,
-                ContentTitle = $"Geo position of {Path.GetFileName(Frames[SelectedIndex].Path)}",
+                ContentTitle = $"Geo position of {PhotoViewModel.Annotation.Filename}",
                 ContentMessage = msg,
                 Icon = Icon.Info,
                 Style = Style.None,
@@ -694,15 +491,11 @@ namespace RescuerLaApp.ViewModels
                 }
             });
             msgbox.Show();
+            */
         }
 
         private string TranslateGeoTag(string tag)
         {
-            /*
-            GPS Latitude: 55° 11' 51,44"
-            GPS Longitude: 37° 41' 39,88"
-            GPS Altitude: 124 metres
-            */
             try
             {
                 if (!tag.Contains('°'))
@@ -711,7 +504,7 @@ namespace RescuerLaApp.ViewModels
                 tag = tag.Replace('\'', ';');
                 tag = tag.Replace('"', ';');
                 tag = tag.Replace(" ", "");
-            
+
                 var splitTag = tag.Split(';');
                 var grad = float.Parse(splitTag[0]);
                 var min = float.Parse(splitTag[1]);
@@ -728,20 +521,21 @@ namespace RescuerLaApp.ViewModels
 
         public void ShowAllMetadata()
         {
+            /*
             var tb = new TextTableBuilder();
             tb.AddRow("Group", "Tag name", "Description");
             tb.AddRow("-----", "--------", "-----------");
 
-            
-            var directories = ImageMetadataReader.ReadMetadata(Frames[SelectedIndex].Path);
+
+            var directories = PhotoViewModel.Photo.MetaDataDirectories;
             foreach (var directory in directories)
             foreach (var tag in directory.Tags)
                 tb.AddRow(directory.Name, tag.Name, tag.Description);
-            
+
             var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
             {
                 ButtonDefinitions = ButtonEnum.Ok,
-                ContentTitle = $"Metadata of {Path.GetFileName(Frames[SelectedIndex].Path)}",
+                ContentTitle = $"Metadata of {PhotoViewModel.Annotation.Filename}",
                 ContentMessage = tb.Output(),
                 Icon = Icon.Info,
                 Style = Style.None,
@@ -754,60 +548,22 @@ namespace RescuerLaApp.ViewModels
                 }
             });
             msgbox.Show();
+            */
         }
 
         public void AddToFavorites()
         {
-            Frames[SelectedIndex].IsFavorite = !Frames[SelectedIndex].IsFavorite;
             
-            if (IsShowFavorites)
-            {
-                IsShowPedestrians = false;
-                //fix bug when application stop if focus was set on image without object
-                if (!_frames.Any(x => x.IsFavorite))
-                {
-                    IsShowFavorites = false;
-                    ShowFavorites();
-                    return;
-                }
-                    
-                SelectedIndex = Frames.FindIndex(x => x.IsFavorite);
-                Frames = _frames.FindAll(x => x.IsFavorite);
-                UpdateUi();
-            }
         }
 
         public void SwitchBoundBoxesVisibility()
         {
-            var isVisible = true;
             
-            if (BoundBoxes == null) return;
-            if (BoundBoxes.Count > 0)
-                isVisible = BoundBoxes[0].IsVisible;
-
-            foreach (var rectangle in BoundBoxes)
-            {
-                rectangle.IsVisible = !isVisible;
-            }
-
-            BoundBoxesStateString = BoundBoxes[0].IsVisible ? "Hide bound boxes" : "Show bound boxes";
-            
-            UpdateUi();
-        }
-
-        private void SwitchBoundBoxesVisibilityToTrue()
-        {
-            if (BoundBoxes == null || BoundBoxes[0].IsVisible) return;
-            
-            foreach (var rectangle in BoundBoxes)
-            {
-                rectangle.IsVisible = true;
-            }
-            BoundBoxesStateString = "Hide bound boxes";
         }
 
         public async void About()
         {
+            /*
             var message =
                 "Copyright (c) 2019 Georgy Perevozghikov <gosha20777@live.ru>\nGithub page: https://github.com/lizaalert/lacmus/. Press `Github` button for more details.\nProvided by Yandex Cloud: https://cloud.yandex.com/." +
                 "\nThis program comes with ABSOLUTELY NO WARRANTY." +
@@ -815,11 +571,11 @@ namespace RescuerLaApp.ViewModels
 
             var msgBoxCustomParams = new MessageBoxCustomParams
             {
-                ButtonDefinitions =  new []
+                ButtonDefinitions = new[]
                 {
-                    new ButtonDefinition{Name = "Ok", Type = ButtonType.Colored},
-                    new ButtonDefinition{Name = "License"},
-                    new ButtonDefinition{Name = "Github"}
+                    new ButtonDefinition {Name = "Ok", Type = ButtonType.Colored},
+                    new ButtonDefinition {Name = "License"},
+                    new ButtonDefinition {Name = "Github"}
                 },
                 ContentTitle = "About",
                 ContentHeader = "Lacmus desktop application. Version 0.3.3 alpha.",
@@ -839,34 +595,16 @@ namespace RescuerLaApp.ViewModels
             switch (result.ToLower())
             {
                 case "ok": return;
-                case "license": OpenUrl("https://github.com/lizaalert/lacmus/blob/master/LICENSE"); break;
-                case "github": OpenUrl("https://github.com/lizaalert/lacmus"); break;
+                case "license":
+                    OpenUrl("https://github.com/lizaalert/lacmus/blob/master/LICENSE");
+                    break;
+                case "github":
+                    OpenUrl("https://github.com/lizaalert/lacmus");
+                    break;
             }
+            */
         }
 
-        public async void SignUp()
-        {
-            var result = await SignUpWindow.Show(null);
-            if(Status.Status == Enums.Status.Unauthenticated && result.IsSignIn)
-                Status = new AppStatusInfo {Status = Enums.Status.Ready};
-        }
-        public async void SignIn()
-        {
-            var path = AppDomain.CurrentDomain.BaseDirectory + "user_info";
-            if (File.Exists(path))
-            {
-                if (Status.Status == Enums.Status.Unauthenticated)
-                {
-                    Status = new AppStatusInfo {Status = Enums.Status.Ready};
-                    return;
-                }
-            }
-            
-            var result = await SignInWindow.Show(null);
-            if(Status.Status == Enums.Status.Unauthenticated && result.IsSignIn)
-                Status = new AppStatusInfo {Status = Enums.Status.Ready};
-        }
-        
         public async void Exit()
         {
             var window = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
@@ -899,24 +637,37 @@ namespace RescuerLaApp.ViewModels
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Log.Error(e,$"Unable to ope url {url}.");
             }
-            
         }
-
-        private void UpdateUi()
+        
+        private async Task UpdateUi()
         {
-            /*TODO: Вынести сюда все функции обновления UI*/
-            ImageBrush.Source = new Bitmap(Frames[SelectedIndex].Path); //replace to frame.load(...)
-            CanvasHeight = ImageBrush.Source.PixelSize.Height;
-            CanvasWidth = ImageBrush.Source.PixelSize.Width;
-            if (Frames[SelectedIndex].Rectangles != null && Frames[SelectedIndex].Rectangles.Any())
+            try
             {
-                BoundBoxes = new List<BoundBox>(Frames[SelectedIndex].Rectangles);
+                await Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    PhotoViewModel = null;
+                    var currentMiniaturePhotoViewModel = PhotoCollection[SelectedIndex];
+                    var photoLoader = new PhotoLoader();
+                    var fullPhoto = photoLoader.Load(currentMiniaturePhotoViewModel.Path, PhotoLoadType.Full);
+                    var annotation = currentMiniaturePhotoViewModel.Annotation;
+                    PhotoViewModel = new PhotoViewModel(fullPhoto, annotation);
+                    PhotoViewModel.BoundBoxes = PhotoCollection[SelectedIndex].BoundBoxes;
+                
+                    CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
+                    CanvasWidth = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Width;
+                
+                    if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
+                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
+                            $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
+                    
+                    Log.Debug($"Ui updated to index {SelectedIndex}");
+                });
             }
-            else
+            catch (Exception ex)
             {
-                BoundBoxes = null;
+                Log.Error(ex, "Unable to update ui.");
             }
         }
     }

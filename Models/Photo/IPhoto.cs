@@ -7,7 +7,6 @@ namespace RescuerLaApp.Models.Photo
     public interface IPhoto
     {
         ImageBrush ImageBrush { get; set; }
-        string Caption { get; set; }
         Attribute Attribute { get; set; }
         IReadOnlyList<Directory> MetaDataDirectories { get; set; }
     }
