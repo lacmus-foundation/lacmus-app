@@ -43,6 +43,7 @@
           <Separator></Separator>
           <MenuItem Name="mImageIncrease" Header="Increase" Command="{Binding IncreaseCanvasCommand}"/>
           <MenuItem Name="mImageShrink" Header="Shrink" Command="{Binding ShrinkCanvasCommand}"/>
+          <MenuItem Name="mImageReset" Header="Reset" Command="{Binding ResetCanvasCommand}"/>
           <Separator></Separator>
           <MenuItem Name="mImageNext" Header="Next" Command="{Binding NextImageCommand}"/>
           <MenuItem Name="mImagePrev" Header="Prev" Command="{Binding PrevImageCommand}"/>
@@ -63,6 +64,7 @@
           <Separator/>
           <Button Name="bImageIncrease" Margin="1" Command="{Binding IncreaseCanvasCommand}">Increase</Button>
           <Button Name="bImageShrink" Margin="1" Command="{Binding ShrinkCanvasCommand}">Shrink</Button>
+          <Button Name="bImageReset" Margin="1" Command="{Binding ResetCanvasCommand}">Reset</Button>
           <Separator/>
           <Button Name="bImagePrev" Margin="1" Command="{Binding PrevImageCommand}">Prev</Button>
           <Button Name="bImageNext" Margin="1" Command="{Binding NextImageCommand}">Next</Button>
