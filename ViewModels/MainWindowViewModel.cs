@@ -106,6 +106,7 @@ namespace RescuerLaApp.ViewModels
         {
             IncreaseCanvasCommand = ReactiveCommand.Create(IncreaseCanvas);
             ShrinkCanvasCommand = ReactiveCommand.Create(ShrinkCanvas);
+            ResetCanvasCommand = ReactiveCommand.Create(ResetCanvas);
             PredictAllCommand = ReactiveCommand.Create(PredictAll, canExecute);
             OpenFileCommand = ReactiveCommand.Create(OpenFile, canExecute);
             SaveAllCommand = ReactiveCommand.Create(SaveAll, canExecute);
@@ -150,6 +151,7 @@ namespace RescuerLaApp.ViewModels
         public ReactiveCommand<Unit, Unit> PrevImageCommand { get; }
         public ReactiveCommand<Unit, Unit> ShrinkCanvasCommand { get; set; }
         public ReactiveCommand<Unit, Unit> IncreaseCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> ResetCanvasCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenFileCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
@@ -334,6 +336,11 @@ namespace RescuerLaApp.ViewModels
         private void IncreaseCanvas()
         {
             Zoomer.Zoom(1.2);
+        }
+        
+        private void ResetCanvas()
+        {
+            Zoomer.Reset();
         }
 
         private async void OpenFile()

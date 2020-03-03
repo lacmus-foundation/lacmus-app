@@ -36,7 +36,7 @@ namespace RescuerLaApp.Models
 
         public static void Reset()
         {
-            _zoomBorder?.Reset();
+            _zoomBorder?.Fill();
         }
         
         public static event EventHandler<KeyEventArgs> KeyDown
