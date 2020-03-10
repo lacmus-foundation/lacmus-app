@@ -38,7 +38,7 @@ namespace RescuerLaApp
         public static AppBuilder BuildAvaloniaApp()
         {
             return AppBuilder.Configure<App>()
-                .UsePlatformDetect())
+                .UsePlatformDetect()
                 .With(new Win32PlatformOptions {EnableMultitouch = true, AllowEglInitialization = true})
                 .UseReactiveUI()
                 .LogToDebug();
