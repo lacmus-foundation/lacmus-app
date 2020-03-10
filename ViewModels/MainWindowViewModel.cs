@@ -123,6 +123,7 @@ namespace RescuerLaApp.ViewModels
             SwitchBoundBoxesVisibilityCommand = ReactiveCommand.Create(SwitchBoundBoxesVisibility, canSwitchBoundBox);
             HelpCommand = ReactiveCommand.Create(Help);
             AboutCommand = ReactiveCommand.Create(About);
+            OpenWizardCommand = ReactiveCommand.Create(OpenWizard);
             ExitCommand = ReactiveCommand.Create(Exit);
         }
 
@@ -168,6 +169,7 @@ namespace RescuerLaApp.ViewModels
         public ReactiveCommand<Unit, Unit> HelpCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AboutCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ExitCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> OpenWizardCommand { get; set; }
 
         #endregion
 
@@ -454,6 +456,13 @@ namespace RescuerLaApp.ViewModels
                 Log.Error(ex, "Unable to save photos.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+
+        public void OpenWizard()
+        {
+            var window = new WizardWindow();
+            window.Show(this);
+            Log.Debug("Open Wizard");
         }
 
         public void Help()
