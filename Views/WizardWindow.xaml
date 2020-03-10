@@ -6,14 +6,38 @@
         x:Class="RescuerLaApp.Views.WizardWindow"
         UseLayoutRounding="True"
         Title="Wizard"
-        Width="400"
-        Height="200">
+        Width="600"
+        Height="340">
     
-    <StackPanel HorizontalAlignment="Center">
-        <TextBlock Margin="10 2 10 2">Input Data</TextBlock>
-        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal">
-            <TextBox Name="tbInputData" Margin="10 2 10 2" Height="30" Width="300"></TextBox>
-            <Button Name="bOpen" Margin="1" Command="{Binding OpenFileCommand}">Open</Button>
-        </StackPanel>
+    <StackPanel Grid.Column="0">
+        <Border Classes="Card">
+            <StackPanel>
+                <TextBlock Classes="Heading" Text="Step 1: Select input data" />
+                <TextBlock Classes="Caption" Text="Welcome to the photo recognition wizard!" />
+                <TextBlock Margin="0 5"
+                           TextWrapping="Wrap"
+                           Text="To begin, please select the input data for recognition by clicking the 'set input' button or by writing the full path to the input folder in the text box below."
+                           ToolTip.Tip="Select input data" />
+            </StackPanel>
+        </Border>
+        <Border Classes="Card">
+            <StackPanel>
+                <TextBox UseFloatingWatermark="True"
+                         Watermark="Enter input path here."
+                         Text="" />
+                <Grid Margin="0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Content="Open photos" />
+                    <Button Grid.Column="2"
+                            Classes="Primary"
+                            Content="Next" />
+                </Grid>
+            </StackPanel>
+        </Border>
     </StackPanel>
 </Window>
