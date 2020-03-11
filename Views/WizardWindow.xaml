@@ -15,7 +15,10 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <reactiveUi:RoutedViewHost Grid.Row="0" Router="{Binding Router}">
+        <ScrollViewer Grid.Row="0"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Hidden">
+            <reactiveUi:RoutedViewHost Router="{Binding Router}">
             <reactiveUi:RoutedViewHost.DefaultContent>
                 <Border Classes="Card">
                     <StackPanel>
@@ -47,7 +50,8 @@
                     </StackPanel>
                 </Border>
             </reactiveUi:RoutedViewHost.DefaultContent>
-        </reactiveUi:RoutedViewHost>
+            </reactiveUi:RoutedViewHost>
+        </ScrollViewer>
         <Border Classes="Card" Grid.Row="1">
             <Grid Margin="0 5">
                 <Grid.ColumnDefinitions>
@@ -56,7 +60,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0"
-                        Content="Back"
+                        Content="{Binding BackButtonText}"
                         Command="{Binding GoBack}" />
                 <Button Grid.Column="2"
                         Classes="Primary"

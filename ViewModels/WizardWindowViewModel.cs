@@ -25,6 +25,7 @@ namespace RescuerLaApp.ViewModels
         public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
         [Reactive] public string NextButtonText { get; private set; } = "Next";
+        [Reactive] public string BackButtonText { get; private set; } = "Back";
 
         public WizardWindowViewModel(Window window)
         {
@@ -38,14 +39,22 @@ namespace RescuerLaApp.ViewModels
                         case 0:
                             Router.Navigate.Execute(new FirstWizardViewModel(this));
                             NextButtonText = "Next";
+                            BackButtonText = "Back";
                             break;
                         case 1:
                             Router.Navigate.Execute(new SecondWizardViewModel(this));
                             NextButtonText = "Next";
+                            BackButtonText = "Back";
                             break;
                         case 2:
                             Router.Navigate.Execute(new ThirdWizardViewModel(this));
                             NextButtonText = "Predict all";
+                            BackButtonText = "Back";
+                            break;
+                        case 3:
+                            Router.Navigate.Execute(new FourthWizardViewModel(this));
+                            NextButtonText = "Finish";
+                            BackButtonText = "Repeat";
                             break;
                     }
                 }
