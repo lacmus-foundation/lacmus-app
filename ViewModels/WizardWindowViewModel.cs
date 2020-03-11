@@ -16,6 +16,7 @@ namespace RescuerLaApp.ViewModels
     {
         private readonly Window _window;
         private readonly RoutingState _router;
+        private readonly FirstWizardViewModel _firstWizardViewModel;
         public RoutingState Router => _router;
             
         // The command that navigates a user to first view model.
@@ -26,18 +27,21 @@ namespace RescuerLaApp.ViewModels
 
         [Reactive] public string NextButtonText { get; private set; } = "Next";
         [Reactive] public string BackButtonText { get; private set; } = "Back";
+        [Reactive] public string InputPath { get; set; } = string.Empty;
+        [Reactive] public string OutputPath { get; set; } = string.Empty;
 
         public WizardWindowViewModel(Window window)
         {
             _window = window;
             _router = new RoutingState();
+            _firstWizardViewModel = new FirstWizardViewModel(this);
             GoNext = ReactiveCommand.Create(
                 () =>
                 {
                     switch (Router.NavigationStack.Count)
                     {
                         case 0:
-                            Router.Navigate.Execute(new FirstWizardViewModel(this));
+                            Router.Navigate.Execute(_firstWizardViewModel);
                             NextButtonText = "Next";
                             BackButtonText = "Back";
                             break;

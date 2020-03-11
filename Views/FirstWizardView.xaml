@@ -15,8 +15,9 @@
             <StackPanel>
                 <TextBox UseFloatingWatermark="True"
                          Watermark="Enter input path here."
-                         Text="" />
-                <Button Content="Open photos" />
+                         Text="{Binding InputPath, Mode=TwoWay}" />
+                <Button Content="Open photos"
+                        Command="{Binding OpenPhotos}"/>
             </StackPanel>
         </Border>
     </StackPanel>
