@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="RescuerLaApp.Views.SecondWizardView">
+    <StackPanel>
+        <Border Classes="Card">
+            <StackPanel>
+                <TextBlock Classes="Heading" Text="Step 2: Select output data" />
+                <TextBlock Margin="0 5"
+                           TextWrapping="Wrap"
+                           Text="Now select the output to save by clicking the 'Save photos' button or specifying the full path to the input folder in the text box below."
+                           ToolTip.Tip="Select input data" />
+                <TextBlock Margin="0 5"
+                           TextWrapping="Wrap"
+                           Text="After processing is complete, the application will save photos and XML files with the description of recognized objects in the specified folder. You can view saved objects at any time by selecting a saved folder from the 'file - import from xml' menu."
+                           ToolTip.Tip="Select input data" />
+            </StackPanel>
+        </Border>
+        <Border Classes="Card">
+            <StackPanel>
+                <TextBox UseFloatingWatermark="True"
+                         Watermark="Enter save path here."
+                         Text="" />
+                <Button Content="Save photos" />
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

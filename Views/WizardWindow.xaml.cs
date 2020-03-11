@@ -16,18 +16,20 @@ using RescuerLaApp.ViewModels;
 
 namespace RescuerLaApp.Views
 {
-    public sealed class WizardWindow : ReactiveWindow<MainWindowViewModel>
+    public sealed class WizardWindow : ReactiveWindow<WizardWindowViewModel>
     {
         public WizardWindow()
         {
-            AvaloniaXamlLoader.Load(this);
             this.WhenActivated(disposables => { });
+            AvaloniaXamlLoader.Load(this);
         }
 
+        /*
         public void Show(MainWindowViewModel vm)
         {
             DataContext = vm;
             base.Show();
         }
+        */
     }
 }

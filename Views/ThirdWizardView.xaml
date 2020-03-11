@@ -1,0 +1,43 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="RescuerLaApp.Views.ThirdWizardView">
+    <StackPanel>
+        <Border Classes="Card">
+            <StackPanel>
+                <TextBlock Classes="Heading" Text="Step 3: Setup ml model" />
+                <TextBlock Margin="0 5"
+                           TextWrapping="Wrap"
+                           Text="Before proceeding, make sure that the selected configuration of the neural network model is correct."
+                           ToolTip.Tip="Select input data" />
+                <TextBlock Margin="0 5"
+                           TextWrapping="Wrap"
+                           Text="If the configuration of the neural network model is not specified or you want to use a different configuration, go to the settings by selecting the 'file - settings' in the main menu of the program."
+                           ToolTip.Tip="Select input data" />
+                <TextBlock Margin="0 5"
+                           TextWrapping="Wrap"
+                           Text="If your model is not loaded, then download it by clicking the 'download model' button. To download, you need to download from 2 to 6GB. Make sure your internet connection is reliable."
+                           ToolTip.Tip="Select input data" />
+                <TextBlock Margin="0 5"
+                           TextWrapping="Wrap"
+                           Text="If everything is correct, click the 'Predict all' button to start the processing process. Upon completion of the process, the result of the program operation will appear in the selected folder."
+                           ToolTip.Tip="Select input data" />
+            </StackPanel>
+        </Border>
+        <Border Classes="Card">
+            <StackPanel>
+                <TextBlock Margin="0 5"
+                           Classes="Caption" 
+                           Text="Ml model repository: gosha20777/lacmus"/>
+                <TextBlock Margin="0 5"
+                           Classes="Caption" 
+                           Text="Ml model type: GPU"/>
+                <TextBlock Margin="0 5"
+                           Classes="Caption" 
+                           Text="Ml model version: 3"/>
+                <TextBlock Margin="0 5"
+                           Classes="Caption" 
+                           Text="Ml model status: Installed"/>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

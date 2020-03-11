@@ -36,6 +36,7 @@ using RescuerLaApp.Services.VM;
 using RescuerLaApp.Views;
 using Serilog;
 using Serilog.Filters;
+using Splat;
 using Attribute = RescuerLaApp.Models.Photo.Attribute;
 using Directory = System.IO.Directory;
 using Object = RescuerLaApp.Models.Object;
@@ -460,8 +461,14 @@ namespace RescuerLaApp.ViewModels
 
         public void OpenWizard()
         {
+            Locator.CurrentMutable.Register(() => new FirstWizardView(), typeof(IViewFor<FirstWizardViewModel>));
+            Locator.CurrentMutable.Register(() => new SecondWizardView(), typeof(IViewFor<SecondWizardViewModel>));
+            Locator.CurrentMutable.Register(() => new ThirdWizardView(), typeof(IViewFor<ThirdWizardViewModel>));
             var window = new WizardWindow();
-            window.Show(this);
+            var context = new WizardWindowViewModel(_window);
+            window.DataContext = context;
+            window.Show();
+            //window.Show(this);
             Log.Debug("Open Wizard");
         }
 

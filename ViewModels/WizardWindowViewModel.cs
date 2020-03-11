@@ -12,27 +12,45 @@ using Serilog;
 
 namespace RescuerLaApp.ViewModels
 {
-    public class WizardWindowViewModel : ReactiveObject
+    public class WizardWindowViewModel : ReactiveObject, IScreen
     {
         private readonly Window _window;
+        private readonly RoutingState _router;
+        public RoutingState Router => _router;
+            
+        // The command that navigates a user to first view model.
+        public ReactiveCommand<Unit, Unit> GoNext { get; }
+
+        // The command that navigates a user back.
+        public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
+
+        [Reactive] public string NextButtonText { get; private set; } = "Next";
 
         public WizardWindowViewModel(Window window)
         {
             _window = window;
-            // Add here newer commands
-            OpenFileCommand = ReactiveCommand.Create(OpenFile);
-
+            _router = new RoutingState();
+            GoNext = ReactiveCommand.Create(
+                () =>
+                {
+                    switch (Router.NavigationStack.Count)
+                    {
+                        case 0:
+                            Router.Navigate.Execute(new FirstWizardViewModel(this));
+                            NextButtonText = "Next";
+                            break;
+                        case 1:
+                            Router.Navigate.Execute(new SecondWizardViewModel(this));
+                            NextButtonText = "Next";
+                            break;
+                        case 2:
+                            Router.Navigate.Execute(new ThirdWizardViewModel(this));
+                            NextButtonText = "Predict all";
+                            break;
+                    }
+                }
+            );
             Log.Information("Wizard started.");
-        }
-
-        #region Public API
-        public ReactiveCommand<Unit, Unit> OpenFileCommand { get; set; }
-
-        #endregion
-
-        void OpenFile()
-        {
-            Log.Debug("open file");
         }
     }
 }
