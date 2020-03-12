@@ -19,8 +19,9 @@
             <StackPanel>
                 <TextBox UseFloatingWatermark="True"
                          Watermark="Enter save path here."
-                         Text="" />
-                <Button Content="Save photos" />
+                         Text="{Binding OutputPath, Mode=TwoWay}" />
+                <Button Content="Save photos"
+                        Command="{Binding SavePhotos}"/>
             </StackPanel>
         </Border>
     </StackPanel>
