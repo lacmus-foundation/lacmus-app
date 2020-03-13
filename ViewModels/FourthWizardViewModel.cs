@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using DynamicData;
@@ -32,7 +33,8 @@ namespace RescuerLaApp.ViewModels
         [Reactive] public string InputTextProgress { get; set; } = "waiting...";
         [Reactive] public string PredictTextProgress { get; set; } = "waiting...";
         [Reactive] public string OutputTextProgress { get; set; } = "waiting...";
-        [Reactive] public string Status { get; set; }
+        [Reactive] public string Status { get; set; } = "";
+        public ReactiveCommand<Unit, Unit> StopCommand { get; }
 
         public FourthWizardViewModel(IScreen screen, 
             ApplicationStatusManager manager,
@@ -42,6 +44,7 @@ namespace RescuerLaApp.ViewModels
             _applicationStatusManager = manager;
             _photos = photos;
             _selectedIndex = selectedIndex;
+            StopCommand = ReactiveCommand.Create(Stop);
             HostScreen = screen;
         }
         
@@ -215,6 +218,15 @@ namespace RescuerLaApp.ViewModels
             Status = "done.";
             OutputTextProgress = $"saved {_photos.Count} photos.";
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+
+        private async void Stop()
+        {
+            var config = await MLModelConfigExtension.Load(_mlConfigPath);
+            using (var model = new MLModel(config))
+            {
+                await model.Stop();
+            }
         }
         private static IEnumerable<string> GetFilesFromDir(string dirPath, bool isRecursive)
         {

@@ -7,7 +7,7 @@
                 <TextBlock Classes="Heading" Text="Photo processing" />
                 <TextBlock Margin="0 5"
                            TextWrapping="Wrap"
-                           Text="Photo processing in progress. Please do not close the program and wait until the process ends. To force stop the processing, click 'Stop'."
+                           Text="Photo processing in progress. Please do not close the program and wait until the process ends. To force stop the processing, click 'Stop ml model' (progress will save)."
                            ToolTip.Tip="Select input data" />
             </StackPanel>
         </Border>
@@ -25,7 +25,8 @@
                                    Text="{Binding Status}"/>
                     </StackPanel>
                     <Button Grid.Column="1"
-                            Content="Stop"/>
+                            Content="Stop ml model"
+                            Command="{Binding StopCommand}"/>
                 </Grid>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption" 
