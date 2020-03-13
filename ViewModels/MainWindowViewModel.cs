@@ -36,6 +36,7 @@ using RescuerLaApp.Services.VM;
 using RescuerLaApp.Views;
 using Serilog;
 using Serilog.Filters;
+using Splat;
 using Attribute = RescuerLaApp.Models.Photo.Attribute;
 using Directory = System.IO.Directory;
 using Object = RescuerLaApp.Models.Object;
@@ -123,6 +124,7 @@ namespace RescuerLaApp.ViewModels
             SwitchBoundBoxesVisibilityCommand = ReactiveCommand.Create(SwitchBoundBoxesVisibility, canSwitchBoundBox);
             HelpCommand = ReactiveCommand.Create(Help);
             AboutCommand = ReactiveCommand.Create(About);
+            OpenWizardCommand = ReactiveCommand.Create(OpenWizard);
             ExitCommand = ReactiveCommand.Create(Exit);
         }
 
@@ -168,6 +170,7 @@ namespace RescuerLaApp.ViewModels
         public ReactiveCommand<Unit, Unit> HelpCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AboutCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ExitCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> OpenWizardCommand { get; set; }
 
         #endregion
 
@@ -454,6 +457,20 @@ namespace RescuerLaApp.ViewModels
                 Log.Error(ex, "Unable to save photos.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+
+        public void OpenWizard()
+        {
+            Locator.CurrentMutable.Register(() => new FirstWizardView(), typeof(IViewFor<FirstWizardViewModel>));
+            Locator.CurrentMutable.Register(() => new SecondWizardView(), typeof(IViewFor<SecondWizardViewModel>));
+            Locator.CurrentMutable.Register(() => new ThirdWizardView(), typeof(IViewFor<ThirdWizardViewModel>));
+            Locator.CurrentMutable.Register(() => new FourthWizardView(), typeof(IViewFor<FourthWizardViewModel>));
+            var window = new WizardWindow();
+            var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex);
+            window.DataContext = context;
+            window.Show();
+            //window.Show(this);
+            Log.Debug("Open Wizard");
         }
 
         public void Help()

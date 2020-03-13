@@ -1,0 +1,72 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:RescuerLaApp.ViewModels;assembly=RescuerLaApp"
+        xmlns:models="clr-namespace:RescuerLaApp.Models"
+        xmlns:reactiveUi="http://reactiveui.net"
+        Icon="resm:RescuerLaApp.Assets.avalonia-logo.ico"
+        x:Class="RescuerLaApp.Views.WizardWindow"
+        UseLayoutRounding="True"
+        Title="Wizard"
+        Width="600"
+        Height="600">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="0"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Hidden">
+            <reactiveUi:RoutedViewHost Router="{Binding Router}">
+            <reactiveUi:RoutedViewHost.DefaultContent>
+                <Border Classes="Card">
+                    <StackPanel>
+                        <TextBlock Classes="Heading" Text="Welcome to the photo recognition wizard!" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="To process your photos with the help of the nero network you need to go through 3 simple steps:"
+                                   ToolTip.Tip="Select input data" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="    Step 1: select photos to process"
+                                   ToolTip.Tip="Select input data" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="    Step 2: choosing a place to save the results"
+                                   ToolTip.Tip="Select input data" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="    Step 3: configure ml model"
+                                   ToolTip.Tip="Select input data" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="At any time, you can close this window and continue using the program through the main interface. Thank you for using the Lacmus program."
+                                   ToolTip.Tip="Select input data" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="Click 'Next' to continue."
+                                   ToolTip.Tip="Select input data" />
+                    </StackPanel>
+                </Border>
+            </reactiveUi:RoutedViewHost.DefaultContent>
+            </reactiveUi:RoutedViewHost>
+        </ScrollViewer>
+        <Border Classes="Card" Grid.Row="1">
+            <Grid Margin="0 5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        Content="{Binding BackButtonText}"
+                        Command="{Binding GoBack}" />
+                <Button Grid.Column="2"
+                        Classes="Primary"
+                        Content="{Binding NextButtonText}"
+                        Command="{Binding GoNext}" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

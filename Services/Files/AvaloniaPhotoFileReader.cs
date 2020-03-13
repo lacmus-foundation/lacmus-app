@@ -110,16 +110,6 @@ namespace RescuerLaApp.Services.Files
             return photoList.ToArray();
         }
 
-        private static string GetCaptionFromPath(string path)
-        {
-            var name = System.IO.Path.GetFileName(path);
-            if (name.Length > 10)
-            {
-                name = name.Substring(0, 3) + "{~}" + name.Substring(name.Length - 5);
-            }
-            return name;
-        }
-        
         private static ImageBrush ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)
         {
             switch (loadType)
