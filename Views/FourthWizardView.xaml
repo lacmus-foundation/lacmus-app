@@ -20,9 +20,9 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Orientation="Horizontal">
                         <TextBlock Classes="Heading"
-                                   Text="Total progress: "/>
+                                   Text="Total status: "/>
                         <TextBlock Classes="Heading"
-                                   Text="7%"/>
+                                   Text="{Binding Status}"/>
                     </StackPanel>
                     <Button Grid.Column="1"
                             Content="Stop"/>
@@ -31,14 +31,13 @@
                     <TextBlock Classes="Caption" 
                                Text="Loading photos:"/>
                     <TextBlock Classes="Caption" Margin="2 0"
-                               Text="30%"/>
+                               Text="{Binding InputTextProgress}"/>
                 </StackPanel>
                 <ProgressBar Orientation="Horizontal" 
                              Margin="0 5"
                              Height="20">
                     <ProgressBar.Value>
-                        30
-                        <!-- <Binding Path="#slider.Value" /> -->
+                        <Binding Path="InputProgress" />
                     </ProgressBar.Value>
                 </ProgressBar>
                 
@@ -46,26 +45,26 @@
                     <TextBlock Classes="Caption" 
                                Text="Processing photos:"/>
                     <TextBlock Classes="Caption" Margin="2 0"
-                               Text="10%"/>
+                               Text="{Binding PredictTextProgress}"/>
                 </StackPanel>
                 <ProgressBar Orientation="Horizontal" 
                              Margin="0 5"
                              Height="20">
                     <ProgressBar.Value>
-                        10
+                        <Binding Path="PredictProgress" />
                     </ProgressBar.Value>
                 </ProgressBar>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption" 
                                Text="Saving results:"/>
                     <TextBlock Classes="Caption" Margin="2 0"
-                               Text="5%"/>
+                               Text="{Binding OutputTextProgress}"/>
                 </StackPanel>
                 <ProgressBar Orientation="Horizontal" 
                              Margin="0 5"
                              Height="20">
                     <ProgressBar.Value>
-                        5
+                        <Binding Path="OutputProgress" />
                     </ProgressBar.Value>
                 </ProgressBar>
                 <Expander Header="Details" IsExpanded="True" Margin="0 5 0 0">

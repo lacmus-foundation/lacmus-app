@@ -466,7 +466,7 @@ namespace RescuerLaApp.ViewModels
             Locator.CurrentMutable.Register(() => new ThirdWizardView(), typeof(IViewFor<ThirdWizardViewModel>));
             Locator.CurrentMutable.Register(() => new FourthWizardView(), typeof(IViewFor<FourthWizardViewModel>));
             var window = new WizardWindow();
-            var context = new WizardWindowViewModel(_window);
+            var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex);
             window.DataContext = context;
             window.Show();
             //window.Show(this);

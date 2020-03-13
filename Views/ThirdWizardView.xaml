@@ -25,18 +25,49 @@
         </Border>
         <Border Classes="Card">
             <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="Ml model repository: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Repository}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="Ml model type: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Type}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="Ml model version: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Version}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="Ml model status: "/>
+                    <TextBlock Classes="Caption" TextWrapping="Wrap"
+                               Text="{Binding Status}"/>
+                </StackPanel>
                 <TextBlock Margin="0 5"
-                           Classes="Caption" 
-                           Text="Ml model repository: gosha20777/lacmus"/>
-                <TextBlock Margin="0 5"
-                           Classes="Caption" 
-                           Text="Ml model type: GPU"/>
-                <TextBlock Margin="0 5"
-                           Classes="Caption" 
-                           Text="Ml model version: 3"/>
-                <TextBlock Margin="0 5"
-                           Classes="Caption" 
-                           Text="Ml model status: Installed"/>
+                           TextWrapping="Wrap" IsVisible="{Binding IsError}"
+                           Text="{Binding Error}"
+                           ToolTip.Tip="Select input data" />
+                <Grid Margin="0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Content="Save photos"
+                            IsVisible="{Binding IsShowLoadModelButton}"
+                            Command="{Binding LoadModelCommand}"/>
+                    <Button Grid.Column="2"
+                            Content="Update ml model status"
+                            IsVisible="{Binding IsError}"
+                            Command="{Binding UpdateModelStatusCommand}" />
+                </Grid>
             </StackPanel>
         </Border>
     </StackPanel>
