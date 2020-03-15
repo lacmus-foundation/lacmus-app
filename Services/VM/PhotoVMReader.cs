@@ -22,7 +22,7 @@ namespace RescuerLaApp.Services.VM
         
         public PhotoVMReader(Window window)  => _reader = new AvaloniaFileReader(window);
         
-        public async Task<PhotoViewModel> ReadByPhoto(PhotoLoadType loadType = PhotoLoadType.Miniature)
+        public async Task<PhotoViewModel> ReadByPhoto(int id, PhotoLoadType loadType = PhotoLoadType.Miniature)
         {
             var dig = new OpenFileDialog()
             {
@@ -39,7 +39,7 @@ namespace RescuerLaApp.Services.VM
                     Filename = Path.GetFileName(path),
                     Folder = Path.GetDirectoryName(path)
                 };
-                return new PhotoViewModel(photo, annotation);
+                return new PhotoViewModel(id, photo, annotation);
             }
             catch (Exception e)
             {
@@ -47,7 +47,7 @@ namespace RescuerLaApp.Services.VM
             }
         }
         
-        public async Task<PhotoViewModel> ReadByAnnotation(PhotoLoadType loadType = PhotoLoadType.Miniature)
+        public async Task<PhotoViewModel> ReadByAnnotation(int id, PhotoLoadType loadType = PhotoLoadType.Miniature)
         {
             var dig = new OpenFileDialog()
             {
@@ -62,7 +62,7 @@ namespace RescuerLaApp.Services.VM
                 var annotation = annotationLoader.Load(path, stream);
                 var photoPath = Path.Combine(annotation.Folder, annotation.Filename);
                 var photo = photoLoader.Load(photoPath, loadType);
-                return new PhotoViewModel(photo, annotation);
+                return new PhotoViewModel(id, photo, annotation);
             }
             catch (Exception e)
             {
@@ -81,6 +81,7 @@ namespace RescuerLaApp.Services.VM
             var photoLoader = new PhotoLoader();
             var photoList = new List<PhotoViewModel>();
             var count = 0;
+            var id = 0;
             var valueTuples = multipleFiles as (string Path, Stream Stream)[] ?? multipleFiles.ToArray();
             using (var pb = new Models.ProgressBar())
             {
@@ -104,7 +105,8 @@ namespace RescuerLaApp.Services.VM
                                 Filename = Path.GetFileName(path),
                                 Folder = Path.GetDirectoryName(path)
                             };
-                            photoList.Add(new PhotoViewModel(photo, annotation));
+                            photoList.Add(new PhotoViewModel(id, photo, annotation));
+                            id++;
                             count++;
                             pb.Report((double)count / valueTuples.Count(), $"Processed {count} of {valueTuples.Count()}");
                         }
@@ -130,6 +132,7 @@ namespace RescuerLaApp.Services.VM
             var annotationLoader = new AnnotationLoader();
             var photoList = new List<PhotoViewModel>();
             var count = 0;
+            var id = 0;
             var valueTuples = multipleFiles as (string Path, Stream Stream)[] ?? multipleFiles.ToArray();
             using (var pb = new Models.ProgressBar())
             {
@@ -146,7 +149,8 @@ namespace RescuerLaApp.Services.VM
                         var annotation = annotationLoader.Load(path, stream);
                         var photoPath = Path.Combine(annotation.Folder, annotation.Filename);
                         var photo = photoLoader.Load(photoPath, loadType);
-                        photoList.Add(new PhotoViewModel(photo, annotation));
+                        photoList.Add(new PhotoViewModel(id, photo, annotation));
+                        id++;
                         count++;
                         pb.Report((double)count / valueTuples.Count(), $"Processed {count} of {valueTuples.Count()}");
                     }

@@ -104,6 +104,15 @@
                     IsChecked="{Binding IsShowPedestrians}" Command="{Binding ShowPedestriansCommand}"/>
           <CheckBox Name="cbShowFavorites" Content="Show favorites" Margin="5,1,2,2"
                     IsChecked="{Binding IsShowFavorites}" Command="{Binding ShowFavoritesCommand}"/>
+          <StackPanel Orientation="Horizontal">
+            <Button Content="First" Command="{Binding FirstPageCommand}"/>
+            <Button Content="Previous" Command="{Binding PreviousPageCommand}"/>
+            <TextBlock Text="{Binding CurrentPage}"/>
+            <TextBlock Text="of"/>
+            <TextBlock Text="{Binding TotalPages}"/>
+            <Button Content="Next" Command="{Binding NextPageCommand}"/>
+            <Button Content="Last" Command="{Binding LastPageCommand}"/>
+          </StackPanel>
         </StackPanel>
       </Grid>
       <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
