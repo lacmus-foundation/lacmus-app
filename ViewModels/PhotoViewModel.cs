@@ -11,8 +11,9 @@ namespace RescuerLaApp.ViewModels
     public class PhotoViewModel : ReactiveObject
     {
         private Annotation _annotation;
-        public PhotoViewModel(Photo photo, Annotation annotation)
+        public PhotoViewModel(int id, Photo photo, Annotation annotation)
         {
+            Id = id;
             Photo = photo;
             _annotation = annotation;
             UpdatePhotoInfo(Annotation);
@@ -31,6 +32,7 @@ namespace RescuerLaApp.ViewModels
         [Reactive] public string Caption { get; private set; }
         [Reactive] public string Path { get; private set; }
         [Reactive] public IEnumerable<BoundBox> BoundBoxes { get; set; }
+        public int Id { get; set; }
 
         private void UpdatePhotoInfo(Annotation annotation)
         {
