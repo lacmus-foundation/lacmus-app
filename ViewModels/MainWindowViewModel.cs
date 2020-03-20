@@ -50,7 +50,7 @@ namespace RescuerLaApp.ViewModels
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly Window _window;
         private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
-        private int itemPerPage = 3;
+        private int itemPerPage = 500;
         private int itemcount;
         private int _currentPageIndex;
         private int _totalPages;
@@ -61,7 +61,8 @@ namespace RescuerLaApp.ViewModels
         {
             _window = window;
             
-            var filter = this.WhenValueChanged(x => x.CurrentPage)
+            var filter = this
+                .WhenValueChanged(x => x.CurrentPage)
                 .Select(PageFilter);
             
             _photos.Connect()
@@ -155,6 +156,7 @@ namespace RescuerLaApp.ViewModels
 
         public ReadOnlyObservableCollection<PhotoViewModel> PhotoCollection => _photoCollection;
         [Reactive] public int SelectedIndex { get; set; }
+        [Reactive] public int FilterIndex { get; set; }
         [Reactive] public PhotoViewModel PhotoViewModel { get; set; }
         [Reactive] public ApplicationStatusViewModel ApplicationStatusViewModel { get; set; }
         [Reactive] public int CurrentPage
