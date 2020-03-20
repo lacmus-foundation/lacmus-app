@@ -56,18 +56,24 @@
       </Menu>
       <ToolTip>
         <StackPanel Orientation="Horizontal">
+          <StackPanel.Styles>
+            <Style Selector="Button">
+              <Setter Property="Padding" Value="8" />
+              <Setter Property="Margin" Value="1" />
+            </Style>
+          </StackPanel.Styles>
           <!-- <Button Name="bSignIn" Command="{Binding SignInCommand}">Suin In</Button> -->
-          <Button Name="bOpen" Margin="1" Command="{Binding OpenFileCommand}">Open</Button>
-          <Button Name="bPredict" Margin="1" Command="{Binding PredictAllCommand}">Predict all</Button>
+          <Button Name="bOpen" Command="{Binding OpenFileCommand}">Open</Button>
+          <Button Name="bPredict" Command="{Binding PredictAllCommand}">Predict all</Button>
           <Separator/>
-          <Button Name="bSave" Margin="1" Command="{Binding SaveAllCommand}">Save all</Button>
+          <Button Name="bSave" Command="{Binding SaveAllCommand}">Save all</Button>
           <Separator/>
-          <Button Name="bImageIncrease" Margin="1" Command="{Binding IncreaseCanvasCommand}">Increase</Button>
-          <Button Name="bImageShrink" Margin="1" Command="{Binding ShrinkCanvasCommand}">Shrink</Button>
-          <Button Name="bImageReset" Margin="1" Command="{Binding ResetCanvasCommand}">Reset</Button>
+          <Button Name="bImageIncrease" Command="{Binding IncreaseCanvasCommand}">Increase</Button>
+          <Button Name="bImageShrink" Command="{Binding ShrinkCanvasCommand}">Shrink</Button>
+          <Button Name="bImageReset" Command="{Binding ResetCanvasCommand}">Reset</Button>
           <Separator/>
-          <Button Name="bImagePrev" Margin="1" Command="{Binding PrevImageCommand}">Prev</Button>
-          <Button Name="bImageNext" Margin="1" Command="{Binding NextImageCommand}">Next</Button>
+          <Button Name="bImagePrev" Command="{Binding PrevImageCommand}">Prev</Button>
+          <Button Name="bImageNext" Command="{Binding NextImageCommand}">Next</Button>
           <Button Name="bWizard" Margin="1" Command="{Binding OpenWizardCommand}">Wizard</Button>
         </StackPanel>
       </ToolTip>
@@ -81,11 +87,16 @@
 
       <Grid Name="ImageView" Grid.Column="0" Grid.Row="0" Background="White">
         <Grid.RowDefinitions>
-          <RowDefinition/>
-          <RowDefinition Height="auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
-        <ListBox Grid.Column="0" Grid.Row="0"
+        <ComboBox Grid.Column="0" Grid.Row="0" SelectedIndex="{Binding FilterIndex, Mode=TwoWay}">
+          <ComboBoxItem Content="All photos" />
+          <ComboBoxItem Content="Photos with objects" />
+          <ComboBoxItem Content="Favorite photos" />
+        </ComboBox>
+        <ListBox Grid.Column="0" Grid.Row="1"
                  x:Name="ImageList" 
                  Items="{Binding PhotoCollection}"
                  SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
@@ -98,13 +109,30 @@
             </DataTemplate>
           </ListBox.DataTemplates>
         </ListBox>
-        
-        <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" Background="White">
-          <CheckBox Name="cbShowPedestrians" Content="Show pedestrians" Margin="5,2,2,1"
-                    IsChecked="{Binding IsShowPedestrians}" Command="{Binding ShowPedestriansCommand}"/>
-          <CheckBox Name="cbShowFavorites" Content="Show favorites" Margin="5,1,2,2"
-                    IsChecked="{Binding IsShowFavorites}" Command="{Binding ShowFavoritesCommand}"/>
-        </StackPanel>
+        <Grid Grid.Column="0" Grid.Row="2">
+          <Grid.Styles>
+            <Style Selector="Button">
+              <Setter Property="Padding" Value="8" />
+              <Setter Property="Margin" Value="1 2" />
+            </Style>
+          </Grid.Styles>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*" MaxWidth="25"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <Button Grid.Column="0" Content="&lt;&lt;" Command="{Binding FirstPageCommand}"/>
+          <Button Grid.Column="1" Content="&lt;" Command="{Binding FirstPageCommand}"/>
+          <TextBlock Grid.Column="2" Margin="1 10" Text="{Binding CurrentPage}"/>
+          <TextBlock Grid.Column="3" HorizontalAlignment="Center" Margin="1 10" Text="of"/>
+          <TextBlock Grid.Column="4" Margin="1 10" Text="{Binding TotalPages}"/>
+          <Button Grid.Column="5" Content=">" Command="{Binding NextPageCommand}"/>
+          <Button Grid.Column="6" Content=">>" Command="{Binding LastPageCommand}"/>
+        </Grid>
       </Grid>
       <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
         <paz:ZoomBorder Name="zoomBorder" Stretch="None" ZoomSpeed="1.2" 

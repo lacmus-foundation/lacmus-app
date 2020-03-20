@@ -16,6 +16,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using DynamicData;
+using DynamicData.Binding;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
@@ -49,15 +50,26 @@ namespace RescuerLaApp.ViewModels
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly Window _window;
         private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
+        private int itemPerPage = 500;
+        private int itemcount;
+        private int _currentPageIndex;
+        private int _totalPages;
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
         private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
         
         public MainWindowViewModel(Window window)
         {
             _window = window;
+            
+            var filter = this
+                .WhenValueChanged(x => x.CurrentPage)
+                .Select(PageFilter);
+            
             _photos.Connect()
+                .Filter(filter)
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _photoCollection)
+                .DisposeMany()
                 .Subscribe();
             
             _applicationStatusManager = new ApplicationStatusManager();
@@ -113,8 +125,14 @@ namespace RescuerLaApp.ViewModels
             SaveAllCommand = ReactiveCommand.Create(SaveAll, canExecute);
             LoadModelCommand = ReactiveCommand.Create(LoadModel, canExecute);
             UpdateModelCommand = ReactiveCommand.Create(UpdateModel, canExecute);
+            
             ShowPedestriansCommand = ReactiveCommand.Create(ShowPedestrians, canExecute);
             ShowFavoritesCommand = ReactiveCommand.Create(ShowFavorites, canExecute);
+            NextPageCommand = ReactiveCommand.Create(ShowNextPage);
+            PreviousPageCommand = ReactiveCommand.Create(ShowPreviousPage);
+            FirstPageCommand = ReactiveCommand.Create(ShowFirstPage);
+            LastPageCommand = ReactiveCommand.Create(ShowLastPage);
+            
             ImportAllCommand = ReactiveCommand.Create(ImportFromXml, canExecute);
             SaveAllImagesWithObjectsCommand = ReactiveCommand.Create(SaveAllImagesWithObjects, canExecute);
             SaveFavoritesImagesCommand = ReactiveCommand.Create(SaveFavoritesImages, canExecute);
@@ -138,8 +156,19 @@ namespace RescuerLaApp.ViewModels
 
         public ReadOnlyObservableCollection<PhotoViewModel> PhotoCollection => _photoCollection;
         [Reactive] public int SelectedIndex { get; set; }
+        [Reactive] public int FilterIndex { get; set; }
         [Reactive] public PhotoViewModel PhotoViewModel { get; set; }
         [Reactive] public ApplicationStatusViewModel ApplicationStatusViewModel { get; set; }
+        [Reactive] public int CurrentPage
+        {
+            get => _currentPageIndex;
+            set => _currentPageIndex = value;
+        }
+        [Reactive] public int TotalPages
+        {
+            get => _totalPages;
+            set => _totalPages = value;
+        }
         // TODO: update with locales
         [Reactive] public string BoundBoxesStateString { get; set; } = "Hide bound boxes";
         [Reactive] public string FavoritesStateString { get; set; } = "Add to favorites";
@@ -163,6 +192,10 @@ namespace RescuerLaApp.ViewModels
         public ReactiveCommand<Unit, Unit> ShowFavoritesCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAllImagesWithObjectsCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveFavoritesImagesCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> FirstPageCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> NextPageCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> LastPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ShowAllMetadataCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ShowGeoDataCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AddToFavoritesCommand { get; set; }
@@ -195,6 +228,58 @@ namespace RescuerLaApp.ViewModels
             else
             {
                 
+            }
+        }
+        
+        private void ShowNextPage()
+        {
+            if (CurrentPage < TotalPages - 1)
+            {
+                SelectedIndex = 0;
+                CurrentPage++;
+            }
+        }
+
+        private void ShowPreviousPage()
+        {
+            if (CurrentPage > 0)
+            {
+                SelectedIndex = 0;
+                CurrentPage--;
+            }
+        }
+
+        private void ShowFirstPage()
+        {
+            SelectedIndex = 0;
+            CurrentPage = 0;
+        }
+
+        private void ShowLastPage()
+        {
+            if (TotalPages > 0)
+            {
+                SelectedIndex = 0;
+                CurrentPage = TotalPages - 1;
+            }
+        }
+        
+        private Func<PhotoViewModel, bool> PageFilter(int currentPage)
+        {
+            return x =>
+                x.Id >= itemPerPage * CurrentPage && x.Id < itemPerPage * (CurrentPage + 1);
+        }
+        
+        private void CalculateTotalPages()
+        {
+            itemcount = _photos.Count;
+            if (itemcount % itemPerPage == 0)
+            {
+                TotalPages = (itemcount / itemPerPage);
+            }
+            else
+            {
+                TotalPages = (itemcount / itemPerPage) + 1;
             }
         }
 
@@ -360,6 +445,7 @@ namespace RescuerLaApp.ViewModels
                         _photos.AddRange(photos);
                     SelectedIndex = 0;
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                    CalculateTotalPages();
                     Log.Information($"Loads {_photos.Count} photos.");
                 });
             }
@@ -383,6 +469,7 @@ namespace RescuerLaApp.ViewModels
                         _photos.AddRange(photos);
                     SelectedIndex = 0;
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                    CalculateTotalPages();
                     Log.Information($"Loads {_photos.Count} photos.");
                 });
             }
@@ -469,7 +556,6 @@ namespace RescuerLaApp.ViewModels
             var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex);
             window.DataContext = context;
             window.Show();
-            //window.Show(this);
             Log.Debug("Open Wizard");
         }
 
@@ -676,7 +762,8 @@ namespace RescuerLaApp.ViewModels
                     var photoLoader = new PhotoLoader();
                     var fullPhoto = photoLoader.Load(currentMiniaturePhotoViewModel.Path, PhotoLoadType.Full);
                     var annotation = currentMiniaturePhotoViewModel.Annotation;
-                    PhotoViewModel = new PhotoViewModel(fullPhoto, annotation);
+                    var id = currentMiniaturePhotoViewModel.Id;
+                    PhotoViewModel = new PhotoViewModel(id, fullPhoto, annotation);
                     PhotoViewModel.BoundBoxes = PhotoCollection[SelectedIndex].BoundBoxes;
                 
                     CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
@@ -691,7 +778,7 @@ namespace RescuerLaApp.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Unable to update ui.");
+                //Log.Error(ex, "Unable to update ui.");
             }
         }
     }

@@ -23,13 +23,5 @@ namespace RescuerLaApp.Views
             this.WhenActivated(disposables => { });
             AvaloniaXamlLoader.Load(this);
         }
-
-        /*
-        public void Show(MainWindowViewModel vm)
-        {
-            DataContext = vm;
-            base.Show();
-        }
-        */
     }
 }

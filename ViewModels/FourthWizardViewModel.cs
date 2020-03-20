@@ -57,6 +57,7 @@ namespace RescuerLaApp.ViewModels
                 using (var pb = new Models.ProgressBar())
                 {
                     var count = 0;
+                    var id = 0;
                     var photoLoader = new PhotoLoader();
                     var files = GetFilesFromDir(inputPath, false);
                     var enumerable = files as string[] ?? files.ToArray();
@@ -85,7 +86,8 @@ namespace RescuerLaApp.ViewModels
                                     await Dispatcher.UIThread.InvokeAsync(() =>
                                     {
                                         var photo = photoLoader.Load(path, stream, PhotoLoadType.Miniature);
-                                        _photos.Add(new PhotoViewModel(photo, annotation));
+                                        _photos.Add(new PhotoViewModel(id, photo, annotation));
+                                        id++;
                                     });
                                 });
                                 
