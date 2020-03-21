@@ -142,7 +142,6 @@ namespace RescuerLaApp.ViewModels
             ShowAllMetadataCommand = ReactiveCommand.Create(ShowAllMetadata, canExecute);
             ShowGeoDataCommand = ReactiveCommand.Create(ShowGeoData, canExecute);
             AddToFavoritesCommand = ReactiveCommand.Create(AddToFavorites, canExecute);
-            SwitchBoundBoxesVisibilityCommand = ReactiveCommand.Create(SwitchBoundBoxesVisibility, canSwitchBoundBox);
             HelpCommand = ReactiveCommand.Create(Help);
             AboutCommand = ReactiveCommand.Create(About);
             OpenWizardCommand = ReactiveCommand.Create(OpenWizard);
@@ -170,7 +169,6 @@ namespace RescuerLaApp.ViewModels
             set => _totalPages = value;
         }
         // TODO: update with locales
-        [Reactive] public string BoundBoxesStateString { get; set; } = "Hide bound boxes";
         [Reactive] public string FavoritesStateString { get; set; } = "Add to favorites";
         [Reactive] public double CanvasWidth { get; set; } = 500;
         [Reactive] public double CanvasHeight { get; set; } = 500;
@@ -678,14 +676,22 @@ namespace RescuerLaApp.ViewModels
             */
         }
 
-        public void AddToFavorites()
+        public async void AddToFavorites()
         {
-            
-        }
-
-        public void SwitchBoundBoxesVisibility()
-        {
-            
+            if (_photoCollection[SelectedIndex].Photo.Attribute != Attribute.Favorite)
+            {
+                _photoCollection[SelectedIndex].Photo.Attribute = Attribute.Favorite;
+            }
+            else
+            {
+                if(_photoCollection[SelectedIndex].BoundBoxes.Any())
+                    _photoCollection[SelectedIndex].Photo.Attribute = Attribute.WithObject;
+                else
+                {
+                    _photoCollection[SelectedIndex].Photo.Attribute = Attribute.Empty;
+                }
+            }
+            await UpdateUi();
         }
 
         public async void About()
@@ -789,9 +795,10 @@ namespace RescuerLaApp.ViewModels
                     if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
                             $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
+
+                    FavoritesStateString = PhotoCollection[SelectedIndex].Photo.Attribute == Attribute.Favorite ? "Remove from favorites" : "Add to favorites";
                     
                     Log.Debug($"Ui updated to index {SelectedIndex}");
-                    Log.Debug($"Ui updated to filter index {FilterIndex}");
                 });
             }
             catch (Exception ex)
