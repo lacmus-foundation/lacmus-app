@@ -52,7 +52,6 @@ namespace RescuerLaApp.ViewModels
         private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
         private int itemPerPage = 500;
         private int itemcount;
-        private int _currentPageIndex;
         private int _totalPages;
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
         private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
@@ -60,13 +59,17 @@ namespace RescuerLaApp.ViewModels
         public MainWindowViewModel(Window window)
         {
             _window = window;
-            
-            var filter = this
+
+            var pageFilter = this
                 .WhenValueChanged(x => x.CurrentPage)
                 .Select(PageFilter);
+            var typeFilter = this
+                .WhenValueChanged(x => x.FilterIndex)
+                .Select(TypeFilter);
             
             _photos.Connect()
-                .Filter(filter)
+                .Filter(pageFilter)
+                .Filter(typeFilter)
                 .ObserveOn(RxApp.MainThreadScheduler)
                 .Bind(out _photoCollection)
                 .DisposeMany()
@@ -139,7 +142,6 @@ namespace RescuerLaApp.ViewModels
             ShowAllMetadataCommand = ReactiveCommand.Create(ShowAllMetadata, canExecute);
             ShowGeoDataCommand = ReactiveCommand.Create(ShowGeoData, canExecute);
             AddToFavoritesCommand = ReactiveCommand.Create(AddToFavorites, canExecute);
-            SwitchBoundBoxesVisibilityCommand = ReactiveCommand.Create(SwitchBoundBoxesVisibility, canSwitchBoundBox);
             HelpCommand = ReactiveCommand.Create(Help);
             AboutCommand = ReactiveCommand.Create(About);
             OpenWizardCommand = ReactiveCommand.Create(OpenWizard);
@@ -156,21 +158,17 @@ namespace RescuerLaApp.ViewModels
 
         public ReadOnlyObservableCollection<PhotoViewModel> PhotoCollection => _photoCollection;
         [Reactive] public int SelectedIndex { get; set; }
-        [Reactive] public int FilterIndex { get; set; }
+        [Reactive] public int CurrentPage { get; set; } = 0;
+        
+        [Reactive] public int FilterIndex { get; set; } = 0;
         [Reactive] public PhotoViewModel PhotoViewModel { get; set; }
         [Reactive] public ApplicationStatusViewModel ApplicationStatusViewModel { get; set; }
-        [Reactive] public int CurrentPage
-        {
-            get => _currentPageIndex;
-            set => _currentPageIndex = value;
-        }
         [Reactive] public int TotalPages
         {
             get => _totalPages;
             set => _totalPages = value;
         }
         // TODO: update with locales
-        [Reactive] public string BoundBoxesStateString { get; set; } = "Hide bound boxes";
         [Reactive] public string FavoritesStateString { get; set; } = "Add to favorites";
         [Reactive] public double CanvasWidth { get; set; } = 500;
         [Reactive] public double CanvasHeight { get; set; } = 500;
@@ -266,8 +264,23 @@ namespace RescuerLaApp.ViewModels
         
         private Func<PhotoViewModel, bool> PageFilter(int currentPage)
         {
-            return x =>
-                x.Id >= itemPerPage * CurrentPage && x.Id < itemPerPage * (CurrentPage + 1);
+           return x =>
+                x.Id >= itemPerPage * currentPage && x.Id < itemPerPage * (currentPage + 1);
+        }
+        private Func<PhotoViewModel, bool> TypeFilter(int fitlerType)
+        {
+            SelectedIndex = 0;
+            switch (fitlerType)
+            {
+                case 0:
+                    return x => true;
+                case 1:
+                    return x => x.Photo.Attribute == Attribute.WithObject;
+                case 2:
+                    return x => x.Photo.Attribute == Attribute.Favorite;
+                default:
+                    return x => true;
+            }
         }
         
         private void CalculateTotalPages()
@@ -390,15 +403,17 @@ namespace RescuerLaApp.ViewModels
                     await model.Init();
                     var count = 0;
                     var objectCount = 0;
-                    foreach (var photoViewModel in _photoCollection)
+                    foreach (var photoViewModel in _photos.Items)
                     {
                         try
                         {
                             photoViewModel.Annotation.Objects = await model.Predict(photoViewModel);
                             photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
+                            if (photoViewModel.BoundBoxes.Any())
+                                photoViewModel.Photo.Attribute = Attribute.WithObject;
                             objectCount += photoViewModel.BoundBoxes.Count();
                             count++;
-                            Console.WriteLine($"\tProgress: {(double) count / _photoCollection.Count() * 100} %");
+                            Console.WriteLine($"\tProgress: {(double) count / _photos.Items.Count() * 100} %");
                         }
                         catch (Exception e)
                         {
@@ -406,7 +421,7 @@ namespace RescuerLaApp.ViewModels
                         }
                     }
                     await model.Stop();
-                    Log.Information($"Successfully predict {_photoCollection.Count} photos. Find {objectCount} objects.");
+                    Log.Information($"Successfully predict {_photos.Items.Count()} photos. Find {objectCount} objects.");
                 }
             }
             catch (Exception e)
@@ -484,16 +499,16 @@ namespace RescuerLaApp.ViewModels
         {
             try
             {
-                if (!_photoCollection.Any())
+                if (!_photos.Items.Any())
                 {
                     Log.Warning("There are no photos to save.");
                     return;
                 }
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 var writer = new PhotoVMWriter(_window);
-                await writer.WriteMany(_photoCollection);
+                await writer.WriteMany(_photos.Items);
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
-                Log.Information($"Saved {_photoCollection.Count} photos.");
+                Log.Information($"Saved {_photos.Items.Count()} photos.");
             }
             catch (Exception ex)
             {
@@ -506,16 +521,16 @@ namespace RescuerLaApp.ViewModels
         {
             try
             {
-                if (!_photoCollection.Any())
+                if (!_photos.Items.Any())
                 {
                     Log.Warning("There are no photos to save.");
                     return;
                 }
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 var writer = new PhotoVMWriter(_window);
-                await writer.WriteMany(_photoCollection.Where(x => x.Photo.Attribute == Attribute.WithObject));
+                await writer.WriteMany(_photos.Items.Where(x => x.Photo.Attribute == Attribute.WithObject));
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
-                Log.Information($"Saved {_photoCollection.Count} photos.");
+                Log.Information($"Saved {_photos.Items.Count()} photos.");
             }
             catch (Exception ex)
             {
@@ -528,16 +543,16 @@ namespace RescuerLaApp.ViewModels
         {
             try
             {
-                if (!_photoCollection.Any())
+                if (!_photos.Items.Any())
                 {
                     Log.Warning("There are no photos to save.");
                     return;
                 }
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 var writer = new PhotoVMWriter(_window);
-                await writer.WriteMany(_photoCollection.Where(x => x.Photo.Attribute == Attribute.Favorite));
+                await writer.WriteMany(_photos.Items.Where(x => x.Photo.Attribute == Attribute.Favorite));
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
-                Log.Information($"Saved {_photoCollection.Count} photos.");
+                Log.Information($"Saved {_photos.Items.Count()} photos.");
             }
             catch (Exception ex)
             {
@@ -661,14 +676,22 @@ namespace RescuerLaApp.ViewModels
             */
         }
 
-        public void AddToFavorites()
+        public async void AddToFavorites()
         {
-            
-        }
-
-        public void SwitchBoundBoxesVisibility()
-        {
-            
+            if (_photoCollection[SelectedIndex].Photo.Attribute != Attribute.Favorite)
+            {
+                _photoCollection[SelectedIndex].Photo.Attribute = Attribute.Favorite;
+            }
+            else
+            {
+                if(_photoCollection[SelectedIndex].BoundBoxes.Any())
+                    _photoCollection[SelectedIndex].Photo.Attribute = Attribute.WithObject;
+                else
+                {
+                    _photoCollection[SelectedIndex].Photo.Attribute = Attribute.Empty;
+                }
+            }
+            await UpdateUi();
         }
 
         public async void About()
@@ -772,6 +795,8 @@ namespace RescuerLaApp.ViewModels
                     if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
                             $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
+
+                    FavoritesStateString = PhotoCollection[SelectedIndex].Photo.Attribute == Attribute.Favorite ? "Remove from favorites" : "Add to favorites";
                     
                     Log.Debug($"Ui updated to index {SelectedIndex}");
                 });

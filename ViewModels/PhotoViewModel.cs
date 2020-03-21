@@ -31,7 +31,7 @@ namespace RescuerLaApp.ViewModels
         }
         [Reactive] public string Caption { get; private set; }
         [Reactive] public string Path { get; private set; }
-        [Reactive] public IEnumerable<BoundBox> BoundBoxes { get; set; }
+        [Reactive] public IEnumerable<BoundBox> BoundBoxes { get; set; } = new List<BoundBox>();
         public int Id { get; set; }
 
         private void UpdatePhotoInfo(Annotation annotation)

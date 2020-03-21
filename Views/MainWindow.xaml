@@ -74,7 +74,8 @@
           <Separator/>
           <Button Name="bImagePrev" Command="{Binding PrevImageCommand}">Prev</Button>
           <Button Name="bImageNext" Command="{Binding NextImageCommand}">Next</Button>
-          <Button Name="bWizard" Margin="1" Command="{Binding OpenWizardCommand}">Wizard</Button>
+          <Button Name="bWizard" Command="{Binding OpenWizardCommand}">Wizard</Button>
+          <ToggleButton Padding="8" Margin="1" Name="bShowBorder" IsChecked="True" Content="Border" />
         </StackPanel>
       </ToolTip>
     </StackPanel>
@@ -156,8 +157,6 @@
                   Width="{Binding CanvasWidth, Mode=TwoWay}">
                   <Canvas.ContextMenu>
                     <ContextMenu>
-                      <MenuItem Header="{Binding BoundBoxesStateString}" Command="{Binding SwitchBoundBoxesVisibilityCommand}"/>
-                      <Separator/>
                       <MenuItem Header="Show geo position" Command="{Binding ShowGeoDataCommand}"/>
                       <!-- <MenuItem Header="Find nearest photo"/> -->
                       <MenuItem Header="Show all metadata" Command="{Binding ShowAllMetadataCommand}"/>
@@ -173,7 +172,7 @@
                 <Polygon
                   Points="{Binding Points}"
                   Stroke="Red" StrokeThickness="10"
-                  IsVisible="{Binding IsVisible}"/>
+                  IsVisible="{Binding #bShowBorder.IsChecked, Mode=OneWay}"/>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
           </ItemsControl>
