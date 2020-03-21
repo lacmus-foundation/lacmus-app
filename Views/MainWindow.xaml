@@ -127,7 +127,7 @@
             <ColumnDefinition Width="*"/>
           </Grid.ColumnDefinitions>
           <Button Grid.Column="0" Content="&lt;&lt;" Command="{Binding FirstPageCommand}"/>
-          <Button Grid.Column="1" Content="&lt;" Command="{Binding FirstPageCommand}"/>
+          <Button Grid.Column="1" Content="&lt;" Command="{Binding PreviousPageCommand}"/>
           <TextBlock Grid.Column="2" Margin="1 10" Text="{Binding CurrentPage}"/>
           <TextBlock Grid.Column="3" HorizontalAlignment="Center" Margin="1 10" Text="of"/>
           <TextBlock Grid.Column="4" Margin="1 10" Text="{Binding TotalPages}"/>
