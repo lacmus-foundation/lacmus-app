@@ -103,10 +103,28 @@
                  SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
           <ListBox.DataTemplates>
             <DataTemplate DataType="{x:Type vm:PhotoViewModel}">
-              <StackPanel Margin="25,5" Orientation="Vertical">
-                <Canvas Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding Photo.ImageBrush}"/>
-                <TextBlock Margin="0,5" HorizontalAlignment="Center" ToolTip.Tip="{Binding Path}" Text="{Binding Caption}"></TextBlock>
-              </StackPanel>
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Canvas Grid.Row="0" ZIndex="0" Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding Photo.ImageBrush}"/>
+                <TextBlock Grid.Row="1" ZIndex="0" Margin="0,5" HorizontalAlignment="Center" ToolTip.Tip="{Binding Path}" Text="{Binding Caption}"></TextBlock>
+                <StackPanel Margin="0 2" ZIndex="1" Orientation="Vertical">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Image Grid.Column="0" IsVisible="{Binding IsHasObject}" Source="resm:RescuerLaApp.Assets.IsObject.png" Width="20" Height="20"/>
+                    <Image Grid.Column="2" IsVisible="{Binding IsFavorite}" Source="resm:RescuerLaApp.Assets.IsFavorite.png" Width="20" Height="20"/>
+                    <Image Grid.Column="4" IsVisible="{Binding IsWatched}" Source="resm:RescuerLaApp.Assets.IsWatched.png" Width="20" Height="20"/>
+                  </Grid>
+                </StackPanel>
+              </Grid>
             </DataTemplate>
           </ListBox.DataTemplates>
         </ListBox>

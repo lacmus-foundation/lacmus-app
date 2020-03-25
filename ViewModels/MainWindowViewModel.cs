@@ -410,7 +410,10 @@ namespace RescuerLaApp.ViewModels
                             photoViewModel.Annotation.Objects = await model.Predict(photoViewModel);
                             photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
                             if (photoViewModel.BoundBoxes.Any())
+                            {
                                 photoViewModel.Photo.Attribute = Attribute.WithObject;
+                                photoViewModel.IsHasObject = true;
+                            }
                             objectCount += photoViewModel.BoundBoxes.Count();
                             count++;
                             Console.WriteLine($"\tProgress: {(double) count / _photos.Items.Count() * 100} %");
@@ -681,6 +684,7 @@ namespace RescuerLaApp.ViewModels
             if (_photoCollection[SelectedIndex].Photo.Attribute != Attribute.Favorite)
             {
                 _photoCollection[SelectedIndex].Photo.Attribute = Attribute.Favorite;
+                _photoCollection[SelectedIndex].IsFavorite = true;
             }
             else
             {
@@ -690,6 +694,7 @@ namespace RescuerLaApp.ViewModels
                 {
                     _photoCollection[SelectedIndex].Photo.Attribute = Attribute.Empty;
                 }
+                _photoCollection[SelectedIndex].IsFavorite = false;
             }
             await UpdateUi();
         }
@@ -780,6 +785,7 @@ namespace RescuerLaApp.ViewModels
             {
                 await Dispatcher.UIThread.InvokeAsync(() =>
                 {
+                    PhotoCollection[SelectedIndex].IsWatched = true;
                     PhotoViewModel = null;
                     var currentMiniaturePhotoViewModel = PhotoCollection[SelectedIndex];
                     var photoLoader = new PhotoLoader();

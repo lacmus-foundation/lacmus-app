@@ -31,6 +31,9 @@ namespace RescuerLaApp.ViewModels
         }
         [Reactive] public string Caption { get; private set; }
         [Reactive] public string Path { get; private set; }
+        [Reactive] public bool IsHasObject { get; set; } = false;
+        [Reactive] public bool IsFavorite { get; set; } = false;
+        [Reactive] public bool IsWatched { get; set; } = false;
         [Reactive] public IEnumerable<BoundBox> BoundBoxes { get; set; } = new List<BoundBox>();
         public int Id { get; set; }
 
