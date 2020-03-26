@@ -1,4 +1,5 @@
 using System.IO;
+using System.Text.RegularExpressions;
 using RescuerLaApp.Models;
 
 namespace RescuerLaApp.Extensions
@@ -7,10 +8,17 @@ namespace RescuerLaApp.Extensions
     {
         public static string GetCaption(this Annotation annotation)
         {
-            var name = annotation.Filename;
-            if (name.Length > 10)
+            var name = Path.GetFileNameWithoutExtension(annotation.Filename);
+            if (name.Length <= 15)
+                return name;
+            
+            var digitName = Regex.Replace(name, @"[^\d]", "");
+            if (!string.IsNullOrWhiteSpace(digitName))
+                name = digitName;
+                
+            if (name.Length > 15)
             {
-                name = name.Substring(0, 3) + "{~}" + name.Substring(name.Length - 5);
+                name = name.Substring(0, 3) + "{~}" + name.Substring(name.Length - 10);
             }
             return name;
         }
