@@ -464,7 +464,7 @@ namespace RescuerLaApp.ViewModels
                     var photos = await reader.ReadAllFromDirByPhoto();
                     if(!photos.Any())
                     {
-                        Log.Warning("There are no photos to save.");
+                        Log.Warning("There are no photos to load.");
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                         return;
                     }
@@ -494,7 +494,7 @@ namespace RescuerLaApp.ViewModels
                     var photos = await reader.ReadAllFromDirByAnnotation();
                     if(!photos.Any())
                     {
-                        Log.Warning("There are no photos to save.");
+                        Log.Warning("There are no photos to load.");
                         _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                         return;
                     }
