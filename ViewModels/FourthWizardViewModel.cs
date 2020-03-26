@@ -16,6 +16,7 @@ using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Services.IO;
 using RescuerLaApp.Services.VM;
 using Serilog;
+using Attribute = RescuerLaApp.Models.Photo.Attribute;
 
 namespace RescuerLaApp.ViewModels
 {
@@ -135,6 +136,11 @@ namespace RescuerLaApp.ViewModels
                         {
                             photoViewModel.Annotation.Objects = await model.Predict(photoViewModel);
                             photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
+                            if (photoViewModel.BoundBoxes.Any())
+                            {
+                                photoViewModel.Photo.Attribute = Attribute.WithObject;
+                                photoViewModel.IsHasObject = true;
+                            }
                             objectCount += photoViewModel.BoundBoxes.Count();
                             count++;
                             PredictProgress = (double) count / _photos.Items.Count() * 100;

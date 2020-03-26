@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using MetadataExtractor;
+using RescuerLaApp.Extensions;
 using RescuerLaApp.Models;
 using RescuerLaApp.Models.Photo;
 using RescuerLaApp.Services.Files;
@@ -105,7 +106,9 @@ namespace RescuerLaApp.Services.VM
                                 Filename = Path.GetFileName(path),
                                 Folder = Path.GetDirectoryName(path)
                             };
-                            photoList.Add(new PhotoViewModel(id, photo, annotation));
+                            var photoViewModel = new PhotoViewModel(id, photo, annotation);
+                            photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
+                            photoList.Add(photoViewModel);
                             id++;
                             count++;
                             pb.Report((double)count / valueTuples.Count(), $"Processed {count} of {valueTuples.Count()}");
@@ -149,7 +152,9 @@ namespace RescuerLaApp.Services.VM
                         var annotation = annotationLoader.Load(path, stream);
                         var photoPath = Path.Combine(annotation.Folder, annotation.Filename);
                         var photo = photoLoader.Load(photoPath, loadType);
-                        photoList.Add(new PhotoViewModel(id, photo, annotation));
+                        var photoViewModel = new PhotoViewModel(id, photo, annotation);
+                        photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
+                        photoList.Add(photoViewModel);
                         id++;
                         count++;
                         pb.Report((double)count / valueTuples.Count(), $"Processed {count} of {valueTuples.Count()}");
