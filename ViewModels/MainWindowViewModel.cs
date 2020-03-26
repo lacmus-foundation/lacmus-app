@@ -229,36 +229,40 @@ namespace RescuerLaApp.ViewModels
             }
         }
         
-        private void ShowNextPage()
+        private async void ShowNextPage()
         {
             if (CurrentPage < TotalPages - 1)
             {
                 SelectedIndex = 0;
                 CurrentPage++;
+                await UpdateUi();
             }
         }
 
-        private void ShowPreviousPage()
+        private async void ShowPreviousPage()
         {
             if (CurrentPage > 0)
             {
                 SelectedIndex = 0;
                 CurrentPage--;
+                await UpdateUi();
             }
         }
 
-        private void ShowFirstPage()
+        private async void ShowFirstPage()
         {
             SelectedIndex = 0;
             CurrentPage = 0;
+            await UpdateUi();
         }
 
-        private void ShowLastPage()
+        private async void ShowLastPage()
         {
             if (TotalPages > 0)
             {
                 SelectedIndex = 0;
                 CurrentPage = TotalPages - 1;
+                await UpdateUi();
             }
         }
         
@@ -457,13 +461,19 @@ namespace RescuerLaApp.ViewModels
                 {
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                     var reader = new PhotoVMReader(_window);
-                    _photos.Clear();
                     var photos = await reader.ReadAllFromDirByPhoto();
-                    if(photos.Any())
-                        _photos.AddRange(photos);
-                    SelectedIndex = 0;
+                    if(!photos.Any())
+                    {
+                        Log.Warning("There are no photos to save.");
+                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                        return;
+                    }
+                    _photos.Clear();
+                    _photos.AddRange(photos);
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     CalculateTotalPages();
+                    SelectedIndex = 0;
+                    await UpdateUi();
                     Log.Information($"Loads {_photos.Count} photos.");
                 });
             }
@@ -481,13 +491,19 @@ namespace RescuerLaApp.ViewModels
                 {
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                     var reader = new PhotoVMReader(_window);
-                    _photos.Clear();
                     var photos = await reader.ReadAllFromDirByAnnotation();
-                    if(photos.Any())
-                        _photos.AddRange(photos);
-                    SelectedIndex = 0;
+                    if(!photos.Any())
+                    {
+                        Log.Warning("There are no photos to save.");
+                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                        return;
+                    }
+                    _photos.Clear();
+                    _photos.AddRange(photos);
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
                     CalculateTotalPages();
+                    SelectedIndex = 0;
+                    await UpdateUi();
                     Log.Information($"Loads {_photos.Count} photos.");
                 });
             }
