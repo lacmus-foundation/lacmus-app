@@ -103,13 +103,13 @@
                  SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
           <ListBox.DataTemplates>
             <DataTemplate DataType="{x:Type vm:PhotoViewModel}">
-              <Grid>
+              <Grid ToolTip.Tip="{Binding Path}">
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto"/>
                   <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Canvas Grid.Row="0" ZIndex="0" Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding Photo.ImageBrush}"/>
-                <TextBlock Grid.Row="1" ZIndex="0" Margin="0,5" HorizontalAlignment="Center" ToolTip.Tip="{Binding Path}" Text="{Binding Caption}"></TextBlock>
+                <TextBlock Grid.Row="1" ZIndex="0" Margin="0,5" HorizontalAlignment="Center" Text="{Binding Caption}"></TextBlock>
                 <StackPanel Margin="0 2" ZIndex="1" Orientation="Vertical">
                   <Grid>
                     <Grid.ColumnDefinitions>
