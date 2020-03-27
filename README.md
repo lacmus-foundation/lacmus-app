@@ -34,11 +34,11 @@ For more info, user guide and installation guide look at [lacmus wiki](https://g
 
 ### 1. Install Dependencies
 - Git: https://git-scm.com/downloads
-- .Net Core 2.2: https://dotnet.microsoft.com/download/dotnet-core/2.2
+- .Net Core 3.1: https://dotnet.microsoft.com/download/dotnet-core/3.1
 - Docker: https://docs.docker.com/install/
 - Nvidia-docker2 (if you have nVidia CUDA compartable GPU and want make GPU inference): https://github.com/nvidia/nvidia-docker/wiki/Installation-(version-2.0)
 
-### 2. Get the code, build and run  the project
+### 2. Get the code, build and run the project
 
 ```bash
 $ git clone https://github.com/lacmus-foundation/lacmus-app.git
@@ -49,18 +49,18 @@ $ dotnet restore
 build in debug mode
 ```bash
 $ dotnet build
-$ dotnet bin/Debug/netcoreapp2.2/RescuerLaApp.dll
+$ dotnet run --framework netcoreapp3.1
 ```
-or create self  executeble binary file
+or create self executable binary file
 ```bash
 # Build for linux
-$ dotnet publish --framework netcoreapp2.2 --runtime="linux-x64" -c Release -o ./bin/app/linux
+$ dotnet publish --framework netcoreapp3.1 --runtime="linux-x64" -c Release -o ./bin/app/linux
 
 # Build for windows
-$ dotnet publish --framework netcoreapp2.2 --runtime="win-x64" -c Release -o ./bin/app/win10
+$ dotnet publish --framework netcoreapp3.1 --runtime="win-x64" -c Release -o ./bin/app/win10
 
 # Build for Mac OS X
-$ dotnet publish --framework netcoreapp2.2 --runtime="osx-x64" -c Release -o ./bin/app/osx
+$ dotnet publish --framework netcoreapp3.1 --runtime="osx-x64" -c Release -o ./bin/app/osx
 ```
 
 ### Contributing
