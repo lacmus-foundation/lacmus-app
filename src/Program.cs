@@ -16,7 +16,7 @@ namespace LacmusApp
             Console.WriteLine($"Lacmus desktop application. Version {GetVersion()} alpha.");
             Console.WriteLine("Copyright (c) 2020 Lacmus Foundation <gosha20777@live.ru>.");
             Console.WriteLine("Github page: https://github.com/lacmus-foundation.");
-            Console.WriteLine("Provided by Immers Cloud: https://immers.cloud/.");
+            Console.WriteLine("Powered by Immers Cloud <https://immers.cloud/> and ODS <https://ods.ai>.");
             Console.WriteLine("This program comes with ABSOLUTELY NO WARRANTY;");
             Console.WriteLine("This is free software, and you are welcome to redistribute it under GNU GPL license;\nClick `help` -> `about' for details.");
             Console.WriteLine("------------------------------------");
