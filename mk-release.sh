@@ -1,5 +1,5 @@
 #!/bin/bash
-rm -rf ./bin/app/ && rm -r ./bin/Release/
+rm -rf ./bin/app/ && rm -rf ./src/bin/Release/
 echo "restoring packeges"
 dotnet restore
 echo -n "building for linux"

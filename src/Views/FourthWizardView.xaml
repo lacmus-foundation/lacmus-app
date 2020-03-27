@@ -1,0 +1,79 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="LacmusApp.Views.FourthWizardView">
+    <StackPanel>
+        <Border Classes="Card">
+            <StackPanel>
+                <TextBlock Classes="Heading" Text="Photo processing" />
+                <TextBlock Margin="0 5"
+                           TextWrapping="Wrap"
+                           Text="Photo processing in progress. Please do not close the program and wait until the process ends. To force stop the processing, click 'Stop ml model' (progress will save)."
+                           ToolTip.Tip="Select input data" />
+            </StackPanel>
+        </Border>
+        <Border Classes="Card">
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="1*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Horizontal">
+                        <TextBlock Classes="Heading"
+                                   Text="Total status: "/>
+                        <TextBlock Classes="Heading"
+                                   Text="{Binding Status}"/>
+                    </StackPanel>
+                    <Button Grid.Column="1"
+                            Content="Stop ml model"
+                            Command="{Binding StopCommand}"/>
+                </Grid>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption" 
+                               Text="Loading photos:"/>
+                    <TextBlock Classes="Caption" Margin="2 0"
+                               Text="{Binding InputTextProgress}"/>
+                </StackPanel>
+                <ProgressBar Orientation="Horizontal" 
+                             Margin="0 5"
+                             Height="20">
+                    <ProgressBar.Value>
+                        <Binding Path="InputProgress" />
+                    </ProgressBar.Value>
+                </ProgressBar>
+                
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption" 
+                               Text="Processing photos:"/>
+                    <TextBlock Classes="Caption" Margin="2 0"
+                               Text="{Binding PredictTextProgress}"/>
+                </StackPanel>
+                <ProgressBar Orientation="Horizontal" 
+                             Margin="0 5"
+                             Height="20">
+                    <ProgressBar.Value>
+                        <Binding Path="PredictProgress" />
+                    </ProgressBar.Value>
+                </ProgressBar>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption" 
+                               Text="Saving results:"/>
+                    <TextBlock Classes="Caption" Margin="2 0"
+                               Text="{Binding OutputTextProgress}"/>
+                </StackPanel>
+                <ProgressBar Orientation="Horizontal" 
+                             Margin="0 5"
+                             Height="20">
+                    <ProgressBar.Value>
+                        <Binding Path="OutputProgress" />
+                    </ProgressBar.Value>
+                </ProgressBar>
+                <Expander Header="Details" IsExpanded="True" Margin="0 5 0 0">
+                    <TextBlock Text="Logs here..."
+                               Classes="Caption"
+                               Margin="10" />
+                </Expander>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>
