@@ -129,8 +129,6 @@ namespace LacmusApp.ViewModels
             LoadModelCommand = ReactiveCommand.Create(LoadModel, canExecute);
             UpdateModelCommand = ReactiveCommand.Create(UpdateModel, canExecute);
             
-            ShowPedestriansCommand = ReactiveCommand.Create(ShowPedestrians, canExecute);
-            ShowFavoritesCommand = ReactiveCommand.Create(ShowFavorites, canExecute);
             NextPageCommand = ReactiveCommand.Create(ShowNextPage);
             PreviousPageCommand = ReactiveCommand.Create(ShowPreviousPage);
             FirstPageCommand = ReactiveCommand.Create(ShowFirstPage);
@@ -172,8 +170,6 @@ namespace LacmusApp.ViewModels
         [Reactive] public string FavoritesStateString { get; set; } = "Add to favorites";
         [Reactive] public double CanvasWidth { get; set; } = 500;
         [Reactive] public double CanvasHeight { get; set; } = 500;
-        [Reactive] public bool IsShowPedestrians { get; set; }
-        [Reactive] public bool IsShowFavorites { get; set; }
 
         public ReactiveCommand<Unit, Unit> PredictAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> NextImageCommand { get; }
@@ -186,8 +182,6 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; set; }
         public ReactiveCommand<Unit, Unit> UpdateModelCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> ShowPedestriansCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> ShowFavoritesCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAllImagesWithObjectsCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveFavoritesImagesCommand { get; set; }
         public ReactiveCommand<Unit, Unit> FirstPageCommand { get; set; }
@@ -197,7 +191,6 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> ShowAllMetadataCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ShowGeoDataCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AddToFavoritesCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> SwitchBoundBoxesVisibilityCommand { get; set; }
         public ReactiveCommand<Unit, Unit> HelpCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AboutCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ExitCommand { get; set; }
@@ -205,30 +198,6 @@ namespace LacmusApp.ViewModels
 
         #endregion
 
-        private void ShowPedestrians()
-        {
-            if (IsShowPedestrians)
-            {
-            
-            }
-            else
-            {
-                
-            }
-        }
-
-        private void ShowFavorites()
-        {
-            if (IsShowFavorites)
-            {
-                
-            }
-            else
-            {
-                
-            }
-        }
-        
         private async void ShowNextPage()
         {
             if (CurrentPage < TotalPages - 1)
@@ -421,6 +390,7 @@ namespace LacmusApp.ViewModels
                             objectCount += photoViewModel.BoundBoxes.Count();
                             count++;
                             Console.WriteLine($"\tProgress: {(double) count / _photos.Items.Count() * 100} %");
+                            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / _photos.Items.Count() * 100)} %, [{count} of {_photos.Items.Count()}]");
                         }
                         catch (Exception e)
                         {
@@ -457,25 +427,26 @@ namespace LacmusApp.ViewModels
         {
             try
             {
-                await Dispatcher.UIThread.InvokeAsync(async () =>
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                var reader = new PhotoVMReader(_window);
+                reader.Notify += (status, statusString) =>
                 {
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                    var reader = new PhotoVMReader(_window);
-                    var photos = await reader.ReadAllFromDirByPhoto();
-                    if(!photos.Any())
-                    {
-                        Log.Warning("There are no photos to load.");
-                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                        return;
-                    }
-                    _photos.Clear();
-                    _photos.AddRange(photos);
+                    _applicationStatusManager.ChangeCurrentAppStatus(status, statusString);
+                };
+                var photos = await reader.ReadAllFromDirByPhoto();
+                if(!photos.Any())
+                {
+                    Log.Warning("There are no photos to load.");
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                    CalculateTotalPages();
-                    SelectedIndex = 0;
-                    await UpdateUi();
-                    Log.Information($"Loads {_photos.Count} photos.");
-                });
+                    return;
+                }
+                _photos.Clear();
+                _photos.AddRange(photos);
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                CalculateTotalPages();
+                SelectedIndex = 0;
+                await UpdateUi();
+                Log.Information($"Loads {_photos.Count} photos.");
             }
             catch (Exception ex)
             {
@@ -483,29 +454,31 @@ namespace LacmusApp.ViewModels
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
+
         private async void ImportFromXml()
         {
             try
             {
-                await Dispatcher.UIThread.InvokeAsync(async () =>
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                var reader = new PhotoVMReader(_window);
+                reader.Notify += (status, statusString) =>
                 {
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                    var reader = new PhotoVMReader(_window);
-                    var photos = await reader.ReadAllFromDirByAnnotation();
-                    if(!photos.Any())
-                    {
-                        Log.Warning("There are no photos to load.");
-                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                        return;
-                    }
-                    _photos.Clear();
-                    _photos.AddRange(photos);
+                    _applicationStatusManager.ChangeCurrentAppStatus(status, statusString);
+                };
+                var photos = await reader.ReadAllFromDirByAnnotation();
+                if(!photos.Any())
+                {
+                    Log.Warning("There are no photos to load.");
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-                    CalculateTotalPages();
-                    SelectedIndex = 0;
-                    await UpdateUi();
-                    Log.Information($"Loads {_photos.Count} photos.");
-                });
+                    return;
+                }
+                _photos.Clear();
+                _photos.AddRange(photos);
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                CalculateTotalPages();
+                SelectedIndex = 0;
+                await UpdateUi();
+                Log.Information($"Loads {_photos.Count} photos.");
             }
             catch (Exception ex)
             {
@@ -595,9 +568,7 @@ namespace LacmusApp.ViewModels
 
         public void Help()
         {
-            /*
-            OpenUrl("https://github.com/lizaalert/lacmus/wiki");
-            */
+            OpenUrl("https://github.com/lacmus-foundation/lacmus/wiki");
         }
 
         public void ShowGeoData()
@@ -715,48 +686,12 @@ namespace LacmusApp.ViewModels
             await UpdateUi();
         }
 
-        public async void About()
+        public void About()
         {
-            /*
-            var message =
-                "Copyright (c) 2019 Georgy Perevozghikov <gosha20777@live.ru>\nGithub page: https://github.com/lizaalert/lacmus/. Press `Github` button for more details.\nProvided by Yandex Cloud: https://cloud.yandex.com/." +
-                "\nThis program comes with ABSOLUTELY NO WARRANTY." +
-                "\nThis is free software, and you are welcome to redistribute it under GNU GPLv3 conditions.\nPress `License` button to learn more about the license";
-
-            var msgBoxCustomParams = new MessageBoxCustomParams
-            {
-                ButtonDefinitions = new[]
-                {
-                    new ButtonDefinition {Name = "Ok", Type = ButtonType.Colored},
-                    new ButtonDefinition {Name = "License"},
-                    new ButtonDefinition {Name = "Github"}
-                },
-                ContentTitle = "About",
-                ContentHeader = "Lacmus desktop application. Version 0.3.3 alpha.",
-                ContentMessage = message,
-                Icon = Icon.Avalonia,
-                Style = Style.None,
-                ShowInCenter = true,
-                Window = new MsBoxCustomWindow
-                {
-                    Height = 400,
-                    Width = 1000,
-                    CanResize = true
-                }
-            };
-            var msgbox = MessageBoxManager.GetMessageBoxCustomWindow(msgBoxCustomParams);
-            var result = await msgbox.Show();
-            switch (result.ToLower())
-            {
-                case "ok": return;
-                case "license":
-                    OpenUrl("https://github.com/lizaalert/lacmus/blob/master/LICENSE");
-                    break;
-                case "github":
-                    OpenUrl("https://github.com/lizaalert/lacmus");
-                    break;
-            }
-            */
+            var window = new AboutWindow();
+            var context = new AboutViewModel(window);
+            window.DataContext = context;
+            window.Show();
         }
 
         public async void Exit()
@@ -799,29 +734,26 @@ namespace LacmusApp.ViewModels
         {
             try
             {
-                await Dispatcher.UIThread.InvokeAsync(() =>
-                {
-                    PhotoCollection[SelectedIndex].IsWatched = true;
-                    PhotoViewModel = null;
-                    var currentMiniaturePhotoViewModel = PhotoCollection[SelectedIndex];
-                    var photoLoader = new PhotoLoader();
-                    var fullPhoto = photoLoader.Load(currentMiniaturePhotoViewModel.Path, PhotoLoadType.Full);
-                    var annotation = currentMiniaturePhotoViewModel.Annotation;
-                    var id = currentMiniaturePhotoViewModel.Id;
-                    PhotoViewModel = new PhotoViewModel(id, fullPhoto, annotation);
-                    PhotoViewModel.BoundBoxes = PhotoCollection[SelectedIndex].BoundBoxes;
+                PhotoCollection[SelectedIndex].IsWatched = true;
+                PhotoViewModel = null;
+                var currentMiniaturePhotoViewModel = PhotoCollection[SelectedIndex];
+                var photoLoader = new PhotoLoader();
+                var fullPhoto = await photoLoader.Load(currentMiniaturePhotoViewModel.Path, PhotoLoadType.Full);
+                var annotation = currentMiniaturePhotoViewModel.Annotation;
+                var id = currentMiniaturePhotoViewModel.Id;
+                PhotoViewModel = new PhotoViewModel(id, fullPhoto, annotation);
+                PhotoViewModel.BoundBoxes = PhotoCollection[SelectedIndex].BoundBoxes;
                 
-                    CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
-                    CanvasWidth = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Width;
+                CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
+                CanvasWidth = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Width;
                 
-                    if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
-                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
-                            $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
+                if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
+                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
+                        $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
 
-                    FavoritesStateString = PhotoCollection[SelectedIndex].Photo.Attribute == Attribute.Favorite ? "Remove from favorites" : "Add to favorites";
+                FavoritesStateString = PhotoCollection[SelectedIndex].Photo.Attribute == Attribute.Favorite ? "Remove from favorites" : "Add to favorites";
                     
-                    Log.Debug($"Ui updated to index {SelectedIndex}");
-                });
+                Log.Debug($"Ui updated to index {SelectedIndex}");
             }
             catch (Exception ex)
             {

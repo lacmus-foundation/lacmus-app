@@ -81,20 +81,13 @@ namespace LacmusApp.ViewModels
                                     Filename = Path.GetFileName(path),
                                     Folder = Path.GetDirectoryName(path)
                                 };
-                                    
-                                await Task.Run(async () =>
-                                {
-                                    await Dispatcher.UIThread.InvokeAsync(() =>
-                                    {
-                                        var photo = photoLoader.Load(path, stream, PhotoLoadType.Miniature);
-                                        _photos.Add(new PhotoViewModel(id, photo, annotation));
-                                        id++;
-                                    });
-                                });
-                                
+                                var photo = await photoLoader.Load(path, stream, PhotoLoadType.Miniature);
+                                _photos.Add(new PhotoViewModel(id, photo, annotation));
+                                id++;
                                 count++;
                                 InputProgress = (double)count / enumerable.Count() * 100;
                                 InputTextProgress = $"{Convert.ToInt32(InputProgress)} %";
+                                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / enumerable.Count() * 100)} %, [{count} of {enumerable.Count()}]");
                                 pb.Report((double)count / enumerable.Count(), $"Processed {count} of {enumerable.Count()}");
                             }
                         }
@@ -145,6 +138,7 @@ namespace LacmusApp.ViewModels
                             count++;
                             PredictProgress = (double) count / _photos.Items.Count() * 100;
                             PredictTextProgress = $"{Convert.ToInt32(PredictProgress)} %";
+                            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / _photos.Items.Count() * 100)} %, [{count} of {_photos.Items.Count()}]");
                             Console.WriteLine($"\tProgress: {(double) count / _photos.Items.Count() * 100} %");
                         }
                         catch (Exception e)
