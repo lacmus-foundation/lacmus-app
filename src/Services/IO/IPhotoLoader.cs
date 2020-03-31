@@ -1,9 +1,10 @@
+using System.Threading.Tasks;
 using LacmusApp.Models.Photo;
 
 namespace LacmusApp.Services.IO
 {
     public interface IPhotoLoader
     {
-        Photo Load(string source, PhotoLoadType loadType);
+        Task<Photo> Load(string source, PhotoLoadType loadType);
     }
 }

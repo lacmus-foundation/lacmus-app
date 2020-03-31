@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Skia;
+using Avalonia.Threading;
 using MetadataExtractor;
 using LacmusApp.Models.Photo;
 using SkiaSharp;
@@ -13,13 +15,13 @@ namespace LacmusApp.Services.IO
 {
     public class PhotoLoader : IPhotoLoader
     {
-        public Photo Load(string source, PhotoLoadType loadType)
+        public async Task<Photo> Load(string source, PhotoLoadType loadType)
         {
             using (var stream = File.OpenRead(source))
             {
                 try
                 {
-                    var imageBrush = ReadImageBrushFromFile(stream, loadType);
+                    var imageBrush = await ReadImageBrushFromFile(stream, loadType);
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(source);
                     var photo = new Photo
                     {
@@ -35,13 +37,13 @@ namespace LacmusApp.Services.IO
                 }
             }
         }
-        public Photo Load(string source, Stream stream, PhotoLoadType loadType)
+        public async Task<Photo> Load(string source, Stream stream, PhotoLoadType loadType)
         {
             using (stream)
             {
                 try
                 {
-                    var imageBrush = ReadImageBrushFromFile(stream, loadType);
+                    var imageBrush = await Task<ImageBrush>.Factory.StartNew( () =>  ReadImageBrushFromFile(stream, loadType).Result);
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(source);
                     var photo = new Photo
                     {
@@ -58,7 +60,7 @@ namespace LacmusApp.Services.IO
             }
         }
         
-        private static ImageBrush ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)
+        private async Task<ImageBrush> ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)
         {
             switch (loadType)
             {
@@ -78,7 +80,7 @@ namespace LacmusApp.Services.IO
                             new PixelSize(resized.Width, resized.Height), 
                             SkiaPlatform.DefaultDpi, 
                             resized.RowBytes);
-                        return new ImageBrush(bitmap);
+                        return await Dispatcher.UIThread.InvokeAsync(() => new ImageBrush(bitmap));
                     }
                     break;
                 case PhotoLoadType.Full:

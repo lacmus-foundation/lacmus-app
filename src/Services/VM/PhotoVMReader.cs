@@ -22,6 +22,8 @@ namespace LacmusApp.Services.VM
         private readonly AvaloniaFileReader _reader;
         
         public PhotoVMReader(Window window)  => _reader = new AvaloniaFileReader(window);
+        public delegate void StstusHandler(Enums.Status status, string statusString);
+        public event StstusHandler Notify; 
         
         public async Task<PhotoViewModel> ReadByPhoto(int id, PhotoLoadType loadType = PhotoLoadType.Miniature)
         {
@@ -34,7 +36,7 @@ namespace LacmusApp.Services.VM
             var (path, stream) = await _reader.Read(dig);
             try
             {
-                var photo = photoLoader.Load(path, stream, loadType);
+                var photo = await photoLoader.Load(path, stream, loadType);
                 var annotation = new Annotation
                 {
                     Filename = Path.GetFileName(path),
@@ -62,7 +64,7 @@ namespace LacmusApp.Services.VM
             {
                 var annotation = annotationLoader.Load(path, stream);
                 var photoPath = Path.Combine(annotation.Folder, annotation.Filename);
-                var photo = photoLoader.Load(photoPath, loadType);
+                var photo = await photoLoader.Load(photoPath, loadType);
                 return new PhotoViewModel(id, photo, annotation);
             }
             catch (Exception e)
@@ -100,7 +102,7 @@ namespace LacmusApp.Services.VM
                                 continue;
                             }
                             
-                            var photo = photoLoader.Load(path, stream, loadType);
+                            var photo = await photoLoader.Load(path, stream, loadType);
                             var annotation = new Annotation
                             {
                                 Filename = Path.GetFileName(path),
@@ -111,6 +113,7 @@ namespace LacmusApp.Services.VM
                             photoList.Add(photoViewModel);
                             id++;
                             count++;
+                            Notify?.Invoke(Enums.Status.Working, $"Working | {(int)((double) count / valueTuples.Count() * 100)} %, [{count} of {valueTuples.Count()}]");
                             pb.Report((double)count / valueTuples.Count(), $"Processed {count} of {valueTuples.Count()}");
                         }
                     }
@@ -151,12 +154,13 @@ namespace LacmusApp.Services.VM
                         
                         var annotation = annotationLoader.Load(path, stream);
                         var photoPath = Path.Combine(annotation.Folder, annotation.Filename);
-                        var photo = photoLoader.Load(photoPath, loadType);
+                        var photo = await photoLoader.Load(photoPath, loadType);
                         var photoViewModel = new PhotoViewModel(id, photo, annotation);
                         photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
                         photoList.Add(photoViewModel);
                         id++;
                         count++;
+                        Notify?.Invoke(Enums.Status.Working, $"Working | {(int)((double) count / valueTuples.Count() * 100)} %, [{count} of {valueTuples.Count()}]");
                         pb.Report((double)count / valueTuples.Count(), $"Processed {count} of {valueTuples.Count()}");
                     }
                     catch (Exception e)
