@@ -187,6 +187,7 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> NextPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> LastPageCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> ShowAllMetadataCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ShowGeoDataCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AddToFavoritesCommand { get; set; }
         public ReactiveCommand<Unit, Unit> HelpCommand { get; set; }
@@ -198,10 +199,10 @@ namespace LacmusApp.ViewModels
 
         private async void ShowNextPage()
         {
-            if (CurrentPage < TotalPages - 1)
+            if (CurrentPage < TotalPages)
             {
-                SelectedIndex = 0;
                 CurrentPage++;
+                SelectedIndex = 0;
                 await UpdateUi();
             }
         }
@@ -210,16 +211,16 @@ namespace LacmusApp.ViewModels
         {
             if (CurrentPage > 0)
             {
-                SelectedIndex = 0;
                 CurrentPage--;
+                SelectedIndex = 0;
                 await UpdateUi();
             }
         }
 
         private async void ShowFirstPage()
         {
-            SelectedIndex = 0;
             CurrentPage = 0;
+            SelectedIndex = 0;
             await UpdateUi();
         }
 
@@ -227,8 +228,8 @@ namespace LacmusApp.ViewModels
         {
             if (TotalPages > 0)
             {
+                CurrentPage = TotalPages;
                 SelectedIndex = 0;
-                CurrentPage = TotalPages - 1;
                 await UpdateUi();
             }
         }
@@ -259,11 +260,11 @@ namespace LacmusApp.ViewModels
             itemcount = _photos.Count;
             if (itemcount % itemPerPage == 0)
             {
-                TotalPages = (itemcount / itemPerPage);
+                TotalPages = (itemcount / itemPerPage) - 1;
             }
             else
             {
-                TotalPages = (itemcount / itemPerPage) + 1;
+                TotalPages = (itemcount / itemPerPage);
             }
         }
 
