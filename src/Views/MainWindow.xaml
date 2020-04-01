@@ -173,7 +173,6 @@
                     <ContextMenu>
                       <MenuItem Header="Show geo position" Command="{Binding ShowGeoDataCommand}"/>
                       <!-- <MenuItem Header="Find nearest photo"/> -->
-                      <MenuItem Header="Show all metadata" Command="{Binding ShowAllMetadataCommand}"/>
                       <Separator/>
                       <MenuItem Header="{Binding FavoritesStateString}" Command="{Binding AddToFavoritesCommand}"/>
                     </ContextMenu>

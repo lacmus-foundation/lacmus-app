@@ -137,7 +137,6 @@ namespace LacmusApp.ViewModels
             ImportAllCommand = ReactiveCommand.Create(ImportFromXml, canExecute);
             SaveAllImagesWithObjectsCommand = ReactiveCommand.Create(SaveAllImagesWithObjects, canExecute);
             SaveFavoritesImagesCommand = ReactiveCommand.Create(SaveFavoritesImages, canExecute);
-            ShowAllMetadataCommand = ReactiveCommand.Create(ShowAllMetadata, canExecute);
             ShowGeoDataCommand = ReactiveCommand.Create(ShowGeoData, canExecute);
             AddToFavoritesCommand = ReactiveCommand.Create(AddToFavorites, canExecute);
             HelpCommand = ReactiveCommand.Create(Help);
@@ -188,7 +187,6 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> NextPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> LastPageCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> ShowAllMetadataCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ShowGeoDataCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AddToFavoritesCommand { get; set; }
         public ReactiveCommand<Unit, Unit> HelpCommand { get; set; }
@@ -574,100 +572,9 @@ namespace LacmusApp.ViewModels
         public void ShowGeoData()
         {
             var window = new MetadataWindow();
-            var context = new MetadataViewModel(window);
+            var context = new MetadataViewModel(window, PhotoViewModel.Photo.MetaDataDirectories);
             window.DataContext = context;
             window.Show();
-            /*
-            var msg = string.Empty;
-            var rows = 0;
-            var directories = PhotoViewModel.Photo.MetaDataDirectories;
-            foreach (var directory in directories)
-            foreach (var tag in directory.Tags)
-            {
-                if (directory.Name.ToLower() != "gps") continue;
-                if (tag.Name.ToLower() != "gps latitude" && tag.Name.ToLower() != "gps longitude" &&
-                    tag.Name.ToLower() != "gps altitude") continue;
-
-                rows++;
-                msg += $"{tag.Name}: {TranslateGeoTag(tag.Description)}\n";
-            }
-
-            if (rows != 3)
-                msg = "This image have hot geo tags.\nUse `Show all metadata` more for more details.";
-            var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
-            {
-                ButtonDefinitions = ButtonEnum.Ok,
-                ContentTitle = $"Geo position of {PhotoViewModel.Annotation.Filename}",
-                ContentMessage = msg,
-                Icon = Icon.Info,
-                Style = Style.None,
-                ShowInCenter = true,
-                Window = new MsBoxStandardWindow
-                {
-                    Height = 300,
-                    Width = 500,
-                    CanResize = true
-                }
-            });
-            msgbox.Show();
-            */
-        }
-
-        private string TranslateGeoTag(string tag)
-        {
-            try
-            {
-                if (!tag.Contains('°'))
-                    return tag;
-                tag = tag.Replace('°', ';');
-                tag = tag.Replace('\'', ';');
-                tag = tag.Replace('"', ';');
-                tag = tag.Replace(" ", "");
-
-                var splitTag = tag.Split(';');
-                var grad = float.Parse(splitTag[0]);
-                var min = float.Parse(splitTag[1]);
-                var sec = float.Parse(splitTag[2]);
-
-                var result = grad + min / 60 + sec / 3600;
-                return $"{result}";
-            }
-            catch
-            {
-                return tag;
-            }
-        }
-
-        public void ShowAllMetadata()
-        {
-            /*
-            var tb = new TextTableBuilder();
-            tb.AddRow("Group", "Tag name", "Description");
-            tb.AddRow("-----", "--------", "-----------");
-
-
-            var directories = PhotoViewModel.Photo.MetaDataDirectories;
-            foreach (var directory in directories)
-            foreach (var tag in directory.Tags)
-                tb.AddRow(directory.Name, tag.Name, tag.Description);
-
-            var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
-            {
-                ButtonDefinitions = ButtonEnum.Ok,
-                ContentTitle = $"Metadata of {PhotoViewModel.Annotation.Filename}",
-                ContentMessage = tb.Output(),
-                Icon = Icon.Info,
-                Style = Style.None,
-                ShowInCenter = true,
-                Window = new MsBoxStandardWindow
-                {
-                    Height = 600,
-                    Width = 1300,
-                    CanResize = true
-                }
-            });
-            msgbox.Show();
-            */
         }
 
         public async void AddToFavorites()
