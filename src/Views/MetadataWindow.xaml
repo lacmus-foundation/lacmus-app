@@ -1,0 +1,53 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
+        x:Class="LacmusApp.Views.MetadataWindow"
+        CanResize="False"
+        Title="About"
+        Width="450"
+        Height="250">
+    
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Hidden">
+            <Border Classes="Card">
+                <Grid>
+                    <StackPanel>
+                        <TextBlock TextWrapping="Wrap" Classes="Heading" Text="GPS position of the image center." />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontWeight="Heavy" Text="Latitude: " />
+                            <TextBlock Text="54.719981" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontWeight="Heavy" Text="Longitude: " />
+                            <TextBlock Text="20.534811" />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontWeight="Heavy" Text="Height: " />
+                            <TextBlock Text="50" />
+                        </StackPanel>
+                        <TextBlock TextWrapping="Wrap" Classes="Heading" Text="Open with:" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="10" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0"
+                                    Content="Yandex"
+                                    Command="{Binding OpenYandexCommand}"/>
+                            <Button Grid.Column="2"
+                                    Content="Google Maps" 
+                                    Command="{Binding OpenGoogleCommand}"/>
+                        </Grid>
+                        <Expander Header="All metadata" IsExpanded="True" Margin="0 5 0 0">
+                            <TextBlock Text="matadata here..."
+                                       Classes="Caption"
+                                       Margin="10" />
+                        </Expander>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</Window>

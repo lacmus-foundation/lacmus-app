@@ -573,6 +573,10 @@ namespace LacmusApp.ViewModels
 
         public void ShowGeoData()
         {
+            var window = new MetadataWindow();
+            var context = new MetadataViewModel(window);
+            window.DataContext = context;
+            window.Show();
             /*
             var msg = string.Empty;
             var rows = 0;
@@ -718,11 +722,16 @@ namespace LacmusApp.ViewModels
                 {
                     Process.Start(url);
                 }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
-                         RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     Process.Start("x-www-browser", url);
                 }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                {
+                    Process.Start("open", url);
+                }
+                else
+                    throw new Exception();
             }
             catch (Exception e)
             {
