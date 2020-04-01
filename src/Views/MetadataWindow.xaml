@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:m="clr-namespace:LacmusApp.Models;assembly=LacmusApp"
+        Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
+        x:Class="LacmusApp.Views.MetadataWindow"
+        CanResize="False"
+        Title="Geo position"
+        Width="550"
+        Height="400">
+    <Window.Styles>
+        <Style Selector="DataGrid">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="RowBackground" Value="Transparent" />
+            <Setter Property="AlternatingRowBackground" Value="Transparent" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="CanUserReorderColumns" Value="True" />
+            <Setter Property="CanUserResizeColumns" Value="True" />
+            <Setter Property="CanUserSortColumns" Value="True" />
+            <Setter Property="IsReadOnly" Value="True" />
+        </Style>
+    </Window.Styles>
+    
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Auto">
+            <Border Classes="Card">
+                <StackPanel>
+                    <TextBlock Grid.Row="0" TextWrapping="Wrap" Classes="Heading" Text="GPS position of the image center." />
+                        
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <TextBlock FontWeight="Heavy" Text="Latitude: " />
+                        <TextBlock Text="{Binding Latitude}" />
+                    </StackPanel>
+                        
+                    <StackPanel Grid.Row="2" Orientation="Horizontal">
+                        <TextBlock FontWeight="Heavy" Text="Longitude: " />
+                        <TextBlock Text="{Binding Longitude}" />
+                    </StackPanel>
+                        
+                    <StackPanel Grid.Row="3" Orientation="Horizontal">
+                        <TextBlock FontWeight="Heavy" Text="Altitude: " />
+                        <TextBlock Text="{Binding Altitude}" />
+                    </StackPanel>
+                        
+                    <TextBlock Grid.Row="4" TextWrapping="Wrap" Classes="Heading" Text="Open with:" />
+                        
+                    <Grid Grid.Row="5">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0"
+                                Content="Yandex"
+                                Command="{Binding OpenYandexCommand}"/>
+                        <Button Grid.Column="2"
+                                Content="Google Maps" 
+                                Command="{Binding OpenGoogleCommand}"/>
+                    </Grid>
+                    <Expander Grid.Row="6" Header="All metadata" IsExpanded="False" Margin="0 5 0 0">
+                        <DataGrid Items="{Binding MetaDataCollection}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Group" Binding="{Binding Group}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Nag Name" Binding="{Binding TagName}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Description" Binding="{Binding Description}"></DataGridTextColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Expander>
+                </StackPanel>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</Window>
