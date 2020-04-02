@@ -135,8 +135,7 @@ namespace LacmusApp.ViewModels
             LastPageCommand = ReactiveCommand.Create(ShowLastPage);
             
             ImportAllCommand = ReactiveCommand.Create(ImportFromXml, canExecute);
-            SaveAllImagesWithObjectsCommand = ReactiveCommand.Create(SaveAllImagesWithObjects, canExecute);
-            SaveFavoritesImagesCommand = ReactiveCommand.Create(SaveFavoritesImages, canExecute);
+            SaveAsCommand = ReactiveCommand.Create(SaveAs, canExecute);
             ShowGeoDataCommand = ReactiveCommand.Create(ShowGeoData, canExecute);
             AddToFavoritesCommand = ReactiveCommand.Create(AddToFavorites, canExecute);
             HelpCommand = ReactiveCommand.Create(Help);
@@ -181,13 +180,11 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; set; }
         public ReactiveCommand<Unit, Unit> UpdateModelCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> SaveAllImagesWithObjectsCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> SaveFavoritesImagesCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> SaveAsCommand { get; set; }
         public ReactiveCommand<Unit, Unit> FirstPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> NextPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> LastPageCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> ShowAllMetadataCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ShowGeoDataCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AddToFavoritesCommand { get; set; }
         public ReactiveCommand<Unit, Unit> HelpCommand { get; set; }
@@ -508,48 +505,10 @@ namespace LacmusApp.ViewModels
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
-        private async void SaveAllImagesWithObjects()
+        private async void SaveAs()
         {
-            try
-            {
-                if (!_photos.Items.Any())
-                {
-                    Log.Warning("There are no photos to save.");
-                    return;
-                }
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                var writer = new PhotoVMWriter(_window);
-                await writer.WriteMany(_photos.Items.Where(x => x.Photo.Attribute == Attribute.WithObject));
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
-                Log.Information($"Saved {_photos.Items.Count()} photos.");
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Unable to save photos.");
-            }
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-        }
-
-        private async void SaveFavoritesImages()
-        {
-            try
-            {
-                if (!_photos.Items.Any())
-                {
-                    Log.Warning("There are no photos to save.");
-                    return;
-                }
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                var writer = new PhotoVMWriter(_window);
-                await writer.WriteMany(_photos.Items.Where(x => x.Photo.Attribute == Attribute.Favorite));
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
-                Log.Information($"Saved {_photos.Items.Count()} photos.");
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Unable to save photos.");
-            }
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+            SaveAsWindow window = new SaveAsWindow();
+            window.Show();
         }
 
         public void OpenWizard()
