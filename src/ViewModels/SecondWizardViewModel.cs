@@ -35,7 +35,7 @@ namespace LacmusApp.ViewModels
                 var dig = new OpenFolderDialog()
                 {
                     //TODO: Multi language support
-                    Title = "CSelect folder to save"
+                    Title = "Select folder to save"
                 };
                 var dirPath = await dig.ShowAsync(new Window());
                 OutputPath = dirPath;

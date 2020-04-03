@@ -49,6 +49,8 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="10" />
                             <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="10" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Button Grid.Column="0"
                                 Content="Yandex"
@@ -56,6 +58,9 @@
                         <Button Grid.Column="2"
                                 Content="Google Maps" 
                                 Command="{Binding OpenGoogleCommand}"/>
+                        <Button Grid.Column="4"
+                                Content="Open Street Map" 
+                                Command="{Binding OpenOSMCommand}"/>
                     </Grid>
                     <Expander Grid.Row="6" Header="All metadata" IsExpanded="False" Margin="0 5 0 0">
                         <DataGrid Items="{Binding MetaDataCollection}">
