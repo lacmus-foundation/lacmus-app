@@ -58,17 +58,28 @@ namespace LacmusApp.ViewModels
 
             OpenYandexCommand = ReactiveCommand.Create(OpenYandex, this.IsValid());
             OpenGoogleCommand = ReactiveCommand.Create(OpenGoogle, this.IsValid());
+            OpenOSMCommand = ReactiveCommand.Create(OpenOSM, this.IsValid());
         }
         public ReactiveCommand<Unit, Unit> OpenYandexCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenGoogleCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> OpenOSMCommand { get; set; }
         
         public void OpenYandex()
         {
-            OpenUrl($"https://yandex.ru/maps/?ll={Longitude.Replace(',', '.')}%2C{Latitude.Replace(',', '.')}&z=15");
+            OpenUrl($"https://yandex.ru/maps/?ll={Longitude.Replace(',', '.')}%2C{Latitude.Replace(',', '.')}&z=15"+
+                    $"&mode=whatshere&whatshere%5Bpoint%5D={Longitude.Replace(',', '.')}%2C{Latitude.Replace(',', '.')}&whatshere%5Bzoom%5D=15");
         }
         public void OpenGoogle()
         {
-            OpenUrl($"https://www.google.ru/maps/@{Latitude.Replace(',', '.')},{Longitude.Replace(',', '.')},15z");
+            //https://www.google.com/maps/place/"&[Latitude]&"+"&[Longitude]&"/@"&[Latitude]&","&[Longitude]&",15z
+            OpenUrl($"https://www.google.ru/maps/place/{Latitude.Replace(',', '.')}+{Longitude.Replace(',', '.')}"+
+                    $"/@{Latitude.Replace(',', '.')},{Longitude.Replace(',', '.')},15z");
+        }
+        
+        public void OpenOSM()
+        {
+            OpenUrl($"https://www.openstreetmap.org/?mlat={Latitude.Replace(',', '.')}&mlon={Longitude.Replace(',', '.')}"+
+                    $"#map=15/{Latitude.Replace(',', '.')}/{Longitude.Replace(',', '.')}");
         }
         
         private string TranslateGeoTag(string tag)

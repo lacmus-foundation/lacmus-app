@@ -23,7 +23,7 @@
                         <TextBlock TextWrapping="Wrap" Classes="Caption" Text="Copyright (c) 2020 Lacmus Foundation." />
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontWeight="Heavy" Text="Version: " />
-                            <TextBlock Text="0.3.3.preview-3 alpha." />
+                            <TextBlock Text="{Binding TextVersion}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontWeight="Heavy" Text="Github page: " />

@@ -4,6 +4,7 @@ using System.Reactive;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 using Serilog;
 
 namespace LacmusApp.ViewModels
@@ -16,6 +17,8 @@ namespace LacmusApp.ViewModels
             OpenGithubCommand = ReactiveCommand.Create(OpenGithub);
             OpenSiteCommand = ReactiveCommand.Create(OpenSite);
         }
+
+        [Reactive] public string TextVersion { get; set; } = GetVersion() + ".";
         public ReactiveCommand<Unit, Unit> OpenLicenseCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenGithubCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenSiteCommand { get; set; }
@@ -56,6 +59,14 @@ namespace LacmusApp.ViewModels
             {
                 Log.Error(e,$"Unable to ope url {url}.");
             }
+        }
+        
+        private static string GetVersion()
+        {
+            var revision = "";
+            if (typeof(Program).Assembly.GetName().Version.Revision != 0)
+                revision = $"preview-{typeof(Program).Assembly.GetName().Version.Revision}";
+            return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build}.{revision}";
         }
     }
 }

@@ -157,6 +157,12 @@ namespace LacmusApp.Services.VM
                         var photo = await photoLoader.Load(photoPath, loadType);
                         var photoViewModel = new PhotoViewModel(id, photo, annotation);
                         photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
+                        
+                        if (photoViewModel.BoundBoxes.Any())
+                        {
+                            photoViewModel.Photo.Attribute = Attribute.WithObject;
+                            photoViewModel.IsHasObject = true;
+                        }
                         photoList.Add(photoViewModel);
                         id++;
                         count++;
