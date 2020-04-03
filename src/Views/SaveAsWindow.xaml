@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
+        x:Class="LacmusApp.Views.SaveAsWindow"
+        CanResize="False"
+        Title="Save as"
+        Width="500"
+        Height="325">
+    <StackPanel>
+        <Border Classes="Card">
+            <StackPanel>
+                <TextBlock Margin="0 2" Classes="Heading" Text="Select options to save:" />
+                <TextBlock Margin="0 2" Classes="Caption" Text="Type of photos to save:" />
+                <ComboBox Margin="0 2 0 5" SelectedIndex="{Binding FilterIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="All photos" />
+                    <ComboBoxItem Content="Photos with objects" />
+                    <ComboBoxItem Content="Favorite photos" />
+                </ComboBox>
+                <CheckBox Margin="0 2" IsChecked="True"
+                          Content="Save source photos." />
+                <CheckBox Margin="0 2" IsChecked="True"
+                          Content="Save XML annotations." />
+                <CheckBox Margin="0 2" IsChecked="False"
+                          Content="Save photo with drawn bboxes." />
+                <CheckBox Margin="0 2" IsChecked="False"
+                          Content="Save bbox crops." />
+                <TextBox Margin="0 5" UseFloatingWatermark="True"
+                         Watermark="Enter input path here."
+                         Text="{Binding OutputPath, Mode=TwoWay}" />
+                <Button Margin="0 2 0 5" Content="Save photos"/>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</Window>
