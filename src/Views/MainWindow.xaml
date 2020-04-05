@@ -30,7 +30,7 @@
           <MenuItem Name="mFileOpen" Header="Open directory..." Command="{Binding OpenFileCommand}"/>
           <MenuItem Name="mFileExportAll" Header="Import from XML..." Command="{Binding ImportAllCommand}"/>
           <MenuItem Name="mFileSave" Header="Save all" Command="{Binding SaveAllCommand}"/>
-          <!--<MenuItem Name="mFileSaveAs" Header="Save as..." Command="{Binding SaveAsCommand}"/>-->
+          <MenuItem Name="mFileSaveAs" Header="Save as..." Command="{Binding SaveAsCommand}"/>
           <Separator></Separator>
           <MenuItem Name="mFileExit" Header="Exit" Command="{Binding ExitCommand}"/>
         </MenuItem>
