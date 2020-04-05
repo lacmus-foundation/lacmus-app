@@ -16,18 +16,18 @@
                     <ComboBoxItem Content="Photos with objects" />
                     <ComboBoxItem Content="Favorite photos" />
                 </ComboBox>
-                <CheckBox Margin="0 2" IsChecked="True"
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSource, Mode=TwoWay}"
                           Content="Save source photos." />
-                <CheckBox Margin="0 2" IsChecked="True"
+                <CheckBox Margin="0 2" IsChecked="{Binding IsXml, Mode=TwoWay}"
                           Content="Save XML annotations." />
-                <CheckBox Margin="0 2" IsChecked="False"
+                <CheckBox Margin="0 2" IsChecked="{Binding IsDraw, Mode=TwoWay}"
                           Content="Save photo with drawn bboxes." />
-                <CheckBox Margin="0 2" IsChecked="False"
+                <CheckBox Margin="0 2" IsChecked="{Binding IsCrop, Mode=TwoWay}"
                           Content="Save bbox crops." />
                 <TextBox Margin="0 5" UseFloatingWatermark="True"
                          Watermark="Enter input path here."
                          Text="{Binding OutputPath, Mode=TwoWay}" />
-                <Button Margin="0 2 0 5" Content="Save photos"/>
+                <Button Margin="0 2 0 5" Content="Save photos" Command="{Binding SaveCommand}"/>
             </StackPanel>
         </Border>
     </StackPanel>
