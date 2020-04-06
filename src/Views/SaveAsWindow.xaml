@@ -25,7 +25,7 @@
                 <CheckBox Margin="0 2" IsChecked="{Binding IsCrop, Mode=TwoWay}"
                           Content="Save bbox crops." />
                 <TextBox Margin="0 5" UseFloatingWatermark="True"
-                         Watermark="Enter input path here."
+                         Watermark="Enter output path here."
                          Text="{Binding OutputPath, Mode=TwoWay}" />
                 <Button Margin="0 2 0 5" Content="Save photos" Command="{Binding SaveCommand}"/>
             </StackPanel>
