@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using DynamicData;
 using LacmusApp.Managers;
 using LacmusApp.Models;
@@ -69,9 +70,9 @@ namespace LacmusApp.ViewModels
 
                 var count = 0;
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / photoViewModels.Length * 100)} %, [{count} of {photoViewModels.Length}]");
-                foreach (var photoViewModel in photoViewModels)
+                Parallel.ForEach(photoViewModels,  async photoViewModel =>
                 {
-                    await Task.Run(() =>
+                    await Task.Run(async () =>
                     {
                         if (IsSource)
                         {
@@ -91,62 +92,68 @@ namespace LacmusApp.ViewModels
                             var saver = new AnnotationSaver();
                             saver.Save(photoViewModel.Annotation, annotationPath);
                         }
+                        
+                        if(!IsDraw && !IsCrop)
+                            return;
 
-                        SKBitmap bitmap = null; 
-
-                        if (IsCrop)
+                        using var bitmap = SKBitmap.Decode(photoViewModel.Path);
                         {
-                            bitmap = SKBitmap.Decode(photoViewModel.Path);
-                            var image = SKImage.FromBitmap(bitmap);
-                            var cropIdx = 0;
-                            foreach (var bbox in photoViewModel.Annotation.Objects)
+                            if (IsCrop)
                             {
-                                var subset = image.Subset(new SKRectI(bbox.Box.Xmin, bbox.Box.Ymin, bbox.Box.Xmax, bbox.Box.Ymax));
-                                var encodedData = subset.Encode(SKEncodedImageFormat.Png, 100);
+                                var image = SKImage.FromBitmap(bitmap);
+                                var cropIdx = 0;
+                                foreach (var bbox in photoViewModel.Annotation.Objects)
+                                {
+                                    var subset = image.Subset(new SKRectI(bbox.Box.Xmin, bbox.Box.Ymin, bbox.Box.Xmax, bbox.Box.Ymax));
+                                    var encodedData = subset.Encode(SKEncodedImageFormat.Png, 100);
+                                    var stream = encodedData.AsStream();
+                                    var path = Path.Join(OutputPath,
+                                        $"{photoViewModel.Annotation.Filename}_crop{cropIdx}.png");
+                                    SaveStream(stream, path);
+                                    cropIdx++;
+                                }
+                            }
+                            if (IsDraw)
+                            {
+                                var canvas = new SKCanvas(bitmap);
+                                var paint = new SKPaint {
+                                    Style = SKPaintStyle.Stroke,
+                                    Color = SKColors.Red,
+                                    StrokeWidth = 10
+                                };
+                                foreach (var bbox in photoViewModel.Annotation.Objects)
+                                {
+                                    var x = bbox.Box.Xmin;
+                                    var y = bbox.Box.Ymin;
+                                    var width = bbox.Box.Xmax - bbox.Box.Xmin;
+                                    var height = bbox.Box.Ymax - bbox.Box.Ymin;
+                                    canvas.DrawRect(SKRect.Create(x, y, width, height), paint);
+                                }
+                            
+                                var encodedData = SKImage.FromBitmap(bitmap).Encode(SKEncodedImageFormat.Png, 100);
                                 var stream = encodedData.AsStream();
                                 var path = Path.Join(OutputPath,
-                                    $"{photoViewModel.Annotation.Filename}_crop{cropIdx}.png");
+                                    $"{photoViewModel.Annotation.Filename}_draw.png");
                                 SaveStream(stream, path);
-                                cropIdx++;
                             }
                         }
-
-                        if (IsDraw)
+                        await Dispatcher.UIThread.InvokeAsync(() =>
                         {
-                            if(bitmap == null)
-                                bitmap = SKBitmap.Decode(photoViewModel.Path);
-                            var canvas = new SKCanvas(bitmap);
-                            
-                            var paint = new SKPaint {
-                                Style = SKPaintStyle.Stroke,
-                                Color = SKColors.Red,
-                                StrokeWidth = 10
-                            };
-                            foreach (var bbox in photoViewModel.Annotation.Objects)
-                            {
-                                var x = bbox.Box.Xmin;
-                                var y = bbox.Box.Ymin;
-                                var width = bbox.Box.Xmax - bbox.Box.Xmin;
-                                var height = bbox.Box.Ymax - bbox.Box.Ymin;
-                                canvas.DrawRect(SKRect.Create(x, y, width, height), paint);
-                            }
-                            
-                            var encodedData = SKImage.FromBitmap(bitmap).Encode(SKEncodedImageFormat.Png, 100);
-                            var stream = encodedData.AsStream();
-                            var path = Path.Join(OutputPath,
-                                $"{photoViewModel.Annotation.Filename}_draw.png");
-                            SaveStream(stream, path);
-                        }
+                            count++;
+                            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / photoViewModels.Length * 100)} %, [{count} of {photoViewModels.Length}]");
+                            if (count >= photoViewModels.Length)
+                                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                        });
                     });
-                    count++;
-                    _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / photoViewModels.Length * 100)} %, [{count} of {photoViewModels.Length}]");
-                }
+                });
+                
                 Log.Information($"Saved {photoViewModels.Length} photos.");
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
             }
             catch (Exception e)
             {
                 Log.Error("Unable to save photos.", e);
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
             }
         }
         
