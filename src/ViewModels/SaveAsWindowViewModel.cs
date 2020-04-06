@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using DynamicData;
 using LacmusApp.Managers;
 using LacmusApp.Models;
@@ -69,9 +70,9 @@ namespace LacmusApp.ViewModels
 
                 var count = 0;
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / photoViewModels.Length * 100)} %, [{count} of {photoViewModels.Length}]");
-                Parallel.ForEach(photoViewModels, photoViewModel => 
+                Parallel.ForEach(photoViewModels,  async photoViewModel =>
                 {
-                    Task.Run(() =>
+                    await Task.Run(async () =>
                     {
                         if (IsSource)
                         {
@@ -136,8 +137,13 @@ namespace LacmusApp.ViewModels
                                 SaveStream(stream, path);
                             }
                         }
-                        count++;
-                        _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / photoViewModels.Length * 100)} %, [{count} of {photoViewModels.Length}]");
+                        await Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            count++;
+                            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / photoViewModels.Length * 100)} %, [{count} of {photoViewModels.Length}]");
+                            if (count >= photoViewModels.Length)
+                                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+                        });
                     });
                 });
                 
@@ -147,6 +153,7 @@ namespace LacmusApp.ViewModels
             catch (Exception e)
             {
                 Log.Error("Unable to save photos.", e);
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
             }
         }
         
