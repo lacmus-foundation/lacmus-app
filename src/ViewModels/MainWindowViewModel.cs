@@ -114,6 +114,8 @@ namespace LacmusApp.ViewModels
 
             // Add here newer commands
             SetupCommand(CanSetup(), canSwitchBoundBox);
+
+            LocalizationContext = new LocalizationContext();
             
             Log.Information("Application started.");
         }
@@ -142,6 +144,7 @@ namespace LacmusApp.ViewModels
             AboutCommand = ReactiveCommand.Create(About);
             OpenWizardCommand = ReactiveCommand.Create(OpenWizard);
             ExitCommand = ReactiveCommand.Create(Exit);
+            OpenSettingsWindowCommand = ReactiveCommand.Create(OpenSettingsWindowAsync, canExecute);
         }
 
         private IObservable<bool> CanSetup()
@@ -168,6 +171,7 @@ namespace LacmusApp.ViewModels
         [Reactive] public string FavoritesStateString { get; set; } = "Add to favorites";
         [Reactive] public double CanvasWidth { get; set; } = 500;
         [Reactive] public double CanvasHeight { get; set; } = 500;
+        [Reactive] public LocalizationContext LocalizationContext {get; set;}
 
         public ReactiveCommand<Unit, Unit> PredictAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> NextImageCommand { get; }
@@ -191,6 +195,7 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> AboutCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ExitCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenWizardCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand{get; set;}
 
         #endregion
 
@@ -638,5 +643,15 @@ namespace LacmusApp.ViewModels
                 //Log.Error(ex, "Unable to update ui.");
             }
         }
+
+        private async void OpenSettingsWindowAsync()
+        {
+            await Dispatcher.UIThread.InvokeAsync(async () =>
+                {
+                    SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext);
+                    settingsWindow.Show();
+                });
+	}
+
     }
 }

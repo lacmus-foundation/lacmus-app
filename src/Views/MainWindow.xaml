@@ -26,32 +26,33 @@
     <!-- Grid 0 -->
     <StackPanel Grid.Row="0">
       <Menu>
-        <MenuItem Name="mFile" Header="File">
-          <MenuItem Name="mFileOpen" Header="Open directory..." Command="{Binding OpenFileCommand}"/>
-          <MenuItem Name="mFileExportAll" Header="Import from XML..." Command="{Binding ImportAllCommand}"/>
-          <MenuItem Name="mFileSave" Header="Save all" Command="{Binding SaveAllCommand}"/>
-          <MenuItem Name="mFileSaveAs" Header="Save as..." Command="{Binding SaveAsCommand}"/>
+        <MenuItem Name="mFile" Header="{Binding LocalizationContext.File}">
+          <MenuItem Name="mFileOpen" Header="{Binding LocalizationContext.OpenDirectory}" Command="{Binding OpenFileCommand}"/>
+          <MenuItem Name="mFileExportAll" Header="{Binding LocalizationContext.ImportAllFromXml}" Command="{Binding ImportAllCommand}"/>
+          <MenuItem Name="mFileSave" Header="{Binding LocalizationContext.SaveAll}" Command="{Binding SaveAllCommand}"/>
+          <MenuItem Name="mFileSaveAs" Header="{Binding LocalizationContext.SaveAs}" Command="{Binding SaveAsCommand}"/>
           <Separator></Separator>
-          <MenuItem Name="mFileExit" Header="Exit" Command="{Binding ExitCommand}"/>
+          <MenuItem Name="mSettings" Header="{Binding LocalizationContext.Settings}" Command="{Binding OpenSettingsWindowCommand}"/>
+          <MenuItem Name="mFileExit" Header="{Binding LocalizationContext.Exit}" Command="{Binding ExitCommand}"/>
         </MenuItem>
-        <MenuItem Name="mModel" Header="Model">
-          <MenuItem Name="mModelLoad" Header="Load model..." Command="{Binding LoadModelCommand}"/>
-          <MenuItem Name="mModelUpdate" Header="Update model..." Command="{Binding UpdateModelCommand}"/>
+        <MenuItem Name="mModel" Header="{Binding LocalizationContext.Model}">
+          <MenuItem Name="mModelLoad" Header="{Binding LocalizationContext.LoadModel}" Command="{Binding LoadModelCommand}"/>
+          <MenuItem Name="mModelUpdate" Header="{Binding LocalizationContext.UpdateModel}" Command="{Binding UpdateModelCommand}"/>
         </MenuItem>
-        <MenuItem Name="mImage" Header="Image">
-          <MenuItem Name="mImagePredictAll" Header="Predict all" Command="{Binding PredictAllCommand}"/>
+        <MenuItem Name="mImage" Header="{Binding LocalizationContext.Image}">
+          <MenuItem Name="mImagePredictAll" Header="{Binding LocalizationContext.PredictAll}" Command="{Binding PredictAllCommand}"/>
           <Separator></Separator>
-          <MenuItem Name="mImageIncrease" Header="Increase" Command="{Binding IncreaseCanvasCommand}"/>
-          <MenuItem Name="mImageShrink" Header="Shrink" Command="{Binding ShrinkCanvasCommand}"/>
-          <MenuItem Name="mImageReset" Header="Reset" Command="{Binding ResetCanvasCommand}"/>
+          <MenuItem Name="mImageIncrease" Header="{Binding LocalizationContext.Increase}" Command="{Binding IncreaseCanvasCommand}"/>
+          <MenuItem Name="mImageShrink" Header="{Binding LocalizationContext.Shrink}" Command="{Binding ShrinkCanvasCommand}"/>
+          <MenuItem Name="mImageReset" Header="{Binding LocalizationContext.Reset}" Command="{Binding ResetCanvasCommand}"/>
           <Separator></Separator>
-          <MenuItem Name="mImageNext" Header="Next" Command="{Binding NextImageCommand}"/>
-          <MenuItem Name="mImagePrev" Header="Prev" Command="{Binding PrevImageCommand}"/>
+          <MenuItem Name="mImageNext" Header="{Binding LocalizationContext.Next}" Command="{Binding NextImageCommand}"/>
+          <MenuItem Name="mImagePrev" Header="{Binding LocalizationContext.Previous}" Command="{Binding PrevImageCommand}"/>
         </MenuItem>
-        <MenuItem Name="mHelp" Header="Help">
-          <MenuItem Name="mHelpOpen" Header="Open user guide" Command="{Binding HelpCommand}"/>
+        <MenuItem Name="mHelp" Header="{Binding LocalizationContext.Help}">
+          <MenuItem Name="mHelpOpen" Header="{Binding LocalizationContext.OpenUserGuide}" Command="{Binding HelpCommand}"/>
           <Separator></Separator>
-          <MenuItem Name="mHelpAbout" Header="About" Command="{Binding AboutCommand}"/>
+          <MenuItem Name="mHelpAbout" Header="{Binding LocalizationContext.About}" Command="{Binding AboutCommand}"/>
         </MenuItem>
       </Menu>
       <ToolTip>
@@ -63,19 +64,19 @@
             </Style>
           </StackPanel.Styles>
           <!-- <Button Name="bSignIn" Command="{Binding SignInCommand}">Suin In</Button> -->
-          <Button Name="bOpen" Command="{Binding OpenFileCommand}">Open</Button>
-          <Button Name="bPredict" Command="{Binding PredictAllCommand}">Predict all</Button>
+          <Button Name="bOpen" Margin="1" Command="{Binding OpenFileCommand}" Content="{Binding LocalizationContext.OpenDirectory}"></Button>
+          <Button Name="bPredict" Margin="1" Command="{Binding PredictAllCommand}" Content="{Binding LocalizationContext.PredictAll}"></Button>
           <Separator/>
-          <Button Name="bSave" Command="{Binding SaveAllCommand}">Save all</Button>
+          <Button Name="bSave" Margin="1" Command="{Binding SaveAllCommand}" Content="{Binding LocalizationContext.SaveAll}"></Button>
           <Separator/>
-          <Button Name="bImageIncrease" Command="{Binding IncreaseCanvasCommand}">Increase</Button>
-          <Button Name="bImageShrink" Command="{Binding ShrinkCanvasCommand}">Shrink</Button>
-          <Button Name="bImageReset" Command="{Binding ResetCanvasCommand}">Reset</Button>
+          <Button Name="bImageIncrease" Margin="1" Command="{Binding IncreaseCanvasCommand}" Content="{Binding LocalizationContext.Increase}"></Button>
+          <Button Name="bImageShrink" Margin="1" Command="{Binding ShrinkCanvasCommand}" Content="{Binding LocalizationContext.Shrink}"></Button>
+          <Button Name="bImageReset" Margin="1" Command="{Binding ResetCanvasCommand}"  Content="{Binding LocalizationContext.Reset}"></Button>
           <Separator/>
-          <Button Name="bImagePrev" Command="{Binding PrevImageCommand}">Prev</Button>
-          <Button Name="bImageNext" Command="{Binding NextImageCommand}">Next</Button>
-          <Button Name="bWizard" Command="{Binding OpenWizardCommand}">Wizard</Button>
-          <ToggleButton Padding="8" Margin="1" Name="bShowBorder" IsChecked="True" Content="Border" />
+          <Button Name="bImagePrev" Margin="1" Command="{Binding PrevImageCommand}" Content="{Binding LocalizationContext.Previous}"></Button>
+          <Button Name="bImageNext" Margin="1" Command="{Binding NextImageCommand}" Content="{Binding LocalizationContext.Next}"></Button>
+          <Button Name="bWizard" Command="{Binding OpenWizardCommand}" Content="{Binding LocalizationContext.Wizard}"></Button>
+          <ToggleButton Padding="8" Margin="1" Name="bShowBorder" IsChecked="True" Content="{Binding LocalizationContext.Border}" />
         </StackPanel>
       </ToolTip>
     </StackPanel>
@@ -93,9 +94,9 @@
           <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
         <ComboBox Grid.Column="0" Grid.Row="0" SelectedIndex="{Binding FilterIndex, Mode=TwoWay}">
-          <ComboBoxItem Content="All photos" />
-          <ComboBoxItem Content="Photos with objects" />
-          <ComboBoxItem Content="Favorite photos" />
+          <ComboBoxItem Content="{Binding LocalizationContext.AllPhotos}" />
+          <ComboBoxItem Content="{Binding LocalizationContext.PhotosWithObjects}" />
+          <ComboBoxItem Content="{Binding LocalizationContext.FavoritePhotos}" />
         </ComboBox>
         <ListBox Grid.Column="0" Grid.Row="1"
                  x:Name="ImageList" 
@@ -211,7 +212,7 @@
                   Width="{Binding CanvasWidth, Mode=TwoWay}">
                   <Canvas.ContextMenu>
                     <ContextMenu>
-                      <MenuItem Header="Show geo position" Command="{Binding ShowGeoDataCommand}"/>
+                      <MenuItem Header="{Binding LocalizationContext.ShowGeoPosition}" Command="{Binding ShowGeoDataCommand}"/>
                       <!-- <MenuItem Header="Find nearest photo"/> -->
                       <Separator/>
                       <MenuItem Header="{Binding FavoritesStateString}" Command="{Binding AddToFavoritesCommand}"/>

@@ -1,0 +1,20 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="LacmusApp.Views.SettingsWindow" 
+        SizeToContent="WidthAndHeight"
+        CanResize="True"
+        Width = "400"
+        Height = "350" Title="{Binding LocalizationContext.Settings}">
+    <StackPanel HorizontalAlignment="Left" Margin="5">
+    <TextBlock Text="{Binding LocalizationContext.SelectLanguage}"/>
+     <Border CornerRadius="6" BorderBrush="LightGray" BorderThickness="2" Padding="8">
+        <StackPanel>
+            <Button Content="Russian" Command="{Binding ChangeRussianCommand}" Margin="3"/>
+            <Button Content="English" Command="{Binding ChangeEnglishCommand}" Margin="3"/>
+        </StackPanel>
+        </Border>
+    </StackPanel>
+</Window>
