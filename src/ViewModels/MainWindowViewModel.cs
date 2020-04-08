@@ -50,15 +50,17 @@ namespace LacmusApp.ViewModels
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly Window _window;
         private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
+        private ThemeManager _themeManager;
         private int itemPerPage = 500;
         private int itemcount;
         private int _totalPages;
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
         private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
         
-        public MainWindowViewModel(Window window)
+        public MainWindowViewModel(Window window, ThemeManager themeManager)
         {
             _window = window;
+            _themeManager = themeManager;
 
             var pageFilter = this
                 .WhenValueChanged(x => x.CurrentPage)
@@ -77,8 +79,7 @@ namespace LacmusApp.ViewModels
             
             _applicationStatusManager = new ApplicationStatusManager();
             ApplicationStatusViewModel = new ApplicationStatusViewModel(_applicationStatusManager);
-
-
+            
             var canGoNext = this
                 .WhenAnyValue(x => x.SelectedIndex)
                 .Select(index => index < _photos.Count - 1);
@@ -154,11 +155,9 @@ namespace LacmusApp.ViewModels
         }
 
         #region Public API
-
         public ReadOnlyObservableCollection<PhotoViewModel> PhotoCollection => _photoCollection;
         [Reactive] public int SelectedIndex { get; set; }
         [Reactive] public int CurrentPage { get; set; } = 0;
-        
         [Reactive] public int FilterIndex { get; set; } = 0;
         [Reactive] public PhotoViewModel PhotoViewModel { get; set; }
         [Reactive] public ApplicationStatusViewModel ApplicationStatusViewModel { get; set; }
@@ -646,12 +645,8 @@ namespace LacmusApp.ViewModels
 
         private async void OpenSettingsWindowAsync()
         {
-            await Dispatcher.UIThread.InvokeAsync(async () =>
-                {
-                    SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext);
-                    settingsWindow.Show();
-                });
-	}
-
+            SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, _themeManager);
+            settingsWindow.Show();
+	    }
     }
 }

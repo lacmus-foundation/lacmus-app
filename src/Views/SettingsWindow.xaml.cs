@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using LacmusApp.Managers;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
@@ -16,10 +17,12 @@ namespace LacmusApp.Views
 {
     class SettingsWindow : Window
     {
-        public SettingsWindow(LocalizationContext context)
+        public SettingsWindow(LocalizationContext context, ThemeManager themeManager)
         {
             AvaloniaXamlLoader.Load(this);
-            this.DataContext = new SettingsWindowViewModel(context);
+            var manager = new ThemeManager(this);
+            manager.UseTheme(themeManager.CurrentTheme);
+            this.DataContext = new SettingsWindowViewModel(context, themeManager, manager);
         }
 
         public SettingsWindow() { }

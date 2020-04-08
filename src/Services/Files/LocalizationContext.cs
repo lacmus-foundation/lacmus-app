@@ -33,18 +33,6 @@ namespace LacmusApp.Services.Files
             get { return _importAllFromXml; }
             set { this.RaiseAndSetIfChanged(ref _importAllFromXml, value); }
         }
-        private string _exportToXml;
-        [Reactive] public string ExportToXml
-        {
-            get { return _exportToXml; }
-            set { this.RaiseAndSetIfChanged(ref _exportToXml, value); }
-        }
-        private string _exportFavoritesToXml;
-        [Reactive] public string ExportFavoritesToXml
-        {
-            get { return _exportFavoritesToXml; }
-            set { this.RaiseAndSetIfChanged(ref _exportFavoritesToXml, value); }
-        }
         private string _settings;
         [Reactive] public string Settings
         {
@@ -80,12 +68,6 @@ namespace LacmusApp.Services.Files
         {
             get { return _image; }
             set { this.RaiseAndSetIfChanged(ref _image, value); }
-        }
-        private string _predictThis;
-        [Reactive] public string PredictThis
-        {
-            get { return _predictThis; }
-            set { this.RaiseAndSetIfChanged(ref _predictThis, value); }
         }
         private string _predictAll;
         [Reactive] public string PredictAll
@@ -147,18 +129,6 @@ namespace LacmusApp.Services.Files
             get { return _saveAll; }
             set { this.RaiseAndSetIfChanged(ref _saveAll, value); }
         }
-        private string _showPedestrians;
-        [Reactive] public string ShowPedestrians
-        {
-            get { return _showPedestrians; }
-            set { this.RaiseAndSetIfChanged(ref _showPedestrians, value); }
-        }
-        private string _showFavorites;
-        [Reactive] public string ShowFavorites
-        {
-            get { return _showFavorites; }
-            set { this.RaiseAndSetIfChanged(ref _showFavorites, value); }
-        }
         private string _showGeoPosition;
         [Reactive] public string ShowGeoPosition
         {
@@ -207,6 +177,12 @@ namespace LacmusApp.Services.Files
             get { return _border; }
             set { this.RaiseAndSetIfChanged(ref _border, value); }
         }
+        private string _favoritesStateString;
+        [Reactive] public string FavoritesStateString
+        {
+            get { return _favoritesStateString; }
+            set { this.RaiseAndSetIfChanged(ref _favoritesStateString, value); }
+        }
         #endregion
 
         public LocalizationContext()
@@ -222,74 +198,86 @@ namespace LacmusApp.Services.Files
             {
                 case Language.English:
                 {
+                    //Main view model
+                    //Main menu
+                    //File
                     File="File";
-                    OpenDirectory="Open Directory";
-                    ImportAllFromXml="Import all from XML";
-                    ExportToXml="Export to XML";
-                    ExportFavoritesToXml="Export favorites to XML";
+                    OpenDirectory="Open...";
+                    ImportAllFromXml="Import from XMLs...";
+                    SaveAll="Save";
+                    SaveAs="Save As";
+                    Wizard="Wizard";
                     Settings="Settings";
                     Exit="Exit";
+                    //Model
                     Model="Model";
                     LoadModel="Load model";
                     UpdateModel="Update model";
+                    //Image
                     Image="Image";
-                    PredictThis="Predict this";
                     PredictAll="Predict All";
                     Increase="Increase";
                     Shrink="Shrink";
                     Reset="Reset";
                     Next="Next";
                     Previous="Previous";
+                    Border="Border";
+                    //Help
                     Help="Help";
                     OpenUserGuide="Open user guide";
                     About="About";
-                    SaveAll="Save all";
-                    ShowPedestrians="Show Pedestrians";
-                    ShowFavorites="Show Favorites";
-                    ShowGeoPosition="Show Geo Position";
-                    SelectLanguage="Select language";
-                    SaveAs="Save As";
+                    //ListView
                     AllPhotos="All photos";
                     PhotosWithObject="Photos with objects";
                     FavoritePhotos="Favorite photos";
-                    Wizard="Wizard";
-                    Border="Border";
+                    //Context menu
+                    ShowGeoPosition="Show geo position";
+                    FavoritesStateString = "Add to \\ remove from favorites";
+                    
+                    //Settings
+                    SelectLanguage = "Select Language";
                     break;
                 }
                 case Language.Russian:
                 {
+                    //Main view model
+                    //Main menu
+                    //File
                     File="Файл";
-                    OpenDirectory="Открыть папку";
-                    ImportAllFromXml="Импортировать всё из XML";
-                    ExportToXml="Экспортировать в XML";
-                    ExportFavoritesToXml="Экспортировать избранное в XML";
+                    OpenDirectory="Открыть...";
+                    ImportAllFromXml="Импортировать из XML...";
+                    SaveAll="Сохранить";
+                    SaveAs="Сохранить как...";
+                    Wizard="Помощник";
                     Settings="Настройки";
                     Exit="Выход";
+                    //Model
                     Model="Модель";
-                    LoadModel="Загрузить модель";
-                    UpdateModel="Обновить модель";
+                    LoadModel="Загрузить";
+                    UpdateModel="Обновить";
+                    //Image
                     Image="Изображение";
-                    PredictThis="Спрогнозировать текущее";
-                    PredictAll="Спрогнозировать все";
-                    Increase="Увеличить";
+                    PredictAll="Обработать все";
+                    Increase="Увеличеть";
                     Shrink="Уменьшить";
-                    Reset="Перезагрузить";
+                    Reset="Сбросить";
                     Next="Следующее";
                     Previous="Предыдущее";
+                    Border="Рамка";
+                    //Help
                     Help="Помощь";
                     OpenUserGuide="Открыть руководство пользователя";
                     About="О программе";
-                    SaveAll="Сохранить всё";
-                    ShowPedestrians="Показать пешеходов";
-                    ShowFavorites="Показать избранное";
-                    ShowGeoPosition="Показать геопозицию";
-                    SelectLanguage="Выберите язык";
-                    SaveAs="Сохранить как";
+                    //ListView
                     AllPhotos="Все фото";
                     PhotosWithObject="Фото с объектами";
                     FavoritePhotos="Избранные фото";
-                    Wizard="Помощник";
-                    Border="Рамка";
+                    //Context menu
+                    ShowGeoPosition="Показать геопозицию";
+                    FavoritesStateString = "Добавить \\ удалить из избранных";
+                    
+                    //Settings
+                    SelectLanguage = "Select Language";
                     break;
                 }
             }

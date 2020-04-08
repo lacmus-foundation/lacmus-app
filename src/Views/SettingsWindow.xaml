@@ -2,19 +2,75 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="LacmusApp.Views.SettingsWindow" 
         SizeToContent="WidthAndHeight"
         CanResize="True"
         Width = "400"
         Height = "350" Title="{Binding LocalizationContext.Settings}">
-    <StackPanel HorizontalAlignment="Left" Margin="5">
-    <TextBlock Text="{Binding LocalizationContext.SelectLanguage}"/>
-     <Border CornerRadius="6" BorderBrush="LightGray" BorderThickness="2" Padding="8">
-        <StackPanel>
-            <Button Content="Russian" Command="{Binding ChangeRussianCommand}" Margin="3"/>
-            <Button Content="English" Command="{Binding ChangeEnglishCommand}" Margin="3"/>
-        </StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <TabControl Margin="0" Grid.Row="0" Background="Transparent">
+            <TabItem Header="General" HorizontalContentAlignment="Center">
+                <ScrollViewer>
+                    <StackPanel>
+                        <Border Classes="Card">
+                            <StackPanel>
+                                <TextBlock Classes="Heading" 
+                                           Text="Language:"
+                                />
+                                <ComboBox SelectedIndex="{Binding LanguageIndex, Mode=TwoWay}">
+                                    <ComboBoxItem Content="English" />
+                                    <ComboBoxItem Content="Russian" />
+                                </ComboBox>
+                                <TextBlock Classes="Heading" 
+                                           Text="Theme:"
+                                />
+                                <ComboBox SelectedIndex="{Binding ThemeIndex, Mode=TwoWay}">
+                                    <ComboBoxItem Content="Light" />
+                                    <ComboBoxItem Content="Dark" />
+                                    <ComboBoxItem Content="Sea" />
+                                    <ComboBoxItem Content="Candy" />
+                                    <ComboBoxItem Content="Magma" />
+                                </ComboBox>
+                                <TextBlock Classes="Heading" 
+                                           Text="Border color:"
+                                />
+                                <cp:ColorPicker Color="Red"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="ML model">
+                <Border Classes="Card">
+                    <TextBlock Classes="Caption" 
+                               Text="Ml settings here..."
+                               Margin="10" />
+                </Border>
+            </TabItem>
+        </TabControl>
+        <Border Classes="Card" Grid.Row="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        Content="Close"
+                        Command="{Binding CancelCommand}"
+                />
+                <Button Grid.Column="2"
+                        Classes="Primary"
+                        Content="Apply" 
+                        Command="{Binding ApplyCommand}"
+                />
+            </Grid>
         </Border>
-    </StackPanel>
+    </Grid>
 </Window>

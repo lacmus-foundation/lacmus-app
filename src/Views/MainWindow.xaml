@@ -10,12 +10,6 @@
         Title="LacmusApp"
         Width="800"
         Height="600">
-  <Window.Styles>
-    <Style Selector="Button">
-      <Setter Property="Foreground" Value="White"></Setter>
-    </Style>
-  </Window.Styles>
-
   <Grid Name="Main">
     <Grid.RowDefinitions>
       <RowDefinition Height="auto"></RowDefinition>
@@ -28,10 +22,11 @@
       <Menu>
         <MenuItem Name="mFile" Header="{Binding LocalizationContext.File}">
           <MenuItem Name="mFileOpen" Header="{Binding LocalizationContext.OpenDirectory}" Command="{Binding OpenFileCommand}"/>
-          <MenuItem Name="mFileExportAll" Header="{Binding LocalizationContext.ImportAllFromXml}" Command="{Binding ImportAllCommand}"/>
+          <MenuItem Name="mFileImportAll" Header="{Binding LocalizationContext.ImportAllFromXml}" Command="{Binding ImportAllCommand}"/>
           <MenuItem Name="mFileSave" Header="{Binding LocalizationContext.SaveAll}" Command="{Binding SaveAllCommand}"/>
           <MenuItem Name="mFileSaveAs" Header="{Binding LocalizationContext.SaveAs}" Command="{Binding SaveAsCommand}"/>
           <Separator></Separator>
+          <MenuItem Name="mWizard" Header="{Binding LocalizationContext.Wizard}" Command="{Binding OpenWizardCommand}"/>
           <MenuItem Name="mSettings" Header="{Binding LocalizationContext.Settings}" Command="{Binding OpenSettingsWindowCommand}"/>
           <MenuItem Name="mFileExit" Header="{Binding LocalizationContext.Exit}" Command="{Binding ExitCommand}"/>
         </MenuItem>
@@ -87,7 +82,7 @@
         <ColumnDefinition/>
       </Grid.ColumnDefinitions>
 
-      <Grid Name="ImageView" Grid.Column="0" Grid.Row="0" Background="White">
+      <Grid Name="ImageView" Grid.Column="0" Grid.Row="0" Background="{DynamicResource ThemeCardBrush}">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="*"/>
@@ -95,7 +90,7 @@
         </Grid.RowDefinitions>
         <ComboBox Grid.Column="0" Grid.Row="0" SelectedIndex="{Binding FilterIndex, Mode=TwoWay}">
           <ComboBoxItem Content="{Binding LocalizationContext.AllPhotos}" />
-          <ComboBoxItem Content="{Binding LocalizationContext.PhotosWithObjects}" />
+          <ComboBoxItem Content="{Binding LocalizationContext.PhotosWithObject}" />
           <ComboBoxItem Content="{Binding LocalizationContext.FavoritePhotos}" />
         </ComboBox>
         <ListBox Grid.Column="0" Grid.Row="1"
@@ -147,7 +142,7 @@
           </Grid.ColumnDefinitions>
           <Button Grid.Column="0" Command="{Binding FirstPageCommand}">
             <Path
-              Fill="{Binding $parent[Button].Foreground}"
+              Fill="White"
               Width="7"
               Height="12"
               Stretch="Uniform"
@@ -157,7 +152,7 @@
           </Button>
           <Button Grid.Column="1" Command="{Binding PreviousPageCommand}">
             <Path
-              Fill="{Binding $parent[Button].Foreground}"
+              Fill="White"
               Width="7"
               Height="12"
               Stretch="Uniform"
@@ -170,7 +165,7 @@
           <TextBlock Grid.Column="4" Margin="1 10" Text="{Binding TotalPages}"/>
           <Button Grid.Column="5" Command="{Binding NextPageCommand}">
             <Path
-              Fill="{Binding $parent[Button].Foreground}"
+              Fill="White"
               Width="7"
               Height="12"
               Stretch="Uniform"
@@ -180,7 +175,7 @@
           </Button>
           <Button Grid.Column="6" Command="{Binding LastPageCommand}">
             <Path
-              Fill="{Binding $parent[Button].Foreground}"
+              Fill="White"
               Width="7"
               Height="12"
               Stretch="Uniform"
@@ -215,7 +210,7 @@
                       <MenuItem Header="{Binding LocalizationContext.ShowGeoPosition}" Command="{Binding ShowGeoDataCommand}"/>
                       <!-- <MenuItem Header="Find nearest photo"/> -->
                       <Separator/>
-                      <MenuItem Header="{Binding FavoritesStateString}" Command="{Binding AddToFavoritesCommand}"/>
+                      <MenuItem Header="{Binding LocalizationContext.FavoritesStateString}" Command="{Binding AddToFavoritesCommand}"/>
                     </ContextMenu>
                   </Canvas.ContextMenu>
                 </Canvas>  
