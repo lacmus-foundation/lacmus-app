@@ -20,6 +20,9 @@
                     <StackPanel>
                         <Border Classes="Card">
                             <StackPanel>
+                                <StackPanel.Resources>
+                                    <cp:HexToColorConverter x:Key="HexToColorConverter"/>
+                                </StackPanel.Resources>
                                 <TextBlock Classes="Heading" 
                                            Text="Language:"
                                 />
@@ -40,7 +43,7 @@
                                 <TextBlock Classes="Heading" 
                                            Text="Border color:"
                                 />
-                                <cp:ColorPicker Color="Red"/>
+                                <cp:ColorPicker Color="{Binding HexColor, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"/>
                             </StackPanel>
                         </Border>
                     </StackPanel>

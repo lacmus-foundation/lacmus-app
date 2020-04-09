@@ -45,7 +45,7 @@ namespace LacmusApp.ViewModels
 
         [Reactive] public int LanguageIndex { get; set; } = 0;
         [Reactive] public int ThemeIndex { get; set; } = 0;
-
+        [Reactive] public string HexColor { get; set; } = "#FFFF0000";
         private void SetupCommands()
         {
             ApplyCommand = ReactiveCommand.Create(Apply);
