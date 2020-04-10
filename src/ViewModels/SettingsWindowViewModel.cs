@@ -14,6 +14,8 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using LacmusApp.Managers;
+using LacmusApp.Models;
+using LacmusApp.Models.ML;
 using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -27,11 +29,13 @@ namespace LacmusApp.ViewModels
     {
         LocalizationContext LocalizationContext {get; set;}
         private ThemeManager _settingsThemeManager, _mainThemeManager;
-        public SettingsWindowViewModel(LocalizationContext context, ThemeManager mainThemeManager, ThemeManager settingsThemeManager)
+        private AppConfig _config;
+        public SettingsWindowViewModel(LocalizationContext context, AppConfig config, ThemeManager mainThemeManager, ThemeManager settingsThemeManager)
         {
             this.LocalizationContext = context;
             _settingsThemeManager = settingsThemeManager;
             _mainThemeManager = mainThemeManager;
+            _config = config;
 
             this.WhenAnyValue(x => x.ThemeIndex)
                 .Skip(1)
@@ -52,7 +56,7 @@ namespace LacmusApp.ViewModels
             CancelCommand = ReactiveCommand.Create(Cancel);
         }
         
-        private void Apply()
+        private async void Apply()
         {
             try
             {
@@ -68,6 +72,14 @@ namespace LacmusApp.ViewModels
                         throw new Exception($"Invalid LanguageIndex: {LanguageIndex}");
                 }
                 _mainThemeManager.UseTheme(_settingsThemeManager.CurrentTheme);
+                
+                //save app settings
+                _config.Language = LocalizationContext.Language;
+                _config.Theme = _mainThemeManager.CurrentTheme;
+                _config.BorderColor = HexColor;
+                //TODO: ml config settings
+                _config.MlModelConfig = new MLModelConfig();
+                await _config.Save(Path.Join("conf", "appConfig.json"));
             }
             catch (Exception e)
             {

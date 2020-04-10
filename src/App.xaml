@@ -6,7 +6,7 @@
         <StyleInclude Source="avares://Material.Avalonia/Material.Avalonia.DeepPurple.xaml" />
         <StyleInclude Source="avares://Material.Avalonia/Material.Avalonia.Templates.xaml" />
         -->
-        <StyleInclude Source="avares://Citrus.Avalonia/Sea.xaml"/>
+        <StyleInclude Source="avares://Citrus.Avalonia/Citrus.xaml"/>
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Default.xaml"/>
         <StyleInclude Source="avares://ThemeEditor.Controls.ColorPicker/ColorPicker.xaml"/>
         <!--

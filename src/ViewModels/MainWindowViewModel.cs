@@ -50,6 +50,7 @@ namespace LacmusApp.ViewModels
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly Window _window;
         private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
+        private AppConfig _appConfig;
         private ThemeManager _themeManager;
         private int itemPerPage = 500;
         private int itemcount;
@@ -57,10 +58,11 @@ namespace LacmusApp.ViewModels
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
         private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
         
-        public MainWindowViewModel(Window window, ThemeManager themeManager)
+        public MainWindowViewModel(Window window, AppConfig appConfig)
         {
             _window = window;
-            _themeManager = themeManager;
+            _appConfig = appConfig;
+            _themeManager = new ThemeManager(window);
 
             var pageFilter = this
                 .WhenValueChanged(x => x.CurrentPage)
@@ -645,7 +647,7 @@ namespace LacmusApp.ViewModels
 
         private async void OpenSettingsWindowAsync()
         {
-            SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, _themeManager);
+            SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, _appConfig, _themeManager);
             settingsWindow.Show();
 	    }
     }

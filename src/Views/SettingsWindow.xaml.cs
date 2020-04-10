@@ -17,12 +17,12 @@ namespace LacmusApp.Views
 {
     class SettingsWindow : Window
     {
-        public SettingsWindow(LocalizationContext context, ThemeManager themeManager)
+        public SettingsWindow(LocalizationContext context, AppConfig appConfig, ThemeManager themeManager)
         {
             AvaloniaXamlLoader.Load(this);
             var manager = new ThemeManager(this);
             manager.UseTheme(themeManager.CurrentTheme);
-            this.DataContext = new SettingsWindowViewModel(context, themeManager, manager);
+            this.DataContext = new SettingsWindowViewModel(context, appConfig, themeManager, manager);
         }
 
         public SettingsWindow() { }

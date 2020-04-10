@@ -1,9 +1,15 @@
-﻿using Avalonia;
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using LacmusApp.Managers;
+using LacmusApp.Models;
 using LacmusApp.ViewModels;
 using LacmusApp.Views;
+using Serilog;
 
 namespace LacmusApp
 {
@@ -15,11 +21,10 @@ namespace LacmusApp
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktopLifetime)
             {
-                var window = new MainWindow();
-                window.DataContext = new MainWindowViewModel(window, new ThemeManager(window));
+                var window = new LoadingWindow();
+                window.DataContext = new LoadingWindowViewModel(window);
                 desktopLifetime.MainWindow = window;
             }
-            
             base.OnFrameworkInitializationCompleted();
         }
     }

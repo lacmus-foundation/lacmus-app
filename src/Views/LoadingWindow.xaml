@@ -1,0 +1,34 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
+        x:Class="LacmusApp.Views.LoadingWindow"
+        CanResize="False"
+        HasSystemDecorations="False"
+        Title="About"
+        Width="700"
+        Height="450">
+    <Grid>
+        <Border Classes="Card">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="3*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <Image Grid.Row="1" Source="resm:LacmusApp.Assets.lacmus_logo.png"/>
+                <Image Grid.Row="2" Source="resm:LacmusApp.Assets.lacmus_text.png"/>
+                <Grid Grid.Row="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
+                        <TextBlock TextWrapping="Wrap" Classes="Caption" Text="Lacmus desktop application. Version 0.4.0." />
+                        <TextBlock TextWrapping="Wrap" FontSize="11" Classes="Caption" Text="Copyright (c) 2020 Lacmus Foundation. This is free software, and you are welcome to redistribute it under GNU GPL license." />
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
