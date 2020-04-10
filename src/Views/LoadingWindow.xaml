@@ -24,7 +24,10 @@
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
-                        <TextBlock TextWrapping="Wrap" Classes="Caption" Text="Lacmus desktop application. Version 0.4.0." />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock TextWrapping="Wrap" Classes="Caption" Text="Lacmus desktop application. " />
+                            <TextBlock Classes="Caption" Text="{Binding TextVersion}" />
+                        </StackPanel>
                         <TextBlock TextWrapping="Wrap" FontSize="11" Classes="Caption" Text="Copyright (c) 2020 Lacmus Foundation. This is free software, and you are welcome to redistribute it under GNU GPL license." />
                     </StackPanel>
                 </Grid>

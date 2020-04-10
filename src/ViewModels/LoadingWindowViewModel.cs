@@ -47,7 +47,7 @@ namespace LacmusApp.ViewModels
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"Unable to parse config from {configPath}.");
+                    Log.Error($"Unable to parse config from {configPath}.", e);
 
                     var config = new AppConfig();
                     await config.Save(configPath);

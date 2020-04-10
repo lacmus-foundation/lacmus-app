@@ -13,10 +13,34 @@ namespace LacmusApp.Models
     [JsonObject]
     public class AppConfig
     {
-        public Language Language { get; set; }
-        public string BorderColor { get; set; }
+        private string _borderColor = "#FFFF0000";
+        private MLModelConfig _mlModelConfig = new MLModelConfig();
+
+        public Language Language { get; set; } = Language.English;
+
+        public string BorderColor
+        {
+            get => _borderColor;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value) || !value.Contains('#') || value.Length != 9)
+                {
+                    throw new Exception($"invalid BorderColor: {_borderColor}");
+                }
+
+                _borderColor = value;
+            }
+        } 
         public ThemeManager.Theme Theme { get; set; }
-        public MLModelConfig MlModelConfig { get; set; }
+
+        public MLModelConfig MlModelConfig
+        {
+            get => _mlModelConfig;
+            set
+            {
+                _mlModelConfig = value ?? throw new Exception($"MlModelConfig is null");
+            }
+        }
         
         public async Task Save(string path)
         {
