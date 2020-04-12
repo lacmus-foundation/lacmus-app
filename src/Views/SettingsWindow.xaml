@@ -40,10 +40,12 @@
                                     <ComboBoxItem Content="Candy" />
                                     <ComboBoxItem Content="Magma" />
                                 </ComboBox>
+                                <!--
                                 <TextBlock Classes="Heading" 
                                            Text="Border color:"
                                 />
                                 <cp:ColorPicker Color="{Binding HexColor, Mode=TwoWay, Converter={StaticResource HexToColorConverter}}"/>
+                                -->
                             </StackPanel>
                         </Border>
                     </StackPanel>

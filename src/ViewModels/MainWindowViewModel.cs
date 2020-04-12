@@ -120,6 +120,10 @@ namespace LacmusApp.ViewModels
 
             LocalizationContext = new LocalizationContext();
             
+            // load settings from config
+            LocalizationContext.Language = _appConfig.Language;
+            _themeManager.UseTheme(_appConfig.Theme);
+
             Log.Information("Application started.");
         }
 

@@ -4,6 +4,7 @@
         xmlns:models="clr-namespace:LacmusApp.Models"
         xmlns:models_photo="clr-namespace:LacmusApp.Models.Photo"
         xmlns:paz="clr-namespace:Avalonia.Controls.PanAndZoom;assembly=Avalonia.Controls.PanAndZoom"
+        xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
         Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
         x:Class="LacmusApp.Views.MainWindow"
         UseLayoutRounding="True"
@@ -196,6 +197,9 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Items="{Binding PhotoViewModel.BoundBoxes}">
+            <ItemsControl.Resources>
+              <cp:HexToColorConverter x:Key="HexToColorConverter"/>
+            </ItemsControl.Resources>
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <Canvas
@@ -220,7 +224,8 @@
               <DataTemplate DataType="{x:Type models:BoundBox}">
                 <Polygon
                   Points="{Binding Points}"
-                  Stroke="Red" StrokeThickness="10"
+                  Stroke="{Binding HexColor, Converter={StaticResource HexToColorConverter}}" 
+                  StrokeThickness="10"
                   IsVisible="{Binding #bShowBorder.IsChecked, Mode=OneWay}"/>
               </DataTemplate>
             </ItemsControl.ItemTemplate>
