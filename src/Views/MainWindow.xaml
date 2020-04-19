@@ -224,7 +224,7 @@
               <DataTemplate DataType="{x:Type models:BoundBox}">
                 <Polygon
                   Points="{Binding Points}"
-                  Stroke="{Binding HexColor, Converter={StaticResource HexToColorConverter}}" 
+                  Stroke="Red" 
                   StrokeThickness="10"
                   IsVisible="{Binding #bShowBorder.IsChecked, Mode=OneWay}"/>
               </DataTemplate>

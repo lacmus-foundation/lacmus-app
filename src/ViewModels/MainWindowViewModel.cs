@@ -633,7 +633,7 @@ namespace LacmusApp.ViewModels
 
         private async void OpenSettingsWindowAsync()
         {
-            SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, _appConfig, _applicationStatusManager, _themeManager);
+            SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
             settingsWindow.Show();
 	    }
     }

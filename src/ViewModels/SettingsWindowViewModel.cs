@@ -31,9 +31,9 @@ namespace LacmusApp.ViewModels
         LocalizationContext LocalizationContext {get; set;}
         private ThemeManager _settingsThemeManager, _mainThemeManager;
         private readonly ApplicationStatusManager _applicationStatusManager;
-        private AppConfig _config;
+        private AppConfig _config, _newConfig;
         public SettingsWindowViewModel(LocalizationContext context,
-                                        AppConfig config,
+                                        ref AppConfig config,
                                         ApplicationStatusManager manager,
                                         ThemeManager mainThemeManager,
                                         ThemeManager settingsThemeManager)
@@ -42,6 +42,7 @@ namespace LacmusApp.ViewModels
             _settingsThemeManager = settingsThemeManager;
             _mainThemeManager = mainThemeManager;
             _config = config;
+            _newConfig = AppConfig.DeepCopy(_config);
             _applicationStatusManager = manager;
 
             this.WhenAnyValue(x => x.ThemeIndex)
@@ -91,12 +92,13 @@ namespace LacmusApp.ViewModels
                 _mainThemeManager.UseTheme(_settingsThemeManager.CurrentTheme);
                 
                 //save app settings
-                _config.Language = LocalizationContext.Language;
-                _config.Theme = _mainThemeManager.CurrentTheme;
-                _config.BorderColor = HexColor;
+                _newConfig.Language = LocalizationContext.Language;
+                _newConfig.Theme = _mainThemeManager.CurrentTheme;
+                _newConfig.BorderColor = HexColor;
                 //TODO: ml config settings
-                _config.MlModelConfig = new MLModelConfig();
-                await _config.Save();
+                
+                await _newConfig.Save();
+                _config = AppConfig.DeepCopy(_newConfig);
             }
             catch (Exception e)
             {
@@ -116,7 +118,7 @@ namespace LacmusApp.ViewModels
             {
                 Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
-                var config = _config.MlModelConfig;;
+                var config = _newConfig.MlModelConfig;;
                 // get local versions
                 var localVersions = await MLModel.GetInstalledVersions(config);
                 if(!localVersions.Contains(config.ModelVersion))
@@ -138,7 +140,7 @@ namespace LacmusApp.ViewModels
 
         private void OpenModelManager()
         {
-            var window = new ModelManagerWindow(LocalizationContext, _config, _applicationStatusManager, _mainThemeManager);
+            var window = new ModelManagerWindow(LocalizationContext, ref _newConfig, _applicationStatusManager, _mainThemeManager);
             window.Show();
         }
         private void SwitchSettingsTheme()

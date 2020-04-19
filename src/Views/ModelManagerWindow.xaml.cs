@@ -9,12 +9,12 @@ namespace LacmusApp.Views
 {
     public class ModelManagerWindow : Window
     {
-        public ModelManagerWindow(LocalizationContext context, AppConfig appConfig, ApplicationStatusManager manager, ThemeManager themeManager)
+        public ModelManagerWindow(LocalizationContext context, ref AppConfig appConfig, ApplicationStatusManager manager, ThemeManager themeManager)
         {
-            AvaloniaXamlLoader.Load(this);
             var localThemeManager = new ThemeManager(this);
             localThemeManager.UseTheme(themeManager.CurrentTheme);
-            this.DataContext = new ModelManagerWindowViewModel(context, appConfig, manager);
+            AvaloniaXamlLoader.Load(this);
+            this.DataContext = new ModelManagerWindowViewModel(this, context, ref appConfig, manager);
         }
         public ModelManagerWindow() { }
     }

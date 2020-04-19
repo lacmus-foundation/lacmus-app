@@ -1,9 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive;
+using System.Reactive.Linq;
+using System.Threading.Tasks;
+using Avalonia.Controls;
 using DynamicData;
+using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
+using LacmusApp.Models.Docker;
 using LacmusApp.Models.ML;
 using LacmusApp.Services.Files;
 using ReactiveUI;
@@ -14,9 +20,10 @@ namespace LacmusApp.ViewModels
 {
     public class ModelManagerWindowViewModel : ReactiveObject
     {
+        private const uint API_VERSION = 1;
         LocalizationContext LocalizationContext { get; set; }
         private readonly ApplicationStatusManager _applicationStatusManager;
-        private AppConfig _config;
+        private AppConfig _config, _newConfig;
         
         private SourceList<MlModelData> _avalableModels { get; set; } = new SourceList<MlModelData>();
         private ReadOnlyObservableCollection<MlModelData> _avalableModelsCollection;
@@ -26,12 +33,14 @@ namespace LacmusApp.ViewModels
         private ReadOnlyObservableCollection<MlModelData> _installedModelsCollection;
         public ReadOnlyObservableCollection<MlModelData> InstalledModelsCollection => _installedModelsCollection;
         
-        public ModelManagerWindowViewModel(LocalizationContext context,
-                                        AppConfig config,
+        public ModelManagerWindowViewModel(Window window, LocalizationContext context,
+                                        ref AppConfig config,
                                         ApplicationStatusManager manager)
         {
             this.LocalizationContext = context;
             _config = config;
+            _newConfig = AppConfig.DeepCopy(_config);
+            
             _applicationStatusManager = manager;
             
             _avalableModels
@@ -44,25 +53,50 @@ namespace LacmusApp.ViewModels
                 .Bind(out _installedModelsCollection)
                 .Subscribe();
             
-            UpdateModelStatusCommand = ReactiveCommand.Create(UpdateModelStatus);
-            UpdateInstalledModelsCommand = ReactiveCommand.Create(UpdateInstalledModels);
-            UpdateAvailableModelsCommand = ReactiveCommand.Create(UpdateAvailableModels);
+            UpdateModelStatusCommand = ReactiveCommand.Create(async () => { await UpdateModelStatus(); }, CanExecute());
+            UpdateInstalledModelsCommand = ReactiveCommand.Create(async () => { await UpdateInstalledModels(); }, CanExecute());
+            UpdateAvailableModelsCommand = ReactiveCommand.Create(async () => { await UpdateAvailableModels(); }, CanExecute());
+            DownloadModelCommand = ReactiveCommand.Create(async () => { await DownloadModel(); }, CanExecute());
+            RemoveModelCommand = ReactiveCommand.Create(async () => { await RemoveModel(); }, CanExecute());
+            ActivateModelCommand = ReactiveCommand.Create(async () => { await ActivateModel(); }, CanExecute());
+            
+            ApplyCommand = ReactiveCommand.Create(async () =>
+            {
+                _config = AppConfig.DeepCopy(_newConfig);
+                await _config.Save();
+                window.Close(); 
+            }, CanExecute());
+            
+            CancelCommand = ReactiveCommand.Create(window.Close, CanExecute());
             
             UpdateModelStatusCommand.Execute().Subscribe();
             UpdateInstalledModelsCommand.Execute().Subscribe();
             UpdateAvailableModelsCommand.Execute().Subscribe();
         }
+        private IObservable<bool> CanExecute()
+        {
+            return _applicationStatusManager.AppStatusInfoObservable
+                .Select(status => status.Status != Enums.Status.Working && status.Status != Enums.Status.Unauthenticated);
+        }
         
-        public ReactiveCommand<Unit, Unit> UpdateModelStatusCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> UpdateInstalledModelsCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> UpdateAvailableModelsCommand { get; set; }
+        public ReactiveCommand<Unit, Task> UpdateModelStatusCommand { get; set; }
+        public ReactiveCommand<Unit, Task> UpdateInstalledModelsCommand { get; set; }
+        public ReactiveCommand<Unit, Task> UpdateAvailableModelsCommand { get; set; }
+        public ReactiveCommand<Unit, Task> DownloadModelCommand { get; set; }
+        public ReactiveCommand<Unit, Task> RemoveModelCommand { get; set; }
+        public ReactiveCommand<Unit, Task> ActivateModelCommand { get; set; }
+        public ReactiveCommand<Unit, Task> ApplyCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> CancelCommand { get; set; }
         
         [Reactive] public string Repository { get; set; } = "None";
         [Reactive] public string Type { get; set; } = "None";
         [Reactive] public string Version { get; set; } = "None";
+        public string ApiVersion => $"{API_VERSION}";
         [Reactive] public string Status { get; set; } = "Not ready";
+        [Reactive] public MlModelData SelectedAvailableModel { get; set; } = null;
+        [Reactive] public MlModelData SelectedInstalledModel { get; set; } = null;
         
-        public async void UpdateModelStatus()
+        public async Task UpdateModelStatus()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
             //get the last version of ml model with specific config
@@ -70,11 +104,13 @@ namespace LacmusApp.ViewModels
             {
                 Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
-                var config = _config.MlModelConfig;;
+                var config = _newConfig.MlModelConfig;
                 // get local versions
                 var localVersions = await MLModel.GetInstalledVersions(config);
                 if(!localVersions.Contains(config.ModelVersion))
                     throw new Exception($"There are no ml local model to init: {config.Image.Name}:{config.Image.Tag}");
+                if(config.ApiVersion != API_VERSION)
+                    throw new Exception($"Unsupported api {config.ApiVersion}. Only api v {API_VERSION} is supported.");
                 
                 Repository = config.Image.Name;
                 Version = $"{config.ModelVersion}";
@@ -89,9 +125,10 @@ namespace LacmusApp.ViewModels
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
-        public async void UpdateInstalledModels()
+        public async Task UpdateInstalledModels()
         {
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | get installed models...");
+            _installedModels.Clear();
             try
             {
                 Log.Information("Get installed ml models.");
@@ -111,13 +148,14 @@ namespace LacmusApp.ViewModels
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
-        public async void UpdateAvailableModels()
+        public async Task UpdateAvailableModels()
         {
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | get available models...");
             try
             {
-                Log.Information("Get ml models from registry.");
-                foreach (var repository in _config.Repositories)
+                Log.Information("Get available ml models from registry.");
+                _avalableModels.Clear();
+                foreach (var repository in _newConfig.Repositories)
                 {
                     try
                     {
@@ -141,6 +179,90 @@ namespace LacmusApp.ViewModels
             catch (Exception e)
             {
                 Log.Error(e, "Unable get available models.");
+            }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+        public async Task DownloadModel()
+        {
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
+            try
+            {
+                if(SelectedAvailableModel == null)
+                    throw new Exception("No selected model.");
+                
+                var config = new MLModelConfig();
+                config.Image.Name = SelectedAvailableModel.Name;
+                config.Type = SelectedAvailableModel.Type;
+                config.ModelVersion = SelectedAvailableModel.Version;
+                config.ApiVersion = SelectedAvailableModel.ApiVersion;
+                config.Image.Tag = config.GetDockerTag();
+                
+                using(var model = new MLModel(config))
+                    await model.Download();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Unable to download ml model.");
+            }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+        public async Task RemoveModel()
+        {
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | remove model...");
+            try
+            {
+                if(SelectedInstalledModel == null)
+                    throw new Exception("No selected model.");
+                
+                var config = new MLModelConfig();
+                config.Image.Name = SelectedInstalledModel.Name;
+                config.Type = SelectedInstalledModel.Type;
+                config.ModelVersion = SelectedInstalledModel.Version;
+                config.ApiVersion = SelectedInstalledModel.ApiVersion;
+                config.Image.Tag = config.GetDockerTag();
+
+                using (var model = new MLModel(config))
+                    await model.Remove();
+
+                if (SelectedInstalledModel.Name == Repository &&
+                    Version == $"{SelectedInstalledModel.Version}" &&
+                    API_VERSION == SelectedInstalledModel.ApiVersion &&
+                    Type == $"{config.Type}")
+                {
+                    Repository = "None";
+                    Type  = "None";
+                    Version = "None";
+                    Status = "Not ready";
+                    await UpdateModelStatus();
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Unable to remove ml model.");
+            }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+        public async Task ActivateModel()
+        {
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | activate model...");
+            try
+            {
+                if(SelectedInstalledModel == null)
+                    throw new Exception("No selected model.");
+                if(SelectedInstalledModel.ApiVersion != API_VERSION)
+                    throw new Exception($"Unsupported api {SelectedInstalledModel.ApiVersion}. Only api v {API_VERSION} is supported.");
+                
+                _newConfig.MlModelConfig.Image.Name = SelectedInstalledModel.Name;
+                _newConfig.MlModelConfig.Type = SelectedInstalledModel.Type;
+                _newConfig.MlModelConfig.ModelVersion = SelectedInstalledModel.Version;
+                _newConfig.MlModelConfig.ApiVersion = SelectedInstalledModel.ApiVersion;
+                _newConfig.MlModelConfig.Image.Tag = _newConfig.MlModelConfig.GetDockerTag();
+
+                await UpdateModelStatus();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Unable to activate ml model.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }

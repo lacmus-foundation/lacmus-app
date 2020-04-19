@@ -4,6 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media;
 using LacmusApp.Managers;
+using LacmusApp.Models.Docker;
 using LacmusApp.Models.ML;
 using LacmusApp.Services.Files;
 using Newtonsoft.Json;
@@ -98,6 +99,28 @@ namespace LacmusApp.Models
             {
                 throw new Exception($"unable to load config from {path}.", e);
             }
+        }
+
+        public static AppConfig DeepCopy(AppConfig config)
+        {
+            //deep copy ml config
+            var newConfig = new AppConfig();
+            newConfig.Language = config.Language;
+            newConfig.Repositories = new List<string>(config.Repositories).ToArray();
+            newConfig.BorderColor = config.BorderColor;
+            newConfig.MlModelConfig = new MLModelConfig();
+            newConfig.MlModelConfig.Accaunt = new DockerAccaunt();
+            newConfig.MlModelConfig.Accaunt.Email = config.MlModelConfig.Accaunt.Email;
+            newConfig.MlModelConfig.Accaunt.Password = config.MlModelConfig.Accaunt.Password;
+            newConfig.MlModelConfig.Accaunt.Username = config.MlModelConfig.Accaunt.Username;
+            newConfig.MlModelConfig.Image = new DockerImage();
+            newConfig.MlModelConfig.Image.Name = config.MlModelConfig.Image.Name;
+            newConfig.MlModelConfig.Image.Tag = config.MlModelConfig.Image.Tag;
+            newConfig.MlModelConfig.Type = config.MlModelConfig.Type;
+            newConfig.MlModelConfig.Url = config.MlModelConfig.Url;
+            newConfig.MlModelConfig.ApiVersion = config.MlModelConfig.ApiVersion;
+            newConfig.MlModelConfig.ModelVersion = config.MlModelConfig.ModelVersion;
+            return newConfig;
         }
     }
 }
