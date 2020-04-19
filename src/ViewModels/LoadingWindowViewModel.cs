@@ -40,6 +40,7 @@ namespace LacmusApp.ViewModels
         {
             var confDir = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "conf");
             var configPath = Path.Join(confDir,"appConfig.json");
+            Console.WriteLine(configPath);
             if (File.Exists(configPath))
                 try
                 {

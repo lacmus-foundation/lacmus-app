@@ -6,6 +6,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="LacmusApp.Views.SettingsWindow" 
         SizeToContent="WidthAndHeight"
+        Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
         CanResize="True"
         Width = "400"
         Height = "350" Title="{Binding LocalizationContext.Settings}">
@@ -124,6 +125,52 @@
                         </Border>
                         <Border Classes="Card">
                             <StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5">
+                                    <TextBlock Classes="Caption"
+                                               Text="Ml model repository: "/>
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding Repository}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5">
+                                    <TextBlock Classes="Caption"
+                                               Text="Ml model type: "/>
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding Type}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5">
+                                    <TextBlock Classes="Caption"
+                                        Text="Ml model version: "/>
+                                    <TextBlock Classes="Caption"
+                                        Text="{Binding Version}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5">
+                                    <TextBlock Classes="Caption"
+                                               Text="Ml model status: "/>
+                                    <TextBlock Classes="Caption" TextWrapping="Wrap"
+                                               Text="{Binding Status}"/>
+                                </StackPanel>
+                                <TextBlock Margin="0 5"
+                                           TextWrapping="Wrap" IsVisible="{Binding IsError}"
+                                           Text="{Binding Error}"/>
+                                <Grid Margin="0 5">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Button Grid.Column="0"
+                                            Content="ML Model Manager"
+                                            Command="{Binding OpenModelMnagerCommand}" />
+                                    <Button Grid.Column="2"
+                                            Content="Refresh"
+                                            Command="{Binding UpdateModelStatusCommand}" />
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+                        
+                        <!--
+                        <Border Classes="Card">
+                            <StackPanel>
                                 <TextBlock Classes="Heading" 
                                            Text="ML models store."
                                 />
@@ -195,6 +242,7 @@
                                 </Expander>
                             </StackPanel>
                         </Border>
+                        -->
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

@@ -13,6 +13,7 @@ using Avalonia.Logging.Serilog;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
+using DynamicData;
 using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.ML;
@@ -29,31 +30,47 @@ namespace LacmusApp.ViewModels
     {
         LocalizationContext LocalizationContext {get; set;}
         private ThemeManager _settingsThemeManager, _mainThemeManager;
+        private readonly ApplicationStatusManager _applicationStatusManager;
         private AppConfig _config;
-        public SettingsWindowViewModel(LocalizationContext context, AppConfig config, ThemeManager mainThemeManager, ThemeManager settingsThemeManager)
+        public SettingsWindowViewModel(LocalizationContext context,
+                                        AppConfig config,
+                                        ApplicationStatusManager manager,
+                                        ThemeManager mainThemeManager,
+                                        ThemeManager settingsThemeManager)
         {
             this.LocalizationContext = context;
             _settingsThemeManager = settingsThemeManager;
             _mainThemeManager = mainThemeManager;
             _config = config;
+            _applicationStatusManager = manager;
 
             this.WhenAnyValue(x => x.ThemeIndex)
                 .Skip(1)
                 .Subscribe(x => SwitchSettingsTheme());
             
             SetupCommands();
+
+            UpdateModelStatusCommand.Execute().Subscribe();
         }
 
         public ReactiveCommand<Unit, Unit> ApplyCommand { get; set; }
         public ReactiveCommand<Unit, Unit> CancelCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> UpdateModelStatusCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> OpenModelMnagerCommand { get; set; }
 
         [Reactive] public int LanguageIndex { get; set; } = 0;
         [Reactive] public int ThemeIndex { get; set; } = 0;
         [Reactive] public string HexColor { get; set; } = "#FFFF0000";
+        [Reactive] public string Repository { get; set; } = "None";
+        [Reactive] public string Type { get; set; } = "None";
+        [Reactive] public string Version { get; set; } = "None";
+        [Reactive] public string Status { get; set; } = "Not ready";
         private void SetupCommands()
         {
             ApplyCommand = ReactiveCommand.Create(Apply);
             CancelCommand = ReactiveCommand.Create(Cancel);
+            UpdateModelStatusCommand = ReactiveCommand.Create(UpdateModelStatus);
+            OpenModelMnagerCommand = ReactiveCommand.Create(OpenModelManager);
         }
         
         private async void Apply()
@@ -79,7 +96,7 @@ namespace LacmusApp.ViewModels
                 _config.BorderColor = HexColor;
                 //TODO: ml config settings
                 _config.MlModelConfig = new MLModelConfig();
-                await _config.Save(Path.Join("conf", "appConfig.json"));
+                await _config.Save();
             }
             catch (Exception e)
             {
@@ -90,6 +107,39 @@ namespace LacmusApp.ViewModels
         private void Cancel()
         {
             
+        }
+        public async void UpdateModelStatus()
+        {
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
+            //get the last version of ml model with specific config
+            try
+            {
+                Log.Information("Loading ml model.");
+                Status = "Loading ml model...";
+                var config = _config.MlModelConfig;;
+                // get local versions
+                var localVersions = await MLModel.GetInstalledVersions(config);
+                if(!localVersions.Contains(config.ModelVersion))
+                    throw new Exception($"There are no ml local model to init: {config.Image.Name}:{config.Image.Tag}");
+                
+                Repository = config.Image.Name;
+                Version = $"{config.ModelVersion}";
+                Type = $"{config.Type}";
+                Status = $"Ready";
+                Log.Information("Successfully init ml model.");
+            }
+            catch (Exception e)
+            {
+                Status = $"Not ready.";
+                Log.Error(e, "Unable to load model.");
+            }
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+
+        private void OpenModelManager()
+        {
+            var window = new ModelManagerWindow(LocalizationContext, _config, _applicationStatusManager, _mainThemeManager);
+            window.Show();
         }
         private void SwitchSettingsTheme()
         {

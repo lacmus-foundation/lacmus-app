@@ -1,0 +1,128 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="LacmusApp.Views.ModelManagerWindow" 
+        SizeToContent="WidthAndHeight"
+        Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
+        CanResize="True"
+        Width = "400"
+        Height = "350" Title="Models Manager">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <ScrollViewer>
+        <Border Classes="Card">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="Ml model repository: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Repository}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="Ml model type: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Type}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                        Text="Ml model version: "/>
+                    <TextBlock Classes="Caption"
+                        Text="{Binding Version}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="Ml model status: "/>
+                    <TextBlock Classes="Caption" TextWrapping="Wrap"
+                               Text="{Binding Status}"/>
+                </StackPanel>
+                <TextBlock Margin="0 5"
+                           TextWrapping="Wrap" IsVisible="{Binding IsError}"
+                           Text="{Binding Error}"/>
+                <Grid Margin="0 5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="10" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="2"
+                            Content="Refresh"
+                            Command="{Binding UpdateModelStatusCommand}" />
+                </Grid>
+                <Expander Header="Installed ml models" IsExpanded="False" Margin="0 5 0 0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button Grid.Column="0" Margin="5"
+                                    Content="Uninstall selected"
+                            />
+                            <Button Grid.Column="1" Margin="5"
+                                    Content="Activate selected"
+                            />
+                        </Grid>
+                        <DataGrid Grid.Row="1" Items="{Binding InstalledModelsCollection}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Repository" Binding="{Binding Name}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Type" Binding="{Binding Type}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Version" Binding="{Binding Version}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Api Version" Binding="{Binding ApiVersion}"></DataGridTextColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Expander>
+                <Expander Header="Available ml models" IsExpanded="False" Margin="0 5 0 0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Button Grid.Row="0" Margin="5"
+                                Content="Download selected"
+                        />
+                        <DataGrid Grid.Row="1" Items="{Binding AvalableModelsCollection}">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Repository" Binding="{Binding Name}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Type" Binding="{Binding Type}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Version" Binding="{Binding Version}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Api Version" Binding="{Binding ApiVersion}"></DataGridTextColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </Expander>
+            </StackPanel>
+        </Border>
+        </ScrollViewer>
+        
+        <Border Classes="Card" Grid.Row="1">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        Content="Close"
+                        Command="{Binding CancelCommand}"
+                />
+                <Button Grid.Column="2"
+                        Classes="Primary"
+                        Content="Apply" 
+                        Command="{Binding ApplyCommand}"
+                />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

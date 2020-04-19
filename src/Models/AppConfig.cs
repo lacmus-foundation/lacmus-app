@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Media;
@@ -15,6 +16,11 @@ namespace LacmusApp.Models
     {
         private string _borderColor = "#FFFF0000";
         private MLModelConfig _mlModelConfig = new MLModelConfig();
+        private string[] _repositories = 
+        {
+            "gosha20777/lacmus",
+            "gosha20777/lacmus-kseniia"
+        };
 
         public Language Language { get; set; } = Language.English;
 
@@ -32,6 +38,19 @@ namespace LacmusApp.Models
             }
         } 
         public ThemeManager.Theme Theme { get; set; }
+
+        public string[]  Repositories
+        {
+            get => _repositories;
+            set
+            {
+                if(value == null || value.Length < 1)
+                {
+                    throw new Exception($"invalid Repositories: {_repositories}");
+                }
+                _repositories = value;
+            }
+        } 
 
         public MLModelConfig MlModelConfig
         {
@@ -57,6 +76,13 @@ namespace LacmusApp.Models
             {
                 throw new Exception($"Unable to save config to file {path}.", e);
             }
+        }
+        
+        public async Task Save()
+        {
+            var confDir = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "conf");
+            var configPath = Path.Join(confDir,"appConfig.json");
+            await Save(configPath);
         }
         
         public static async Task<AppConfig> Create(string path)

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -8,27 +7,17 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Logging;
-using Avalonia.Logging.Serilog;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
-using MessageBox.Avalonia.Models;
-using MessageBox.Avalonia.Views;
-using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
-using LacmusApp.Models.Docker;
 using LacmusApp.Models.ML;
 using LacmusApp.Models.Photo;
 using LacmusApp.Services.Files;
@@ -36,12 +25,8 @@ using LacmusApp.Services.IO;
 using LacmusApp.Services.VM;
 using LacmusApp.Views;
 using Serilog;
-using Serilog.Filters;
 using Splat;
 using Attribute = LacmusApp.Models.Photo.Attribute;
-using Directory = System.IO.Directory;
-using Object = LacmusApp.Models.Object;
-using Size = LacmusApp.Models.Size;
 
 namespace LacmusApp.ViewModels
 {
@@ -282,11 +267,7 @@ namespace LacmusApp.ViewModels
             try
             {
                 Log.Information("Loading ml model.");
-                if (!File.Exists(_mlConfigPath))
-                {
-                    throw new Exception("There are no ml model config file. Please configure your model.");
-                }
-                var config = await MLModelConfigExtension.Load(_mlConfigPath);
+                var config = _appConfig.MlModelConfig;
                 // get local versions
                 var localVersions = await MLModel.GetInstalledVersions(config);
                 if (localVersions.Any())
@@ -327,7 +308,7 @@ namespace LacmusApp.ViewModels
             try
             {
                 Log.Information("Updating ml model.");
-                var oldConfig = await MLModelConfigExtension.Load(_mlConfigPath);
+                var oldConfig = _appConfig.MlModelConfig;
                 var localVersions = await MLModel.GetInstalledVersions(oldConfig);
                 if (localVersions.Any())
                 {
@@ -352,7 +333,8 @@ namespace LacmusApp.ViewModels
                         await newModel.Download();
                     using(var oldModel = new MLModel(oldConfig))
                         await oldModel.Remove();
-                    await newConfig.Save(_mlConfigPath);
+                    _appConfig.MlModelConfig = newConfig;
+                    await _appConfig.Save();
                     Log.Information("Successfully updates ml model.");
                 }
                 else
@@ -376,7 +358,7 @@ namespace LacmusApp.ViewModels
             try
             {
                 //load config
-                var config = await MLModelConfigExtension.Load(_mlConfigPath);
+                var config = _appConfig.MlModelConfig;
                 using (var model = new MLModel(config))
                 {
                     await model.Init();
@@ -530,7 +512,7 @@ namespace LacmusApp.ViewModels
             Locator.CurrentMutable.Register(() => new ThirdWizardView(), typeof(IViewFor<ThirdWizardViewModel>));
             Locator.CurrentMutable.Register(() => new FourthWizardView(), typeof(IViewFor<FourthWizardViewModel>));
             var window = new WizardWindow();
-            var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex);
+            var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex, _appConfig);
             window.DataContext = context;
             window.Show();
             Log.Debug("Open Wizard");
@@ -651,7 +633,7 @@ namespace LacmusApp.ViewModels
 
         private async void OpenSettingsWindowAsync()
         {
-            SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, _appConfig, _themeManager);
+            SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, _appConfig, _applicationStatusManager, _themeManager);
             settingsWindow.Show();
 	    }
     }
