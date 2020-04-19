@@ -499,7 +499,7 @@ namespace LacmusApp.ViewModels
 
         private async void SaveAs()
         {
-            SaveAsWindow window = new SaveAsWindow();
+            SaveAsWindow window = new SaveAsWindow(_themeManager);
             var context = new SaveAsWindowViewModel(window, _photos, _applicationStatusManager);
             window.DataContext = context;
             window.Show();
@@ -511,7 +511,7 @@ namespace LacmusApp.ViewModels
             Locator.CurrentMutable.Register(() => new SecondWizardView(), typeof(IViewFor<SecondWizardViewModel>));
             Locator.CurrentMutable.Register(() => new ThirdWizardView(), typeof(IViewFor<ThirdWizardViewModel>));
             Locator.CurrentMutable.Register(() => new FourthWizardView(), typeof(IViewFor<FourthWizardViewModel>));
-            var window = new WizardWindow();
+            var window = new WizardWindow(_themeManager);
             var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex, _appConfig);
             window.DataContext = context;
             window.Show();
@@ -525,7 +525,7 @@ namespace LacmusApp.ViewModels
 
         public void ShowGeoData()
         {
-            var window = new MetadataWindow();
+            var window = new MetadataWindow(_themeManager);
             var context = new MetadataViewModel(window, PhotoViewModel.Photo.MetaDataDirectories);
             window.DataContext = context;
             window.Show();
@@ -553,7 +553,7 @@ namespace LacmusApp.ViewModels
 
         public void About()
         {
-            var window = new AboutWindow();
+            var window = new AboutWindow(_themeManager);
             var context = new AboutViewModel(window);
             window.DataContext = context;
             window.Show();
