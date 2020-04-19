@@ -8,13 +8,13 @@ namespace LacmusApp.Models.ML
     public class MLModelConfig : IMLModelConfig
     {
         private uint _apiVersion = 1;
-        private uint _modelVersion = 0;
+        private uint _modelVersion = 1;
         private MLModelType _type = MLModelType.Cpu;
         public string Url { get; set; } = "http://localhost:5000";
         public IDockerImage Image { get; set; } = new DockerImage
         {
-            Name = "gosha20777/lacmus",
-            Tag = MLModelConfigExtension.GetDockerTag(1, 0, MLModelType.Cpu)
+            Name = "gosha20777/lacmus-kseniia",
+            Tag = MLModelConfigExtension.GetDockerTag(1, 1, MLModelType.Cpu)
         };
         public IDockerAccaunt Accaunt { get; set; } = new DockerAccaunt
         {

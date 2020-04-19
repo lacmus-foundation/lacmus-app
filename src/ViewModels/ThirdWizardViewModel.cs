@@ -16,6 +16,7 @@ namespace LacmusApp.ViewModels
     {
         private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
         private readonly ApplicationStatusManager _applicationStatusManager;
+        private AppConfig _appConfig;
         public IScreen HostScreen { get; }
         public string UrlPathSegment { get; } = Guid.NewGuid().ToString().Substring(0, 5);
         [Reactive] public string Repository { get; set; } = "None";
@@ -29,9 +30,10 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; }
         public ReactiveCommand<Unit, Unit> UpdateModelStatusCommand { get; }
 
-        public ThirdWizardViewModel(IScreen screen, ApplicationStatusManager manager)
+        public ThirdWizardViewModel(IScreen screen, ApplicationStatusManager manager, AppConfig config)
         {
             _applicationStatusManager = manager;
+            _appConfig = config;
             HostScreen = screen;
             LoadModelCommand = ReactiveCommand.Create(LoadModel);
             UpdateModelStatusCommand = ReactiveCommand.Create(UpdateModelStatus);
@@ -45,11 +47,7 @@ namespace LacmusApp.ViewModels
             {
                 Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
-                if (!File.Exists(_mlConfigPath))
-                {
-                    throw new Exception($"There are no ml model config file at {_mlConfigPath}. Please configure your model.");
-                }
-                var config = await MLModelConfigExtension.Load(_mlConfigPath);
+                var config = _appConfig.MlModelConfig;;
                 // get local versions
                 var localVersions = await MLModel.GetInstalledVersions(config);
                 if (localVersions.Any())
@@ -62,7 +60,6 @@ namespace LacmusApp.ViewModels
                     IsShowLoadModelButton = true;
                     throw new Exception($"There are no ml local models to init: {config.Image.Name}:{config.Image.Tag}");
                 }
-                await config.Save(_mlConfigPath);
                 Repository = config.Image.Name;
                 Version = $"{config.ModelVersion}";
                 Type = $"{config.Type}";
@@ -89,11 +86,7 @@ namespace LacmusApp.ViewModels
             try
             {
                 Log.Information("Check ml model status.");
-                if (!File.Exists(_mlConfigPath))
-                {
-                    throw new Exception("There are no ml model config file. Please configure your model.");
-                }
-                var config = await MLModelConfigExtension.Load(_mlConfigPath);
+                var config = _appConfig.MlModelConfig;;
                 // get local versions
                 var localVersions = await MLModel.GetInstalledVersions(config);
                 if (localVersions.Any())

@@ -263,12 +263,12 @@ namespace LacmusApp.Models.Docker
                     response = JsonConvert.DeserializeObject<DockerTagResponse>(jsonResp);
                     result.AddRange(response.Images.Select(image => image.Tag).ToList());
                 }
-                
+                Console.WriteLine(result.Count);
                 return result;
             }
             catch(Exception e)
             {
-                throw new Exception($"Unable to retrieve tag(s): {e.Message}");
+                throw new Exception($"Unable to retrieve tag(s): {e.Message}", e);
             }
         }
 
@@ -311,6 +311,25 @@ namespace LacmusApp.Models.Docker
                 }
 
                 return (from tag in tags where tag.Contains($"{imageName}:") select tag.Replace($"{imageName}:", "")).ToList();
+            }
+            catch(Exception e)
+            {
+                throw new Exception($"Unable to retrieve installed versions: {e.Message}");
+            }
+        }
+        
+        public async Task<List<string>> GetInstalledImages()
+        {
+            try
+            {
+                var imgs = new List<string>();
+                var images = await _client.Images.ListImagesAsync(new ImagesListParameters());
+                foreach (var image in images)
+                {
+                    imgs.AddRange(image.RepoTags);
+                }
+
+                return imgs;
             }
             catch(Exception e)
             {

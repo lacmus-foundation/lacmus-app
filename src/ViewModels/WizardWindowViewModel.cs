@@ -43,15 +43,15 @@ namespace LacmusApp.ViewModels
         public WizardWindowViewModel(Window window, 
             ApplicationStatusManager manager,
             SourceList<PhotoViewModel> photos,
-            int selectedIndex)
+            int selectedIndex, AppConfig config)
         {
             _window = window;
             _router = new RoutingState();
             _firstWizardViewModel = new FirstWizardViewModel(this);
             _secondWizardViewModel = new SecondWizardViewModel(this);
-            _thirdWizardViewModel = new ThirdWizardViewModel(this, manager);
+            _thirdWizardViewModel = new ThirdWizardViewModel(this, manager, config);
             _fourthWizardViewModel = new FourthWizardViewModel(this, manager,
-                photos, selectedIndex);
+                photos, selectedIndex, config);
 
             canGoNext = this
                 .WhenAnyValue(x => x.CanGoNext);

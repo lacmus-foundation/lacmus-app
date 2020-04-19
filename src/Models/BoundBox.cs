@@ -26,7 +26,6 @@ namespace LacmusApp.Models
                 return new List<Point> {p1, p3, p4, p2};
             }
         }
-
         public bool IsVisible { get; set; }
 
         public int X { get; set; }
