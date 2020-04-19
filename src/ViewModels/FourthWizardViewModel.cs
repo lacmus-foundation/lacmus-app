@@ -25,6 +25,7 @@ namespace LacmusApp.ViewModels
         private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly SourceList<PhotoViewModel> _photos;
+        private AppConfig _appConfig;
         private int _selectedIndex;
         public IScreen HostScreen { get; }
         public string UrlPathSegment { get; } = Guid.NewGuid().ToString().Substring(0, 5);
@@ -40,11 +41,13 @@ namespace LacmusApp.ViewModels
         public FourthWizardViewModel(IScreen screen, 
             ApplicationStatusManager manager,
             SourceList<PhotoViewModel> photos,
-            int selectedIndex)
+            int selectedIndex,
+            AppConfig config)
         {
             _applicationStatusManager = manager;
             _photos = photos;
             _selectedIndex = selectedIndex;
+            _appConfig = config;
             StopCommand = ReactiveCommand.Create(Stop);
             HostScreen = screen;
         }
@@ -116,7 +119,7 @@ namespace LacmusApp.ViewModels
             {
                 Status = "starting ml model...";
                 //load config
-                var config = await MLModelConfigExtension.Load(_mlConfigPath);
+                var config = _appConfig.MlModelConfig;
                 using (var model = new MLModel(config))
                 {
                     await model.Init();

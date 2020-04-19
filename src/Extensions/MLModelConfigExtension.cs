@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
+using LacmusApp.Models.Docker;
 using Newtonsoft.Json;
 using LacmusApp.Models.ML;
 using Serilog;
@@ -96,6 +98,29 @@ namespace LacmusApp.Extensions
                 default:
                     throw new Exception($"Invalid model type: {type.ToString()}.");
             }
+        }
+        public static void GetConfigFromImage(this MLModelConfig config)
+        {
+            var apiVer = uint.Parse(config.Image.Tag.Split('.').First());
+            var modelVer = uint.Parse(config.Image.Tag.Split('.').Last().Split('-').First());
+            var tag = config.Image.Tag.Split('.').Last().Replace($"{modelVer}-", "");
+            switch (tag)
+            {
+                case "cpu":
+                    config.Type = MLModelType.Cpu;
+                    break;
+                case "cpu-no-avx":
+                    config.Type = MLModelType.CpuNoAvx;
+                    break;
+                case "gpu":
+                    config.Type = MLModelType.Gpu;
+                    break;
+                default:
+                    throw new Exception($"Invalid model type: {tag}.");
+            }
+
+            config.ApiVersion = apiVer;
+            config.ModelVersion = modelVer;
         }
     }
 }

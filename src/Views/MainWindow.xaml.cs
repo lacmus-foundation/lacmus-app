@@ -16,9 +16,6 @@ namespace LacmusApp.Views
         {
             AvaloniaXamlLoader.Load(this);
             this.WhenActivated(disposables => { });
-#if DEBUG
-            //this.AttachDevTools();
-#endif
             Zoomer.Init(this.Find<ZoomBorder>("zoomBorder"));
             Zoomer.KeyDown += ZoomBorder_KeyDown;
         }

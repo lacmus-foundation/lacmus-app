@@ -187,6 +187,42 @@ namespace LacmusApp.Models.ML
             }
         }
         
+        public static async Task<List<MLModelConfig>> GetInstalledModels()
+        {
+            try
+            {
+                using (var docker = new Docker.Docker())
+                {
+                    var result = new List<MLModelConfig>();
+                    var images = await docker.GetInstalledImages();
+                    foreach (var image in images)
+                    {
+                        try
+                        {
+                            var rex = new Regex($"[a-z-]+\\:[0-9]+\\.[0-9]+\\-[a-z]+");
+                            if (rex.IsMatch(image))
+                            {
+                                var model = new MLModelConfig();
+                                model.Image.Name = image.Split(':').First();
+                                model.Image.Tag = image.Split(':').Last();
+                                model.GetConfigFromImage();
+                                result.Add(model);
+                            }
+                        }
+                        catch
+                        {
+                            Log.Warning($"Cannot parse tag {image}.");
+                        }
+                    }
+                    return result;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Unable to get installed ml model versions.", e);
+            }
+        }
+        
         public static async Task<List<uint>> GetAvailableVersionsFromRegistry(MLModelConfig config)
         {
             try
@@ -212,6 +248,43 @@ namespace LacmusApp.Models.ML
                         }
                     }
                     return versions;
+                }
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Unable to get available ml model versions from registry.", e);
+            }
+        }
+        
+        public static async Task<List<MLModelConfig>> GetAvailableModelsFromRegistry(string repo)
+        {
+            try
+            {
+                using (var docker = new Docker.Docker())
+                {
+                    var result = new List<MLModelConfig>();
+                    var tags = await docker.GetTagsFromDockerRegistry(repo);
+                    foreach (var t in tags)
+                    {
+                        try
+                        {
+                            var rex = new Regex($"[0-9]+\\.[0-9]+\\-[a-z]+");
+                            if (!rex.IsMatch(t))
+                            {
+                                continue;
+                            }
+                            var model = new MLModelConfig();
+                            model.Image.Name = repo;
+                            model.Image.Tag = t;
+                            model.GetConfigFromImage();
+                            result.Add(model);
+                        }
+                        catch
+                        {
+                            Log.Warning($"Cannot parse tag {t}.");
+                        }
+                    }
+                    return result;
                 }
             }
             catch (Exception e)

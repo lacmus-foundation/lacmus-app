@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
@@ -8,27 +7,17 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Logging;
-using Avalonia.Logging.Serilog;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
-using MessageBox.Avalonia.Models;
-using MessageBox.Avalonia.Views;
-using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
-using LacmusApp.Models.Docker;
 using LacmusApp.Models.ML;
 using LacmusApp.Models.Photo;
 using LacmusApp.Services.Files;
@@ -36,12 +25,8 @@ using LacmusApp.Services.IO;
 using LacmusApp.Services.VM;
 using LacmusApp.Views;
 using Serilog;
-using Serilog.Filters;
 using Splat;
 using Attribute = LacmusApp.Models.Photo.Attribute;
-using Directory = System.IO.Directory;
-using Object = LacmusApp.Models.Object;
-using Size = LacmusApp.Models.Size;
 
 namespace LacmusApp.ViewModels
 {
@@ -50,15 +35,19 @@ namespace LacmusApp.ViewModels
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly Window _window;
         private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
+        private AppConfig _appConfig;
+        private ThemeManager _themeManager;
         private int itemPerPage = 500;
         private int itemcount;
         private int _totalPages;
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
         private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
         
-        public MainWindowViewModel(Window window)
+        public MainWindowViewModel(Window window, AppConfig appConfig)
         {
             _window = window;
+            _appConfig = appConfig;
+            _themeManager = new ThemeManager(window);
 
             var pageFilter = this
                 .WhenValueChanged(x => x.CurrentPage)
@@ -77,8 +66,7 @@ namespace LacmusApp.ViewModels
             
             _applicationStatusManager = new ApplicationStatusManager();
             ApplicationStatusViewModel = new ApplicationStatusViewModel(_applicationStatusManager);
-
-
+            
             var canGoNext = this
                 .WhenAnyValue(x => x.SelectedIndex)
                 .Select(index => index < _photos.Count - 1);
@@ -114,7 +102,13 @@ namespace LacmusApp.ViewModels
 
             // Add here newer commands
             SetupCommand(CanSetup(), canSwitchBoundBox);
+
+            LocalizationContext = new LocalizationContext();
             
+            // load settings from config
+            LocalizationContext.Language = _appConfig.Language;
+            _themeManager.UseTheme(_appConfig.Theme);
+
             Log.Information("Application started.");
         }
 
@@ -142,6 +136,7 @@ namespace LacmusApp.ViewModels
             AboutCommand = ReactiveCommand.Create(About);
             OpenWizardCommand = ReactiveCommand.Create(OpenWizard);
             ExitCommand = ReactiveCommand.Create(Exit);
+            OpenSettingsWindowCommand = ReactiveCommand.Create(OpenSettingsWindowAsync, canExecute);
         }
 
         private IObservable<bool> CanSetup()
@@ -151,11 +146,9 @@ namespace LacmusApp.ViewModels
         }
 
         #region Public API
-
         public ReadOnlyObservableCollection<PhotoViewModel> PhotoCollection => _photoCollection;
         [Reactive] public int SelectedIndex { get; set; }
         [Reactive] public int CurrentPage { get; set; } = 0;
-        
         [Reactive] public int FilterIndex { get; set; } = 0;
         [Reactive] public PhotoViewModel PhotoViewModel { get; set; }
         [Reactive] public ApplicationStatusViewModel ApplicationStatusViewModel { get; set; }
@@ -168,6 +161,7 @@ namespace LacmusApp.ViewModels
         [Reactive] public string FavoritesStateString { get; set; } = "Add to favorites";
         [Reactive] public double CanvasWidth { get; set; } = 500;
         [Reactive] public double CanvasHeight { get; set; } = 500;
+        [Reactive] public LocalizationContext LocalizationContext {get; set;}
 
         public ReactiveCommand<Unit, Unit> PredictAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> NextImageCommand { get; }
@@ -191,6 +185,7 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> AboutCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ExitCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenWizardCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand{get; set;}
 
         #endregion
 
@@ -272,11 +267,7 @@ namespace LacmusApp.ViewModels
             try
             {
                 Log.Information("Loading ml model.");
-                if (!File.Exists(_mlConfigPath))
-                {
-                    throw new Exception("There are no ml model config file. Please configure your model.");
-                }
-                var config = await MLModelConfigExtension.Load(_mlConfigPath);
+                var config = _appConfig.MlModelConfig;
                 // get local versions
                 var localVersions = await MLModel.GetInstalledVersions(config);
                 if (localVersions.Any())
@@ -317,7 +308,7 @@ namespace LacmusApp.ViewModels
             try
             {
                 Log.Information("Updating ml model.");
-                var oldConfig = await MLModelConfigExtension.Load(_mlConfigPath);
+                var oldConfig = _appConfig.MlModelConfig;
                 var localVersions = await MLModel.GetInstalledVersions(oldConfig);
                 if (localVersions.Any())
                 {
@@ -342,7 +333,8 @@ namespace LacmusApp.ViewModels
                         await newModel.Download();
                     using(var oldModel = new MLModel(oldConfig))
                         await oldModel.Remove();
-                    await newConfig.Save(_mlConfigPath);
+                    _appConfig.MlModelConfig = newConfig;
+                    await _appConfig.Save();
                     Log.Information("Successfully updates ml model.");
                 }
                 else
@@ -366,7 +358,7 @@ namespace LacmusApp.ViewModels
             try
             {
                 //load config
-                var config = await MLModelConfigExtension.Load(_mlConfigPath);
+                var config = _appConfig.MlModelConfig;
                 using (var model = new MLModel(config))
                 {
                     await model.Init();
@@ -520,7 +512,7 @@ namespace LacmusApp.ViewModels
             Locator.CurrentMutable.Register(() => new ThirdWizardView(), typeof(IViewFor<ThirdWizardViewModel>));
             Locator.CurrentMutable.Register(() => new FourthWizardView(), typeof(IViewFor<FourthWizardViewModel>));
             var window = new WizardWindow();
-            var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex);
+            var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex, _appConfig);
             window.DataContext = context;
             window.Show();
             Log.Debug("Open Wizard");
@@ -638,5 +630,11 @@ namespace LacmusApp.ViewModels
                 //Log.Error(ex, "Unable to update ui.");
             }
         }
+
+        private async void OpenSettingsWindowAsync()
+        {
+            SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
+            settingsWindow.Show();
+	    }
     }
 }
