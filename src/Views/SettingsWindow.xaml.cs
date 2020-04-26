@@ -15,16 +15,24 @@ using LacmusApp.Services.Files;
 
 namespace LacmusApp.Views
 {
-    class SettingsWindow : Window
+    public class SettingsWindow : Window
     {
+        public AppConfig AppConfig { get; set; }
         public SettingsWindow(LocalizationContext context, ref AppConfig appConfig, ApplicationStatusManager manager, ThemeManager themeManager)
         {
             AvaloniaXamlLoader.Load(this);
             var settingsThemeManager = new ThemeManager(this);
             settingsThemeManager.UseTheme(themeManager.CurrentTheme);
-            this.DataContext = new SettingsWindowViewModel(context, ref appConfig, manager, themeManager, settingsThemeManager);
+            this.DataContext = new SettingsWindowViewModel(this, context, ref appConfig, manager, themeManager, settingsThemeManager);
         }
 
         public SettingsWindow() { }
+        public Task<AppConfig> ShowResult()
+        {
+            var tcs = new TaskCompletionSource<AppConfig>();
+            Closed += delegate { tcs.TrySetResult(AppConfig); };
+            Show();
+            return tcs.Task;
+        }
     }
 }

@@ -12,6 +12,7 @@ using LacmusApp.Models;
 using LacmusApp.Models.Docker;
 using LacmusApp.Models.ML;
 using LacmusApp.Services.Files;
+using LacmusApp.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using Serilog;
@@ -33,7 +34,7 @@ namespace LacmusApp.ViewModels
         private ReadOnlyObservableCollection<MlModelData> _installedModelsCollection;
         public ReadOnlyObservableCollection<MlModelData> InstalledModelsCollection => _installedModelsCollection;
         
-        public ModelManagerWindowViewModel(Window window, LocalizationContext context,
+        public ModelManagerWindowViewModel(ModelManagerWindow window, LocalizationContext context,
                                         ref AppConfig config,
                                         ApplicationStatusManager manager)
         {
@@ -64,6 +65,7 @@ namespace LacmusApp.ViewModels
             {
                 _config = AppConfig.DeepCopy(_newConfig);
                 await _config.Save();
+                window.AppConfig = _config;
                 window.Close(); 
             }, CanExecute());
             
