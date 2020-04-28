@@ -145,6 +145,7 @@ namespace LacmusApp.ViewModels
 
         private async void OpenModelManager()
         {
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
             var window = new ModelManagerWindow(LocalizationContext, ref _newConfig, _applicationStatusManager, _mainThemeManager);
             _newConfig = await window.ShowResult();
         }

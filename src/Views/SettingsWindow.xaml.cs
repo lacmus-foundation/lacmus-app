@@ -20,6 +20,7 @@ namespace LacmusApp.Views
         public AppConfig AppConfig { get; set; }
         public SettingsWindow(LocalizationContext context, ref AppConfig appConfig, ApplicationStatusManager manager, ThemeManager themeManager)
         {
+            AppConfig = appConfig;
             AvaloniaXamlLoader.Load(this);
             var settingsThemeManager = new ThemeManager(this);
             settingsThemeManager.UseTheme(themeManager.CurrentTheme);

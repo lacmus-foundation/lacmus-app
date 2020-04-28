@@ -34,6 +34,7 @@
         <MenuItem Name="mModel" Header="{Binding LocalizationContext.Model}">
           <MenuItem Name="mModelLoad" Header="{Binding LocalizationContext.LoadModel}" Command="{Binding LoadModelCommand}"/>
           <MenuItem Name="mModelUpdate" Header="{Binding LocalizationContext.UpdateModel}" Command="{Binding UpdateModelCommand}"/>
+          <MenuItem Name="mModelManager" Header="Model manager..." Command="{Binding OpenModelManagerCommand}"/>
         </MenuItem>
         <MenuItem Name="mImage" Header="{Binding LocalizationContext.Image}">
           <MenuItem Name="mImagePredictAll" Header="{Binding LocalizationContext.PredictAll}" Command="{Binding PredictAllCommand}"/>

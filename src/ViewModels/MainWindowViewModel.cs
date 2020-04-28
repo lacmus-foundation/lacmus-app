@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
 using MessageBox.Avalonia;
@@ -122,6 +123,7 @@ namespace LacmusApp.ViewModels
             SaveAllCommand = ReactiveCommand.Create(SaveAll, canExecute);
             LoadModelCommand = ReactiveCommand.Create(LoadModel, canExecute);
             UpdateModelCommand = ReactiveCommand.Create(UpdateModel, canExecute);
+            OpenModelManagerCommand = ReactiveCommand.Create(OpenModelManager, canExecute);
             
             NextPageCommand = ReactiveCommand.Create(ShowNextPage);
             PreviousPageCommand = ReactiveCommand.Create(ShowPreviousPage);
@@ -174,6 +176,7 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; set; }
         public ReactiveCommand<Unit, Unit> UpdateModelCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> OpenModelManagerCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAsCommand { get; set; }
         public ReactiveCommand<Unit, Unit> FirstPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; set; }
@@ -347,6 +350,13 @@ namespace LacmusApp.ViewModels
                 Log.Error(e,"Unable to update ml model.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+
+        public async void OpenModelManager()
+        {
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+            ModelManagerWindow window = new ModelManagerWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
+            _appConfig = await window.ShowResult();
         }
 
         /// <summary>
