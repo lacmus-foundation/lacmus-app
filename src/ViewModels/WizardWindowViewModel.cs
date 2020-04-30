@@ -11,6 +11,8 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using LacmusApp.Managers;
 using LacmusApp.Models;
+using LacmusApp.Services.Files;
+using LacmusApp.Views;
 using Serilog;
 
 namespace LacmusApp.ViewModels
@@ -40,18 +42,18 @@ namespace LacmusApp.ViewModels
         [Reactive] private bool CanGoNext { get; set; }
         [Reactive] private bool CanGoBack { get; set; }
 
-        public WizardWindowViewModel(Window window, 
+        public WizardWindowViewModel(WizardWindow window,
             ApplicationStatusManager manager,
             SourceList<PhotoViewModel> photos,
-            int selectedIndex, AppConfig config)
+            int selectedIndex)
         {
             _window = window;
             _router = new RoutingState();
             _firstWizardViewModel = new FirstWizardViewModel(this);
             _secondWizardViewModel = new SecondWizardViewModel(this);
-            _thirdWizardViewModel = new ThirdWizardViewModel(this, manager, config);
+            _thirdWizardViewModel = new ThirdWizardViewModel(this, window, manager);
             _fourthWizardViewModel = new FourthWizardViewModel(this, manager,
-                photos, selectedIndex, config);
+                photos, selectedIndex, window.AppConfig);
 
             canGoNext = this
                 .WhenAnyValue(x => x.CanGoNext);

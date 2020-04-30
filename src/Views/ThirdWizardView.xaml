@@ -60,7 +60,7 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="0"
-                            Content="Save photos"
+                            Content="Model manager..."
                             IsVisible="{Binding IsShowLoadModelButton}"
                             Command="{Binding LoadModelCommand}"/>
                     <Button Grid.Column="2"
