@@ -13,6 +13,7 @@ using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.ML;
 using LacmusApp.Models.Photo;
+using LacmusApp.Services;
 using LacmusApp.Services.IO;
 using LacmusApp.Services.VM;
 using Serilog;
@@ -29,6 +30,7 @@ namespace LacmusApp.ViewModels
         private int _selectedIndex;
         public IScreen HostScreen { get; }
         public string UrlPathSegment { get; } = Guid.NewGuid().ToString().Substring(0, 5);
+        [Reactive] public LocalizationContext LocalizationContext { get; set; }
         [Reactive] public double InputProgress { get; set; }
         [Reactive] public double PredictProgress { get; set; }
         [Reactive] public double OutputProgress { get; set; }
@@ -42,12 +44,13 @@ namespace LacmusApp.ViewModels
             ApplicationStatusManager manager,
             SourceList<PhotoViewModel> photos,
             int selectedIndex,
-            AppConfig config)
+            AppConfig config, LocalizationContext localizationContext)
         {
             _applicationStatusManager = manager;
             _photos = photos;
             _selectedIndex = selectedIndex;
             _appConfig = config;
+            LocalizationContext = localizationContext;
             StopCommand = ReactiveCommand.Create(Stop);
             HostScreen = screen;
         }

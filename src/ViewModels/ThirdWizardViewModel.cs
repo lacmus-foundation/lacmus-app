@@ -8,6 +8,7 @@ using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.ML;
+using LacmusApp.Services;
 using LacmusApp.Services.Files;
 using LacmusApp.Views;
 using Serilog;
@@ -29,14 +30,16 @@ namespace LacmusApp.ViewModels
         [Reactive] public string Error { get; set; }
         [Reactive] public bool IsError { get; set; } = false;
         [Reactive] public bool IsShowLoadModelButton { get; set; } = false;
+        [Reactive] public LocalizationContext LocalizationContext { get; set; }
         
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; }
         public ReactiveCommand<Unit, Unit> UpdateModelStatusCommand { get; }
 
-        public ThirdWizardViewModel(IScreen screen, WizardWindow window, ApplicationStatusManager manager)
+        public ThirdWizardViewModel(IScreen screen, WizardWindow window, ApplicationStatusManager manager, LocalizationContext localizationContext)
         {
             _applicationStatusManager = manager;
             _window = window;
+            LocalizationContext = localizationContext;
             HostScreen = screen;
             _appConfig = window.AppConfig;
             LoadModelCommand = ReactiveCommand.Create(LoadModel);

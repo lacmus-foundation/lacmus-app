@@ -11,6 +11,7 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using LacmusApp.Managers;
 using LacmusApp.Models;
+using LacmusApp.Services;
 using LacmusApp.Services.Files;
 using LacmusApp.Views;
 using Serilog;
@@ -41,6 +42,7 @@ namespace LacmusApp.ViewModels
         [Reactive] public string OutputPath { get; set; } = string.Empty;
         [Reactive] private bool CanGoNext { get; set; }
         [Reactive] private bool CanGoBack { get; set; }
+        [Reactive] public LocalizationContext LocalizationContext { get; set; }
 
         public WizardWindowViewModel(WizardWindow window,
             ApplicationStatusManager manager,
@@ -48,12 +50,13 @@ namespace LacmusApp.ViewModels
             int selectedIndex)
         {
             _window = window;
+            LocalizationContext = window.LocalizationContext;
             _router = new RoutingState();
-            _firstWizardViewModel = new FirstWizardViewModel(this);
-            _secondWizardViewModel = new SecondWizardViewModel(this);
-            _thirdWizardViewModel = new ThirdWizardViewModel(this, window, manager);
+            _firstWizardViewModel = new FirstWizardViewModel(this, LocalizationContext);
+            _secondWizardViewModel = new SecondWizardViewModel(this, LocalizationContext);
+            _thirdWizardViewModel = new ThirdWizardViewModel(this, window, manager, LocalizationContext);
             _fourthWizardViewModel = new FourthWizardViewModel(this, manager,
-                photos, selectedIndex, window.AppConfig);
+                photos, selectedIndex, window.AppConfig, LocalizationContext);
 
             canGoNext = this
                 .WhenAnyValue(x => x.CanGoNext);
@@ -64,6 +67,9 @@ namespace LacmusApp.ViewModels
             CanGoBack = false;
             GoNext = ReactiveCommand.Create(Next, canGoNext);
             GoBack = ReactiveCommand.Create(Back, canGoBack);
+
+            BackButtonText = LocalizationContext.WizardBackButtonText;
+            NextButtonText = LocalizationContext.WizardNextButtonText;
             
             Log.Information("Wizard started.");
         }
@@ -85,16 +91,16 @@ namespace LacmusApp.ViewModels
                     break;
                 case 3:
                     CanGoBack = true;
-                    NextButtonText = "Next";
-                    BackButtonText = "Back";
+                    NextButtonText = LocalizationContext.WizardNextButtonText;
+                    BackButtonText = LocalizationContext.WizardBackButtonText;
                     Router.NavigateBack.Execute();
                     break;
                 case 4:
                     CanGoBack = false;
                     Router.NavigationStack.Clear();
                     Router.Navigate.Execute(_firstWizardViewModel);
-                    NextButtonText = "Next";
-                    BackButtonText = "Back";
+                    NextButtonText = LocalizationContext.WizardNextButtonText;
+                    BackButtonText = LocalizationContext.WizardBackButtonText;
                     break;
             }
         }
@@ -114,26 +120,26 @@ namespace LacmusApp.ViewModels
                 case 0:
                     CanGoBack = false;
                     Router.Navigate.Execute(_firstWizardViewModel);
-                    NextButtonText = "Next";
-                    BackButtonText = "Back";
+                    NextButtonText = LocalizationContext.WizardNextButtonText;
+                    BackButtonText = LocalizationContext.WizardBackButtonText;
                     break;
                 case 1:
                     CanGoBack = true;
                     Router.Navigate.Execute(_secondWizardViewModel);
-                    NextButtonText = "Next";
-                    BackButtonText = "Back";
+                    NextButtonText = LocalizationContext.WizardNextButtonText;
+                    BackButtonText = LocalizationContext.WizardBackButtonText;
                     break;
                 case 2:
                     CanGoBack = true;
                     Router.Navigate.Execute(_thirdWizardViewModel);
                     _thirdWizardViewModel.UpdateModelStatus();
-                    NextButtonText = "Predict all";
-                    BackButtonText = "Back";
+                    NextButtonText = LocalizationContext.WizardPredictAllButtonText;
+                    BackButtonText = LocalizationContext.WizardBackButtonText;
                     break;
                 case 3:
                     Router.Navigate.Execute(_fourthWizardViewModel);
-                    NextButtonText = "Finish";
-                    BackButtonText = "Repeat";
+                    NextButtonText = LocalizationContext.WizardFinishButtonText;
+                    BackButtonText = LocalizationContext.WizardRepeatButtonText;
                     CanGoNext = false;
                     CanGoBack = false;
                     await _fourthWizardViewModel.OpenFile(_firstWizardViewModel.InputPath);
@@ -146,8 +152,8 @@ namespace LacmusApp.ViewModels
                     CanGoBack = true;
                     Router.NavigationStack.Clear();
                     _window.Close();
-                    NextButtonText = "Next";
-                    BackButtonText = "Back";
+                    NextButtonText = LocalizationContext.WizardNextButtonText;
+                    BackButtonText = LocalizationContext.WizardBackButtonText;
                     break;
             }
         }

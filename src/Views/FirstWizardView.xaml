@@ -4,19 +4,19 @@
     <StackPanel>
         <Border Classes="Card">
             <StackPanel>
-                <TextBlock Classes="Heading" Text="Step 1: Select input data" />
+                <TextBlock Classes="Heading" Text="{Binding LocalizationContext.WizardFirstHeader}" />
                 <TextBlock Margin="0 5"
                            TextWrapping="Wrap"
-                           Text="To begin, please select the input data for recognition by clicking the 'Open photos' button or by writing the full path to the input folder in the text box below."
+                           Text="{Binding LocalizationContext.WizardFirstDescription}"
                            ToolTip.Tip="Select input data" />
             </StackPanel>
         </Border>
         <Border Classes="Card">
             <StackPanel>
                 <TextBox UseFloatingWatermark="True"
-                         Watermark="Enter input path here."
+                         Watermark="{Binding LocalizationContext.WizardFirstInputWatermark}"
                          Text="{Binding InputPath, Mode=TwoWay}" />
-                <Button Content="Open photos"
+                <Button Content="{Binding LocalizationContext.WizardFirstOpenPhotosButton}"
                         Command="{Binding OpenPhotos}"/>
             </StackPanel>
         </Border>
