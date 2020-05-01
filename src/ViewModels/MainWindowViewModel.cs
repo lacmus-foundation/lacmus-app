@@ -506,7 +506,7 @@ namespace LacmusApp.ViewModels
         public void ShowGeoData()
         {
             var window = new MetadataWindow(_themeManager);
-            var context = new MetadataViewModel(window, PhotoViewModel.Photo.MetaDataDirectories);
+            var context = new MetadataViewModel(window, PhotoViewModel.Photo.MetaDataDirectories, LocalizationContext);
             window.DataContext = context;
             window.Show();
         }

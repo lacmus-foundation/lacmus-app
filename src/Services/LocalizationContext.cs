@@ -546,6 +546,52 @@ namespace LacmusApp.Services
 
         #endregion
 
+        #region METADATA WINDOW
+
+        private string _metadataHeader;
+        [Reactive] public string MetadataHeader
+        {
+            get { return _metadataHeader; }
+            set { this.RaiseAndSetIfChanged(ref _metadataHeader, value); }
+        }
+        
+        private string _metadataLatitude;
+        [Reactive] public string MetadataLatitude
+        {
+            get { return _metadataLatitude; }
+            set { this.RaiseAndSetIfChanged(ref _metadataLatitude, value); }
+        }
+        
+        private string _metadataLongitude;
+        [Reactive] public string MetadataLongitude
+        {
+            get { return _metadataLongitude; }
+            set { this.RaiseAndSetIfChanged(ref _metadataLongitude, value); }
+        }
+        
+        private string _metadataAltitude;
+        [Reactive] public string MetadataAltitude
+        {
+            get { return _metadataAltitude; }
+            set { this.RaiseAndSetIfChanged(ref _metadataAltitude, value); }
+        }
+        
+        private string _metadataOpenWith;
+        [Reactive] public string MetadataOpenWith
+        {
+            get { return _metadataOpenWith; }
+            set { this.RaiseAndSetIfChanged(ref _metadataOpenWith, value); }
+        }
+        
+        private string _metadataAllMetadata;
+        [Reactive] public string MetadataAllMetadata
+        {
+            get { return _metadataAllMetadata; }
+            set { this.RaiseAndSetIfChanged(ref _metadataAllMetadata, value); }
+        }
+
+        #endregion
+
         public LocalizationContext()
         {
             this.WhenAnyValue(vm=>vm.Language).Subscribe(_=>UpdateText());
@@ -652,6 +698,14 @@ namespace LacmusApp.Services
                     WizardFourthStopButton = "Stop ml model";
                     WizardFourthLogsExpander = "Details";
                     
+                    //Metadata
+                    MetadataHeader = "GPS position of the image center";
+                    MetadataLatitude = "Latitude: ";
+                    MetadataLongitude = "Longitude: ";
+                    MetadataAltitude = "Altitude: ";
+                    MetadataOpenWith = "Open with:";
+                    MetadataAllMetadata = "All metadata";
+                    
                     //Settings
                     SelectLanguage = "Select Language";
                     break;
@@ -750,6 +804,14 @@ namespace LacmusApp.Services
                     WizardFourthSavingResults = "Сохранение результатов: ";
                     WizardFourthStopButton = "Остановить ml модель";
                     WizardFourthLogsExpander = "Детали обработки";
+                    
+                    //Metadata
+                    MetadataHeader = "GPS коордиаты центра изображения";
+                    MetadataLatitude = "Широта: ";
+                    MetadataLongitude = "Долгота: ";
+                    MetadataAltitude = "Высота: ";
+                    MetadataOpenWith = "Показать на карте:";
+                    MetadataAllMetadata = "Все метаданные";
                     
                     //Settings window
                     SelectLanguage = "Select Language";

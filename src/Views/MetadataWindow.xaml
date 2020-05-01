@@ -25,24 +25,26 @@
                       VerticalScrollBarVisibility="Auto">
             <Border Classes="Card">
                 <StackPanel>
-                    <TextBlock Grid.Row="0" TextWrapping="Wrap" Classes="Heading" Text="GPS position of the image center." />
+                    <TextBlock Grid.Row="0" TextWrapping="Wrap" Classes="Heading" 
+                               Text="{Binding LocalizationContext.MetadataHeader}" />
                         
                     <StackPanel Grid.Row="1" Orientation="Horizontal">
-                        <TextBlock FontWeight="Heavy" Text="Latitude: " />
+                        <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataLatitude}" />
                         <TextBlock Text="{Binding Latitude}" />
                     </StackPanel>
                         
                     <StackPanel Grid.Row="2" Orientation="Horizontal">
-                        <TextBlock FontWeight="Heavy" Text="Longitude: " />
+                        <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataLongitude}" />
                         <TextBlock Text="{Binding Longitude}" />
                     </StackPanel>
                         
                     <StackPanel Grid.Row="3" Orientation="Horizontal">
-                        <TextBlock FontWeight="Heavy" Text="Altitude: " />
+                        <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataAltitude}" />
                         <TextBlock Text="{Binding Altitude}" />
                     </StackPanel>
                         
-                    <TextBlock Grid.Row="4" TextWrapping="Wrap" Classes="Heading" Text="Open with:" />
+                    <TextBlock Grid.Row="4" TextWrapping="Wrap" Classes="Heading" 
+                               Text="{Binding LocalizationContext.MetadataOpenWith}" />
                         
                     <Grid Grid.Row="5">
                         <Grid.ColumnDefinitions>
@@ -62,7 +64,7 @@
                                 Content="Open Street Map" 
                                 Command="{Binding OpenOSMCommand}"/>
                     </Grid>
-                    <Expander Grid.Row="6" Header="All metadata" IsExpanded="False" Margin="0 5 0 0">
+                    <Expander Grid.Row="6" Header="{Binding LocalizationContext.MetadataAllMetadata}" IsExpanded="False" Margin="0 5 0 0">
                         <DataGrid Items="{Binding MetaDataCollection}">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Group" Binding="{Binding Group}"></DataGridTextColumn>
