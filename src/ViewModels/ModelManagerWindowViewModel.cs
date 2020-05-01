@@ -12,6 +12,7 @@ using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.Docker;
 using LacmusApp.Models.ML;
+using LacmusApp.Services;
 using LacmusApp.Services.Files;
 using LacmusApp.Views;
 using ReactiveUI;

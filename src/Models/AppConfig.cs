@@ -6,6 +6,7 @@ using Avalonia.Media;
 using LacmusApp.Managers;
 using LacmusApp.Models.Docker;
 using LacmusApp.Models.ML;
+using LacmusApp.Services;
 using LacmusApp.Services.Files;
 using Newtonsoft.Json;
 using Serilog;

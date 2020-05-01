@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using LacmusApp.Managers;
 using LacmusApp.Models;
+using LacmusApp.Services;
 using LacmusApp.Services.Files;
 using LacmusApp.ViewModels;
 

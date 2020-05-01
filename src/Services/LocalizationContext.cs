@@ -1,20 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
-using ReactiveUI.Fody.Helpers;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 
-
-namespace LacmusApp.Services.Files
+namespace LacmusApp.Services
 {
     public class LocalizationContext : ReactiveObject
     {
         [Reactive] public Language Language {get; set;}
 
-        #region STRINGS FOR LOCALIZING
+        #region STRINGS FOR LOCALIZING MAIN WINDOW
         private string _file;
         [Reactive] public string File 
         {
@@ -62,6 +56,12 @@ namespace LacmusApp.Services.Files
         {
             get { return _updateModel; }
             set { this.RaiseAndSetIfChanged(ref _updateModel, value); }
+        }
+        private string _modelManager;
+        [Reactive] public string ModelManager
+        {
+            get { return _modelManager; }
+            set { this.RaiseAndSetIfChanged(ref _modelManager, value); }
         }
         private string _image;
         [Reactive] public string Image
@@ -185,6 +185,66 @@ namespace LacmusApp.Services.Files
         }
         #endregion
 
+        #region ABOUT WINDOW
+
+        private string _aboutAppName;
+        [Reactive] public string AboutAppName
+        {
+            get { return _aboutAppName; }
+            set { this.RaiseAndSetIfChanged(ref _aboutAppName, value); }
+        }
+        
+        private string _aboutVersion;
+        [Reactive] public string AboutVersion
+        {
+            get { return _aboutVersion; }
+            set { this.RaiseAndSetIfChanged(ref _aboutVersion, value); }
+        }
+        
+        private string _aboutGintubPage;
+        [Reactive] public string AboutGintubPage
+        {
+            get { return _aboutGintubPage; }
+            set { this.RaiseAndSetIfChanged(ref _aboutGintubPage, value); }
+        }
+        
+        private string _aboutPoweredBy;
+        [Reactive] public string AboutPoweredBy
+        {
+            get { return _aboutPoweredBy; }
+            set { this.RaiseAndSetIfChanged(ref _aboutPoweredBy, value); }
+        }
+        
+        private string _aboutLicense;
+        [Reactive] public string AboutLicense
+        {
+            get { return _aboutLicense; }
+            set { this.RaiseAndSetIfChanged(ref _aboutLicense, value); }
+        }
+        
+        private string _aboutLicenseButton;
+        [Reactive] public string AboutLicenseButton
+        {
+            get { return _aboutLicenseButton; }
+            set { this.RaiseAndSetIfChanged(ref _aboutLicenseButton, value); }
+        }
+        
+        private string _aboutGinhubButton;
+        [Reactive] public string AboutGinhubButton
+        {
+            get { return _aboutGinhubButton; }
+            set { this.RaiseAndSetIfChanged(ref _aboutGinhubButton, value); }
+        }
+        
+        private string _aboutVisitWebSiteButton;
+        [Reactive] public string AboutVisitWebSiteButton
+        {
+            get { return _aboutVisitWebSiteButton; }
+            set { this.RaiseAndSetIfChanged(ref _aboutVisitWebSiteButton, value); }
+        }
+
+        #endregion
+
         public LocalizationContext()
         {
             this.WhenAnyValue(vm=>vm.Language).Subscribe(_=>UpdateText());
@@ -213,6 +273,7 @@ namespace LacmusApp.Services.Files
                     Model="Model";
                     LoadModel="Load model";
                     UpdateModel="Update model";
+                    ModelManager="Model manager...";
                     //Image
                     Image="Image";
                     PredictAll="Predict All";
@@ -233,6 +294,16 @@ namespace LacmusApp.Services.Files
                     //Context menu
                     ShowGeoPosition="Show geo position";
                     FavoritesStateString = "Add to \\ remove from favorites";
+                    
+                    //About Window
+                    AboutAppName = "Lacmus desktop application.";
+                    AboutVersion = "Version: ";
+                    AboutGintubPage = "Github page: ";
+                    AboutPoweredBy = "Powered by: ";
+                    AboutLicense = "This program comes with ABSOLUTELY NO WARRANTY; This is free software, and you are welcome to redistribute it under GNU GPL license; Click `license` for details.";
+                    AboutLicenseButton = "License";
+                    AboutGinhubButton = "Github";
+                    AboutVisitWebSiteButton = "Visit web site";
                     
                     //Settings
                     SelectLanguage = "Select Language";
@@ -255,6 +326,7 @@ namespace LacmusApp.Services.Files
                     Model="Модель";
                     LoadModel="Загрузить";
                     UpdateModel="Обновить";
+                    ModelManager="Менеджер моделей...";
                     //Image
                     Image="Изображение";
                     PredictAll="Обработать все";
@@ -276,7 +348,17 @@ namespace LacmusApp.Services.Files
                     ShowGeoPosition="Показать геопозицию";
                     FavoritesStateString = "Добавить \\ удалить из избранных";
                     
-                    //Settings
+                    //About Window
+                    AboutAppName = "Приложение Lacmus.";
+                    AboutVersion = "Версия: ";
+                    AboutGintubPage = "Страница Github: ";
+                    AboutPoweredBy = "При поддержке: ";
+                    AboutLicense = "Данное ПО поставляется АБСОЛЮТНО БЕЗ ГАРАНТИЙ; Это свободное ПО, оно распостраняется под лиценизией GNU GPL; Нажмите `Лицензия` для просмотра.";
+                    AboutLicenseButton = "Лицензия";
+                    AboutGinhubButton = "Github";
+                    AboutVisitWebSiteButton = "Веб-сайт";
+                    
+                    //Settings window
                     SelectLanguage = "Select Language";
                     break;
                 }

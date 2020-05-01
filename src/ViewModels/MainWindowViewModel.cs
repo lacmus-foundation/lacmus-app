@@ -21,6 +21,7 @@ using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.ML;
 using LacmusApp.Models.Photo;
+using LacmusApp.Services;
 using LacmusApp.Services.Files;
 using LacmusApp.Services.IO;
 using LacmusApp.Services.VM;
@@ -533,7 +534,7 @@ namespace LacmusApp.ViewModels
         public void About()
         {
             var window = new AboutWindow(_themeManager);
-            var context = new AboutViewModel(window);
+            var context = new AboutViewModel(window, LocalizationContext);
             window.DataContext = context;
             window.Show();
         }
