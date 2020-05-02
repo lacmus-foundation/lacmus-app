@@ -26,7 +26,7 @@
             <Border Classes="Card">
                 <StackPanel>
                     <TextBlock Grid.Row="0" TextWrapping="Wrap" Classes="Heading" 
-                               Text="{Binding LocalizationContext.MetadataHeader}" />
+                               Text="{Binding LocalizationContext.WizardThirdModelRepository}" />
                         
                     <StackPanel Grid.Row="1" Orientation="Horizontal">
                         <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataLatitude}" />

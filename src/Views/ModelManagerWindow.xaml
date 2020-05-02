@@ -33,37 +33,34 @@
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="Ml model repository: "/>
+                               Text="{Binding LocalizationContext.MetadataHeader}"/>
                     <TextBlock Classes="Caption"
                                Text="{Binding Repository}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="Ml model type: "/>
+                               Text="{Binding LocalizationContext.WizardThirdModelType}"/>
                     <TextBlock Classes="Caption"
                                Text="{Binding Type}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                        Text="Ml model version: "/>
+                        Text="{Binding LocalizationContext.WizardThirdModelVersion}"/>
                     <TextBlock Classes="Caption"
                         Text="{Binding Version}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="API version: "/>
+                               Text="{Binding LocalizationContext.ModelManagerApiVersion}"/>
                     <TextBlock Classes="Caption"
                                Text="{Binding ApiVersion}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="Ml model status: "/>
+                               Text="{Binding LocalizationContext.WizardThirdModelStatus}"/>
                     <TextBlock Classes="Caption" TextWrapping="Wrap"
                                Text="{Binding Status}"/>
                 </StackPanel>
-                <TextBlock Margin="0 5"
-                           TextWrapping="Wrap" IsVisible="{Binding IsError}"
-                           Text="{Binding Error}"/>
                 <Grid Margin="0 5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -71,10 +68,10 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="2"
-                            Content="Refresh"
+                            Content="{Binding LocalizationContext.ModelManagerRefreshButton}"
                             Command="{Binding UpdateModelStatusCommand}" />
                 </Grid>
-                <Expander Header="Installed ml models" IsExpanded="False" Margin="0 5 0 0">
+                <Expander Header="{Binding LocalizationContext.ModelManagerInstalledModels}" IsExpanded="False" Margin="0 5 0 0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition/>
@@ -87,15 +84,15 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="0" Margin="5"
-                                    Content="Remove selected"
+                                    Content="{Binding LocalizationContext.ModelManagerRemoveSelectedButton}"
                                     Command="{Binding RemoveModelCommand}"
                             />
                             <Button Grid.Column="1" Margin="5"
-                                    Content="Activate selected"
+                                    Content="{Binding LocalizationContext.ModelManagerActivateSelectedButton}"
                                     Command="{Binding ActivateModelCommand}"
                             />
                             <Button Grid.Column="2" Margin="5"
-                                    Content="Refresh"
+                                    Content="{Binding LocalizationContext.ModelManagerRefreshButton}"
                                     Classes="Primary"
                                     Command="{Binding UpdateInstalledModelsCommand}"
                             />
@@ -113,7 +110,7 @@
                         </DataGrid>
                     </Grid>
                 </Expander>
-                <Expander Header="Available ml models" IsExpanded="False" Margin="0 5 0 0">
+                <Expander Header="{Binding LocalizationContext.ModelManagerAvailableModels}" IsExpanded="False" Margin="0 5 0 0">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition/>
@@ -125,11 +122,11 @@
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="0" Margin="5"
-                                    Content="Download selected"
+                                    Content="{Binding LocalizationContext.ModelManagerDownloadSelectedButton}"
                                     Command="{Binding DownloadModelCommand}"
                             />
                             <Button Grid.Column="1" Margin="5"
-                                    Content="Refresh"
+                                    Content="{Binding LocalizationContext.ModelManagerRefreshButton}"
                                     Classes="Primary"
                                     Command="{Binding UpdateAvailableModelsCommand}"
                             />
@@ -159,12 +156,12 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0"
-                        Content="Close"
+                        Content="{Binding LocalizationContext.ModelManagerCloseButton}"
                         Command="{Binding CancelCommand}"
                 />
                 <Button Grid.Column="2"
                         Classes="Primary"
-                        Content="Apply" 
+                        Content="{Binding LocalizationContext.ModelManagerApplyButton}" 
                         Command="{Binding ApplyCommand}"
                 />
             </Grid>

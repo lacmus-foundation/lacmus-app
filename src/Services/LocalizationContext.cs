@@ -592,6 +592,73 @@ namespace LacmusApp.Services
 
         #endregion
 
+        #region MODEL MANAGER WINDOW
+
+        private string _modelManagerApiVersion;
+        [Reactive] public string ModelManagerApiVersion
+        {
+            get { return _modelManagerApiVersion; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerApiVersion, value); }
+        }
+        
+        private string _modelManagerInstalledModels;
+        [Reactive] public string ModelManagerInstalledModels
+        {
+            get { return _modelManagerInstalledModels; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerInstalledModels, value); }
+        }
+        
+        private string _modelManagerAvailableModels;
+        [Reactive] public string ModelManagerAvailableModels
+        {
+            get { return _modelManagerAvailableModels; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerAvailableModels, value); }
+        }
+        
+        private string _modelManagerRefreshButton;
+        [Reactive] public string ModelManagerRefreshButton
+        {
+            get { return _modelManagerRefreshButton; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerRefreshButton, value); }
+        }
+        
+        private string _modelManagerRemoveSelectedButton;
+        [Reactive] public string ModelManagerRemoveSelectedButton
+        {
+            get { return _modelManagerRemoveSelectedButton; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerRemoveSelectedButton, value); }
+        }
+        
+        private string _modelManagerActivateSelectedButton;
+        [Reactive] public string ModelManagerActivateSelectedButton
+        {
+            get { return _modelManagerActivateSelectedButton; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerActivateSelectedButton, value); }
+        }
+        
+        private string _modelManagerDownloadSelectedButton;
+        [Reactive] public string ModelManagerDownloadSelectedButton
+        {
+            get { return _modelManagerDownloadSelectedButton; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerDownloadSelectedButton, value); }
+        }
+        
+        private string _modelManagerApplyButton;
+        [Reactive] public string ModelManagerApplyButton
+        {
+            get { return _modelManagerApplyButton; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerApplyButton, value); }
+        }
+        
+        private string _modelManagerManagerCloseButton;
+        [Reactive] public string ModelManagerCloseButton
+        {
+            get { return _modelManagerManagerCloseButton; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerManagerCloseButton, value); }
+        }
+
+        #endregion
+
         public LocalizationContext()
         {
             this.WhenAnyValue(vm=>vm.Language).Subscribe(_=>UpdateText());
@@ -706,6 +773,17 @@ namespace LacmusApp.Services
                     MetadataOpenWith = "Open with:";
                     MetadataAllMetadata = "All metadata";
                     
+                    //Model manager
+                    ModelManagerApiVersion = "API version";
+                    ModelManagerInstalledModels = "Installed ml models";
+                    ModelManagerAvailableModels = "Available ml models";
+                    ModelManagerRefreshButton = "Refresh";
+                    ModelManagerRemoveSelectedButton = "Remove selected";
+                    ModelManagerActivateSelectedButton = "Activate selected";
+                    ModelManagerDownloadSelectedButton = "Download selected";
+                    ModelManagerApplyButton = "Apply";
+                    ModelManagerCloseButton = "Close";
+                    
                     //Settings
                     SelectLanguage = "Select Language";
                     break;
@@ -812,6 +890,17 @@ namespace LacmusApp.Services
                     MetadataAltitude = "Высота: ";
                     MetadataOpenWith = "Показать на карте:";
                     MetadataAllMetadata = "Все метаданные";
+                    
+                    //Model manager
+                    ModelManagerApiVersion = "Версия API";
+                    ModelManagerInstalledModels = "Установленные ml модели";
+                    ModelManagerAvailableModels = "Доступные для загрузки ml модели";
+                    ModelManagerRefreshButton = "Обновить информацию";
+                    ModelManagerRemoveSelectedButton = "Удалить выбранную";
+                    ModelManagerActivateSelectedButton = "Активировать выбранную";
+                    ModelManagerDownloadSelectedButton = "Загрузить выбранную";
+                    ModelManagerApplyButton = "Применить";
+                    ModelManagerCloseButton = "Отмена";
                     
                     //Settings window
                     SelectLanguage = "Select Language";
