@@ -16,7 +16,7 @@
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <TabControl Margin="0" Grid.Row="0" Background="Transparent">
-            <TabItem Header="General" HorizontalContentAlignment="Center">
+            <TabItem Header="{Binding LocalizationContext.SettingsGeneral}" HorizontalContentAlignment="Center">
                 <ScrollViewer>
                     <StackPanel>
                         <Border Classes="Card">
@@ -25,14 +25,14 @@
                                     <cp:HexToColorConverter x:Key="HexToColorConverter"/>
                                 </StackPanel.Resources>
                                 <TextBlock Classes="Heading" 
-                                           Text="Language:"
+                                           Text="{Binding LocalizationContext.SettingsLanguage}"
                                 />
                                 <ComboBox SelectedIndex="{Binding LanguageIndex, Mode=TwoWay}">
                                     <ComboBoxItem Content="English" />
                                     <ComboBoxItem Content="Russian" />
                                 </ComboBox>
                                 <TextBlock Classes="Heading" 
-                                           Text="Theme:"
+                                           Text="{Binding LocalizationContext.SettingsTheme}"
                                 />
                                 <ComboBox SelectedIndex="{Binding ThemeIndex, Mode=TwoWay}">
                                     <ComboBoxItem Content="Light" />
@@ -52,13 +52,13 @@
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
-            <TabItem Header="ML model">
+            <TabItem Header="{Binding LocalizationContext.SettingsMlModel}">
                 <ScrollViewer>
                     <StackPanel>
                         <Border Classes="Card">
                             <StackPanel>
                                 <TextBlock Classes="Heading" 
-                                           Text="General ML model settings."
+                                           Text="{Binding LocalizationContext.SettingsMlModelGeneral}"
                                 />
                                 <Grid>
                                     <Grid.ColumnDefinitions>
@@ -79,22 +79,22 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Classes="Heading" 
-                                               Text="Host:"
+                                               Text="{Binding LocalizationContext.SettingsHost}"
                                     />
                                     <TextBox Grid.Column="2" UseFloatingWatermark="True"
                                              Watermark="localhost"
                                              Text="{Binding MLHost, Mode=TwoWay}"/>
                                     <TextBlock Grid.Column="4" Classes="Heading" 
-                                               Text="Port:"
+                                               Text="{Binding LocalizationContext.SettingsPort}"
                                     />
                                     <NumericUpDown Grid.Column="6"
                                                    Maximum="10000"
                                                    Minimum="80"
                                                    Value="5000"/>
                                 </Grid>
-                                <CheckBox IsChecked="False"
-                                          Content="Use JVT for external usage"/>
-                                <Grid>
+                                <!-- <CheckBox IsChecked="False"
+                                          Content="Use JVT for external usage"/> -->
+                                <Grid> 
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="auto"/>
                                         <ColumnDefinition Width="10"/>
@@ -104,20 +104,20 @@
                                         <ColumnDefinition Width="10"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Classes="Heading" 
+                                    <!-- <TextBlock Grid.Column="0" Classes="Heading" 
                                                Text="Inference type:"
                                     />
-                                    <ComboBox Grid.Column="2" SelectedIndex="{Binding LanguageIndex, Mode=TwoWay}">
+                                    <ComboBox Grid.Column="2" SelectedIndex="{Binding InferenceIndex, Mode=TwoWay}">
                                         <ComboBoxItem Content="cpu" />
                                         <ComboBoxItem Content="gpu" />
                                         <ComboBoxItem Content="cpu no avx" />
                                         <ComboBoxItem Content="tpu" />
-                                    </ComboBox>
+                                    </ComboBox> -->
                                     <TextBlock Grid.Column="4" Classes="Heading" 
-                                               Text="Batch size:"
+                                               Text="{Binding LocalizationContext.SettingsBatchSize}"
                                     />
                                     <NumericUpDown Grid.Column="6"
-                                                   Maximum="32"
+                                                   Maximum="4"
                                                    Minimum="1"
                                                    Value="1"/>
                                 </Grid>
@@ -127,25 +127,25 @@
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0 5">
                                     <TextBlock Classes="Caption"
-                                               Text="Ml model repository: "/>
+                                               Text="{Binding LocalizationContext.WizardThirdModelRepository}"/>
                                     <TextBlock Classes="Caption"
                                                Text="{Binding Repository}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0 5">
                                     <TextBlock Classes="Caption"
-                                               Text="Ml model type: "/>
+                                               Text="{Binding LocalizationContext.WizardThirdModelType}"/>
                                     <TextBlock Classes="Caption"
                                                Text="{Binding Type}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0 5">
                                     <TextBlock Classes="Caption"
-                                        Text="Ml model version: "/>
+                                        Text="{Binding LocalizationContext.WizardThirdModelVersion}"/>
                                     <TextBlock Classes="Caption"
                                         Text="{Binding Version}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0 5">
                                     <TextBlock Classes="Caption"
-                                               Text="Ml model status: "/>
+                                               Text="{Binding LocalizationContext.WizardThirdModelStatus}"/>
                                     <TextBlock Classes="Caption" TextWrapping="Wrap"
                                                Text="{Binding Status}"/>
                                 </StackPanel>
@@ -159,90 +159,14 @@
                                         <ColumnDefinition Width="*" />
                                     </Grid.ColumnDefinitions>
                                     <Button Grid.Column="0"
-                                            Content="ML Model Manager"
+                                            Content="{Binding LocalizationContext.WizardThirdModelManagerButton}"
                                             Command="{Binding OpenModelMnagerCommand}" />
                                     <Button Grid.Column="2"
-                                            Content="Refresh"
+                                            Content="{Binding LocalizationContext.WizardThirdModelStatusUpdateButton}"
                                             Command="{Binding UpdateModelStatusCommand}" />
                                 </Grid>
                             </StackPanel>
                         </Border>
-                        
-                        <!--
-                        <Border Classes="Card">
-                            <StackPanel>
-                                <TextBlock Classes="Heading" 
-                                           Text="ML models store."
-                                />
-                                <Expander Header="Active ml models" IsExpanded="False" Margin="0 5 0 0">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition/>
-                                            <RowDefinition/>
-                                        </Grid.RowDefinitions>
-                                        <Button Grid.Row="0" Margin="5"
-                                                Content="Deactivate selected"
-                                        />
-                                        <DataGrid Grid.Row="1" Items="{Binding MetaDataCollection}">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn Header="Repository" Binding="{Binding Group}"></DataGridTextColumn>
-                                                <DataGridTextColumn Header="Type" Binding="{Binding Group}"></DataGridTextColumn>
-                                                <DataGridTextColumn Header="Version" Binding="{Binding TagName}"></DataGridTextColumn>
-                                                <DataGridTextColumn Header="Api Version" Binding="{Binding Description}"></DataGridTextColumn>
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-                                    </Grid>
-                                </Expander>
-                                <Expander Header="Installed ml models" IsExpanded="False" Margin="0 5 0 0">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition/>
-                                            <RowDefinition/>
-                                        </Grid.RowDefinitions>
-                                        <Grid Grid.Row="0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-                                            <Button Grid.Column="0" Margin="5"
-                                                    Content="Uninstall selected"
-                                            />
-                                            <Button Grid.Column="1" Margin="5"
-                                                    Content="Activate selected"
-                                            />
-                                        </Grid>
-                                        <DataGrid Grid.Row="1" Items="{Binding MetaDataCollection}">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn Header="Repository" Binding="{Binding Group}"></DataGridTextColumn>
-                                                <DataGridTextColumn Header="Type" Binding="{Binding Group}"></DataGridTextColumn>
-                                                <DataGridTextColumn Header="Version" Binding="{Binding TagName}"></DataGridTextColumn>
-                                                <DataGridTextColumn Header="Api Version" Binding="{Binding Description}"></DataGridTextColumn>
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-                                    </Grid>
-                                </Expander>
-                                <Expander Header="Available ml models" IsExpanded="False" Margin="0 5 0 0">
-                                    <Grid>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition/>
-                                            <RowDefinition/>
-                                        </Grid.RowDefinitions>
-                                        <Button Grid.Row="0" Margin="5"
-                                                Content="Download selected"
-                                        />
-                                        <DataGrid Grid.Row="1" Items="{Binding MetaDataCollection}">
-                                            <DataGrid.Columns>
-                                                <DataGridTextColumn Header="Repository" Binding="{Binding Group}"></DataGridTextColumn>
-                                                <DataGridTextColumn Header="Type" Binding="{Binding Group}"></DataGridTextColumn>
-                                                <DataGridTextColumn Header="Version" Binding="{Binding TagName}"></DataGridTextColumn>
-                                                <DataGridTextColumn Header="Api Version" Binding="{Binding Description}"></DataGridTextColumn>
-                                            </DataGrid.Columns>
-                                        </DataGrid>
-                                    </Grid>
-                                </Expander>
-                            </StackPanel>
-                        </Border>
-                        -->
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -255,12 +179,12 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="0"
-                        Content="Close"
+                        Content="{Binding LocalizationContext.ModelManagerCloseButton}"
                         Command="{Binding CancelCommand}"
                 />
                 <Button Grid.Column="2"
                         Classes="Primary"
-                        Content="Apply" 
+                        Content="{Binding LocalizationContext.ModelManagerApplyButton}" 
                         Command="{Binding ApplyCommand}"
                 />
             </Grid>

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reactive;
 using Avalonia.Controls;
+using LacmusApp.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Abstractions;
@@ -19,10 +20,12 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> OpenPhotos { get; }
 
         [Reactive] public string InputPath { get; set; }
+        [Reactive] public LocalizationContext LocalizationContext { get; set; }
 
-        public FirstWizardViewModel(IScreen screen)
+        public FirstWizardViewModel(IScreen screen, LocalizationContext localizationContext)
         {
             HostScreen = screen;
+            LocalizationContext = localizationContext;
             
             this.ValidationRule(
                 viewModel => viewModel.InputPath,

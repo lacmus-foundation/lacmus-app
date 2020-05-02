@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Reactive;
 using Avalonia.Controls;
+using LacmusApp.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
@@ -17,10 +18,12 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> SavePhotos { get; }
 
         [Reactive] public string OutputPath { get; set; }
+        [Reactive] public LocalizationContext LocalizationContext { get; set; }
 
-        public SecondWizardViewModel(IScreen screen)
+        public SecondWizardViewModel(IScreen screen, LocalizationContext localizationContext)
         {
             HostScreen = screen;
+            LocalizationContext = localizationContext;
             this.ValidationRule(
                 viewModel => viewModel.OutputPath,
                 Directory.Exists,

@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Reactive;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
+using LacmusApp.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using Serilog;
@@ -11,13 +12,14 @@ namespace LacmusApp.ViewModels
 {
     public class AboutViewModel : ReactiveObject
     {
-        public AboutViewModel(Window window)
+        public AboutViewModel(Window window, LocalizationContext localizationContext)
         {
+            LocalizationContext = localizationContext;
             OpenLicenseCommand = ReactiveCommand.Create(OpenLicense);
             OpenGithubCommand = ReactiveCommand.Create(OpenGithub);
             OpenSiteCommand = ReactiveCommand.Create(OpenSite);
         }
-
+        [Reactive] public LocalizationContext LocalizationContext { get; set; }
         [Reactive] public string TextVersion { get; set; } = GetVersion() + ".";
         public ReactiveCommand<Unit, Unit> OpenLicenseCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenGithubCommand { get; set; }

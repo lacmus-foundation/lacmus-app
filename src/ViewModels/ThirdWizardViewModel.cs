@@ -8,6 +8,9 @@ using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.ML;
+using LacmusApp.Services;
+using LacmusApp.Services.Files;
+using LacmusApp.Views;
 using Serilog;
 
 namespace LacmusApp.ViewModels
@@ -16,6 +19,7 @@ namespace LacmusApp.ViewModels
     {
         private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
         private readonly ApplicationStatusManager _applicationStatusManager;
+        private WizardWindow _window;
         private AppConfig _appConfig;
         public IScreen HostScreen { get; }
         public string UrlPathSegment { get; } = Guid.NewGuid().ToString().Substring(0, 5);
@@ -26,15 +30,18 @@ namespace LacmusApp.ViewModels
         [Reactive] public string Error { get; set; }
         [Reactive] public bool IsError { get; set; } = false;
         [Reactive] public bool IsShowLoadModelButton { get; set; } = false;
+        [Reactive] public LocalizationContext LocalizationContext { get; set; }
         
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; }
         public ReactiveCommand<Unit, Unit> UpdateModelStatusCommand { get; }
 
-        public ThirdWizardViewModel(IScreen screen, ApplicationStatusManager manager, AppConfig config)
+        public ThirdWizardViewModel(IScreen screen, WizardWindow window, ApplicationStatusManager manager, LocalizationContext localizationContext)
         {
             _applicationStatusManager = manager;
-            _appConfig = config;
+            _window = window;
+            LocalizationContext = localizationContext;
             HostScreen = screen;
+            _appConfig = window.AppConfig;
             LoadModelCommand = ReactiveCommand.Create(LoadModel);
             UpdateModelStatusCommand = ReactiveCommand.Create(UpdateModelStatus);
         }
@@ -47,12 +54,14 @@ namespace LacmusApp.ViewModels
             {
                 Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
+                var confDir = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "conf");
+                var configPath = Path.Join(confDir,"appConfig.json");
+                _appConfig = await AppConfig.Create(configPath);
                 var config = _appConfig.MlModelConfig;;
                 // get local versions
                 var localVersions = await MLModel.GetInstalledVersions(config);
-                if (localVersions.Any())
+                if(localVersions.Contains(config.ModelVersion))
                 {
-                    config.ModelVersion = localVersions.Max();
                     Log.Information($"Find local version: {config.Image.Name}:{config.Image.Tag}.");
                 }
                 else
@@ -85,35 +94,21 @@ namespace LacmusApp.ViewModels
             //get the last version of ml model with specific config
             try
             {
-                Log.Information("Check ml model status.");
-                var config = _appConfig.MlModelConfig;;
-                // get local versions
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+                ModelManagerWindow window = new ModelManagerWindow(_window.LocalizationContext, ref _appConfig, _applicationStatusManager, _window.ThemeManager);
+                _appConfig = await window.ShowResult();
+                var config = _appConfig.MlModelConfig;
+                // init local model or download and init it from docker registry
                 var localVersions = await MLModel.GetInstalledVersions(config);
-                if (localVersions.Any())
+                if(localVersions.Contains(config.ModelVersion))
                 {
-                    config.ModelVersion = localVersions.Max();
                     Log.Information($"Find local version: {config.Image.Name}:{config.Image.Tag}.");
                 }
                 else
                 {
-                    // if there are no local models try to download it from docker registry
-                    var netVersions = await MLModel.GetAvailableVersionsFromRegistry(config);
-                    if (netVersions.Any())
-                    {
-                        config.ModelVersion = netVersions.Max();
-                        Log.Information($"Find version in registry: {config.Image.Name}:{config.Image.Tag}.");
-                    }
-                    else
-                    {
-                        throw new Exception($"There are no ml models to init: {config.Image.Name}:{config.Image.Tag}");
-                    }
+                    IsShowLoadModelButton = true;
+                    throw new Exception($"There are no ml local models to init: {config.Image.Name}:{config.Image.Tag}");
                 }
-                await config.Save(_mlConfigPath);
-                // init local model or download and init it from docker registry
-                using(var model = new MLModel(config))
-                    await model.Download();
-                
-                await config.Save(_mlConfigPath);
                 Repository = config.Image.Name;
                 Version = $"{config.ModelVersion}";
                 Type = $"{config.Type}";
@@ -121,6 +116,7 @@ namespace LacmusApp.ViewModels
                     await model.Download();
                 Status = $"Ready";
                 IsError = false;
+                _window.AppConfig = _appConfig;
             }
             catch (Exception e)
             {
