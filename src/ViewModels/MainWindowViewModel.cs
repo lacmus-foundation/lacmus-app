@@ -480,7 +480,7 @@ namespace LacmusApp.ViewModels
         private async void SaveAs()
         {
             SaveAsWindow window = new SaveAsWindow(_themeManager);
-            var context = new SaveAsWindowViewModel(window, _photos, _applicationStatusManager);
+            var context = new SaveAsWindowViewModel(window, _photos, _applicationStatusManager, LocalizationContext);
             window.DataContext = context;
             window.Show();
         }

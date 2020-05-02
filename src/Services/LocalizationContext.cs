@@ -659,6 +659,119 @@ namespace LacmusApp.Services
 
         #endregion
 
+        #region SAVE AS WINDOW
+
+        private string _saveAsOptionsToSave;
+        [Reactive] public string SaveAsOptionsToSave
+        {
+            get { return _saveAsOptionsToSave; }
+            set { this.RaiseAndSetIfChanged(ref _saveAsOptionsToSave, value); }
+        }
+        
+        private string _saveAsTypesToSave;
+        [Reactive] public string SaveAsTypesToSave
+        {
+            get { return _saveAsTypesToSave; }
+            set { this.RaiseAndSetIfChanged(ref _saveAsTypesToSave, value); }
+        }
+        
+        private string _saveAsSourcePhotos;
+        [Reactive] public string SaveAsSourcePhotos
+        {
+            get { return _saveAsSourcePhotos; }
+            set { this.RaiseAndSetIfChanged(ref _saveAsSourcePhotos, value); }
+        }
+        
+        private string _saveAsXmlAnnotations;
+        [Reactive] public string SaveAsXmlAnnotations
+        {
+            get { return _saveAsXmlAnnotations; }
+            set { this.RaiseAndSetIfChanged(ref _saveAsXmlAnnotations, value); }
+        }
+        
+        private string _saveAsDrawBbox;
+        [Reactive] public string SaveAsDrawBbox
+        {
+            get { return _saveAsDrawBbox; }
+            set { this.RaiseAndSetIfChanged(ref _saveAsDrawBbox, value); }
+        }
+        
+        private string _saveAsCrops;
+        [Reactive] public string SaveAsCrops
+        {
+            get { return _saveAsCrops; }
+            set { this.RaiseAndSetIfChanged(ref _saveAsCrops, value); }
+        }
+
+        #endregion
+
+        #region SETTINGS
+
+        private string _settingsGeneral;
+        [Reactive] public string SettingsGeneral
+        {
+            get { return _settingsGeneral; }
+            set { this.RaiseAndSetIfChanged(ref _settingsGeneral, value); }
+        }
+        
+        private string _settingsLanguage;
+        [Reactive] public string SettingsLanguage
+        {
+            get { return _settingsLanguage; }
+            set { this.RaiseAndSetIfChanged(ref _settingsLanguage, value); }
+        }
+        
+        private string _settingsTheme;
+        [Reactive] public string SettingsTheme
+        {
+            get { return _settingsTheme; }
+            set { this.RaiseAndSetIfChanged(ref _settingsTheme, value); }
+        }
+        
+        private string _settingsMlModel;
+        [Reactive] public string SettingsMlModel
+        {
+            get { return _settingsMlModel; }
+            set { this.RaiseAndSetIfChanged(ref _settingsMlModel, value); }
+        }
+        
+        private string _settingsMlModelGeneral;
+        [Reactive] public string SettingsMlModelGeneral
+        {
+            get { return _settingsMlModelGeneral; }
+            set { this.RaiseAndSetIfChanged(ref _settingsMlModelGeneral, value); }
+        }
+        
+        private string _settingsHost;
+        [Reactive] public string SettingsHost
+        {
+            get { return _settingsHost; }
+            set { this.RaiseAndSetIfChanged(ref _settingsHost, value); }
+        }
+        
+        private string _settingsPort;
+        [Reactive] public string SettingsPort
+        {
+            get { return _settingsPort; }
+            set { this.RaiseAndSetIfChanged(ref _settingsPort, value); }
+        }
+        
+        private string _settingsJWT;
+        [Reactive] public string SettingsJWT
+        {
+            get { return _settingsJWT; }
+            set { this.RaiseAndSetIfChanged(ref _settingsJWT, value); }
+        }
+        
+        private string _settingsBatchSize;
+        [Reactive] public string SettingsBatchSize
+        {
+            get { return _settingsBatchSize; }
+            set { this.RaiseAndSetIfChanged(ref _settingsBatchSize, value); }
+        }
+
+        #endregion
+
         public LocalizationContext()
         {
             this.WhenAnyValue(vm=>vm.Language).Subscribe(_=>UpdateText());
@@ -784,8 +897,37 @@ namespace LacmusApp.Services
                     ModelManagerApplyButton = "Apply";
                     ModelManagerCloseButton = "Close";
                     
+                    //Save as
+                    SaveAsOptionsToSave = "Select options to save:";
+                    SaveAsTypesToSave = "Type of photos to save:";
+                    //AllPhotos="All photos";
+                    //PhotosWithObject="Photos with objects";
+                    //FavoritePhotos="Favorite photos";
+                    SaveAsSourcePhotos = "Save source photos.";
+                    SaveAsXmlAnnotations = "Save XML annotations.";
+                    SaveAsDrawBbox = "Save photo with drawn bounded boxes.";
+                    SaveAsCrops = "Save bbox crops.";
+                    //WizardSecondOutputWatermark = "Enter output path here.";
+                    //WizardSecondSavePhotosButton = "Save photos";
+                    
                     //Settings
-                    SelectLanguage = "Select Language";
+                    SettingsGeneral = "General";
+                    SettingsLanguage = "Language:";
+                    SettingsTheme = "Theme:";
+                    SettingsMlModel = "ML model";
+                    SettingsMlModelGeneral = "General ML model settings.";
+                    SettingsHost = "Host:";
+                    SettingsPort = "Port:";
+                    SettingsJWT = "Use JVT for external usage";
+                    SettingsBatchSize = "Threads:";
+                    //WizardThirdModelRepository = "Ml model repository: ";
+                    //WizardThirdModelType = "Ml model type: ";
+                    //WizardThirdModelVersion = "Ml model version: ";
+                    //WizardThirdModelStatus = "Ml model status: ";
+                    //WizardThirdModelManagerButton = "Model manager";
+                    //WizardThirdModelStatusUpdateButton = "Refresh";
+                    //ModelManagerApplyButton = "Apply";
+                    //ModelManagerCloseButton = "Close";
                     break;
                 }
                 case Language.Russian:
@@ -902,6 +1044,25 @@ namespace LacmusApp.Services
                     ModelManagerApplyButton = "Применить";
                     ModelManagerCloseButton = "Отмена";
                     
+                    //Save as
+                    SaveAsOptionsToSave = "Выбирете опции для сохранения:";
+                    SaveAsTypesToSave = "Тип сохраняемых отографий:";
+                    SaveAsSourcePhotos = "Сохранить исходные фото.";
+                    SaveAsXmlAnnotations = "Сохранить XML аннотации.";
+                    SaveAsDrawBbox = "Сохранить фотографии с нарисованными рамками объектов.";
+                    SaveAsCrops = "Сохранить вырезанные обьекты.";
+                    
+                    //Settings
+                    SettingsGeneral = "Общие";
+                    SettingsLanguage = "Язык:";
+                    SettingsTheme = "Тема оффорления:";
+                    SettingsMlModel = "ML модель";
+                    SettingsMlModelGeneral = "Общие настройки ml модели.";
+                    SettingsHost = "Хост:";
+                    SettingsPort = "Порт:";
+                    SettingsJWT = "Внешнее использование (включить JVT шифрование)";
+                    SettingsBatchSize = "Число потоков:";
+
                     //Settings window
                     SelectLanguage = "Select Language";
                     break;
