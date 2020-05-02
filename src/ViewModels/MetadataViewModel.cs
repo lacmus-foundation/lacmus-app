@@ -8,6 +8,7 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using DynamicData;
 using LacmusApp.Models;
+using LacmusApp.Services;
 using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -25,7 +26,8 @@ namespace LacmusApp.ViewModels
         [Reactive] public string Latitude { get; set; } = "N/A";
         [Reactive] public string Longitude { get; set; } = "N/A";
         [Reactive] public string Altitude { get; set; } = "N/A";
-        public MetadataViewModel(Window window, IReadOnlyList<Directory> metadata)
+        [Reactive] public LocalizationContext LocalizationContext { get; set; }
+        public MetadataViewModel(Window window, IReadOnlyList<Directory> metadata, LocalizationContext localizationContext)
         {
             foreach (var directory in metadata)
             {
@@ -41,6 +43,8 @@ namespace LacmusApp.ViewModels
                     _metaDataList.Add(new MetaData(directory.Name, tag.Name, tag.Description));
                 }
             }
+
+            LocalizationContext = localizationContext;
             
             _metaDataList
                 .Connect()

@@ -9,25 +9,25 @@
     <StackPanel>
         <Border Classes="Card">
             <StackPanel>
-                <TextBlock Margin="0 2" Classes="Heading" Text="Select options to save:" />
-                <TextBlock Margin="0 2" Classes="Caption" Text="Type of photos to save:" />
+                <TextBlock Margin="0 2" Classes="Heading" Text="{Binding LocalizationContext.SaveAsOptionsToSave}" />
+                <TextBlock Margin="0 2" Classes="Caption" Text="{Binding LocalizationContext.SaveAsTypesToSave}" />
                 <ComboBox Margin="0 2 0 5" SelectedIndex="{Binding FilterIndex, Mode=TwoWay}">
-                    <ComboBoxItem Content="All photos" />
-                    <ComboBoxItem Content="Photos with objects" />
-                    <ComboBoxItem Content="Favorite photos" />
+                    <ComboBoxItem Content="{Binding LocalizationContext.AllPhotos}" />
+                    <ComboBoxItem Content="{Binding LocalizationContext.PhotosWithObject}" />
+                    <ComboBoxItem Content="{Binding LocalizationContext.FavoritePhotos}" />
                 </ComboBox>
                 <CheckBox Margin="0 2" IsChecked="{Binding IsSource, Mode=TwoWay}"
-                          Content="Save source photos." />
+                          Content="{Binding LocalizationContext.SaveAsSourcePhotos}" />
                 <CheckBox Margin="0 2" IsChecked="{Binding IsXml, Mode=TwoWay}"
-                          Content="Save XML annotations." />
+                          Content="{Binding LocalizationContext.SaveAsXmlAnnotations}" />
                 <CheckBox Margin="0 2" IsChecked="{Binding IsDraw, Mode=TwoWay}"
-                          Content="Save photo with drawn bboxes." />
+                          Content="{Binding LocalizationContext.SaveAsDrawBbox}" />
                 <CheckBox Margin="0 2" IsChecked="{Binding IsCrop, Mode=TwoWay}"
-                          Content="Save bbox crops." />
+                          Content="{Binding LocalizationContext.SaveAsCrops}" />
                 <TextBox Margin="0 5" UseFloatingWatermark="True"
-                         Watermark="Enter output path here."
+                         Watermark="{Binding LocalizationContext.WizardSecondOutputWatermark}"
                          Text="{Binding OutputPath, Mode=TwoWay}" />
-                <Button Margin="0 2 0 5" Content="Save photos" Command="{Binding SaveCommand}"/>
+                <Button Margin="0 2 0 5" Content="{Binding LocalizationContext.WizardSecondSavePhotosButton}" Command="{Binding SaveCommand}"/>
             </StackPanel>
         </Border>
     </StackPanel>

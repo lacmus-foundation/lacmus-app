@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using DynamicData;
 using LacmusApp.Managers;
 using LacmusApp.Models;
+using LacmusApp.Services;
 using LacmusApp.Services.IO;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -24,8 +25,9 @@ namespace LacmusApp.ViewModels
     {
         private readonly SourceList<PhotoViewModel> _photos;
         private readonly ApplicationStatusManager _applicationStatusManager;
-        public SaveAsWindowViewModel(Window window, SourceList<PhotoViewModel> photos, ApplicationStatusManager applicationStatusManager)
+        public SaveAsWindowViewModel(Window window, SourceList<PhotoViewModel> photos, ApplicationStatusManager applicationStatusManager, LocalizationContext localizationContext)
         {
+            LocalizationContext = localizationContext;
             _photos = photos;
             _applicationStatusManager = applicationStatusManager;
             this.ValidationRule(
@@ -41,6 +43,7 @@ namespace LacmusApp.ViewModels
         [Reactive] public bool IsSource { get; set; } = true;
         [Reactive] public bool IsDraw { get; set; } = false;
         [Reactive] public bool IsCrop { get; set; } = false;
+        [Reactive] public LocalizationContext LocalizationContext { get; set; }
         public ReactiveCommand<Unit, Unit> SaveCommand { get; set; }
         
         public async void SavePhotos()

@@ -4,22 +4,23 @@
     <StackPanel>
         <Border Classes="Card">
             <StackPanel>
-                <TextBlock Classes="Heading" Text="Step 3: Setup ml model" />
+                <TextBlock Classes="Heading"
+                           Text="{Binding LocalizationContext.WizardThirdHeader}"/>
                 <TextBlock Margin="0 5"
                            TextWrapping="Wrap"
-                           Text="Before proceeding, make sure that the selected configuration of the neural network model is correct."
+                           Text="{Binding LocalizationContext.WizardThirdDescription1}"
                            ToolTip.Tip="Select input data" />
                 <TextBlock Margin="0 5"
                            TextWrapping="Wrap"
-                           Text="If the configuration of the neural network model is not specified or you want to use a different configuration, go to the settings by selecting the 'file - settings' in the main menu of the program."
+                           Text="{Binding LocalizationContext.WizardThirdDescription2}"
                            ToolTip.Tip="Select input data" />
                 <TextBlock Margin="0 5"
                            TextWrapping="Wrap"
-                           Text="If your model is not loaded, then download it by clicking the 'download model' button. To download, you need to download from 2 to 6GB. Make sure your internet connection is reliable."
+                           Text="{Binding LocalizationContext.WizardThirdDescription3}"
                            ToolTip.Tip="Select input data" />
                 <TextBlock Margin="0 5"
                            TextWrapping="Wrap"
-                           Text="If everything is correct, click the 'Predict all' button to start the processing process. Upon completion of the process, the result of the program operation will appear in the selected folder."
+                           Text="{Binding LocalizationContext.WizardThirdDescription4}"
                            ToolTip.Tip="Select input data" />
             </StackPanel>
         </Border>
@@ -27,32 +28,31 @@
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="Ml model repository: "/>
+                               Text="{Binding LocalizationContext.WizardThirdModelRepository}"/>
                     <TextBlock Classes="Caption"
                                Text="{Binding Repository}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="Ml model type: "/>
+                               Text="{Binding LocalizationContext.WizardThirdModelType}"/>
                     <TextBlock Classes="Caption"
                                Text="{Binding Type}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="Ml model version: "/>
+                               Text="{Binding LocalizationContext.WizardThirdModelVersion}"/>
                     <TextBlock Classes="Caption"
                                Text="{Binding Version}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="Ml model status: "/>
+                               Text="{Binding LocalizationContext.WizardThirdModelStatus}"/>
                     <TextBlock Classes="Caption" TextWrapping="Wrap"
                                Text="{Binding Status}"/>
                 </StackPanel>
                 <TextBlock Margin="0 5"
                            TextWrapping="Wrap" IsVisible="{Binding IsError}"
-                           Text="{Binding Error}"
-                           ToolTip.Tip="Select input data" />
+                           Text="{Binding Error}" />
                 <Grid Margin="0 5">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -60,11 +60,11 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="0"
-                            Content="Save photos"
+                            Content="{Binding LocalizationContext.WizardThirdModelManagerButton}"
                             IsVisible="{Binding IsShowLoadModelButton}"
                             Command="{Binding LoadModelCommand}"/>
                     <Button Grid.Column="2"
-                            Content="Update ml model status"
+                            Content="{Binding LocalizationContext.WizardThirdModelStatusUpdateButton}"
                             IsVisible="{Binding IsError}"
                             Command="{Binding UpdateModelStatusCommand}" />
                 </Grid>

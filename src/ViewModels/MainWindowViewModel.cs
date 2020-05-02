@@ -8,6 +8,7 @@ using System.Reactive.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
 using MessageBox.Avalonia;
@@ -20,6 +21,7 @@ using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.ML;
 using LacmusApp.Models.Photo;
+using LacmusApp.Services;
 using LacmusApp.Services.Files;
 using LacmusApp.Services.IO;
 using LacmusApp.Services.VM;
@@ -122,6 +124,7 @@ namespace LacmusApp.ViewModels
             SaveAllCommand = ReactiveCommand.Create(SaveAll, canExecute);
             LoadModelCommand = ReactiveCommand.Create(LoadModel, canExecute);
             UpdateModelCommand = ReactiveCommand.Create(UpdateModel, canExecute);
+            OpenModelManagerCommand = ReactiveCommand.Create(OpenModelManager, canExecute);
             
             NextPageCommand = ReactiveCommand.Create(ShowNextPage);
             PreviousPageCommand = ReactiveCommand.Create(ShowPreviousPage);
@@ -174,6 +177,7 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; set; }
         public ReactiveCommand<Unit, Unit> UpdateModelCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> OpenModelManagerCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAsCommand { get; set; }
         public ReactiveCommand<Unit, Unit> FirstPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; set; }
@@ -263,36 +267,14 @@ namespace LacmusApp.ViewModels
         private async void LoadModel()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
-            //get the last version of ml model with specific config
+            //ml model with specific config
             try
             {
                 Log.Information("Loading ml model.");
                 var config = _appConfig.MlModelConfig;
-                // get local versions
-                var localVersions = await MLModel.GetInstalledVersions(config);
-                if (localVersions.Any())
-                {
-                    config.ModelVersion = localVersions.Max();
-                    Log.Information($"Find local version: {config.Image.Name}:{config.Image.Tag}.");
-                }
-                else
-                {
-                    // if there are no local models try to download it from docker registry
-                    var netVersions = await MLModel.GetAvailableVersionsFromRegistry(config);
-                    if (netVersions.Any())
-                    {
-                        config.ModelVersion = netVersions.Max();
-                        Log.Information($"Find version in registry: {config.Image.Name}:{config.Image.Tag}.");
-                    }
-                    else
-                    {
-                        throw new Exception($"There are no ml models to init: {config.Image.Name}:{config.Image.Tag}");
-                    }
-                }
-                await config.Save(_mlConfigPath);
                 // init local model or download and init it from docker registry
                 using(var model = new MLModel(config))
-                    await model.Download();
+                    await model.Download(); //download if it necessary
                 Log.Information("Successfully loads ml model.");
             }
             catch (Exception e)
@@ -309,15 +291,6 @@ namespace LacmusApp.ViewModels
             {
                 Log.Information("Updating ml model.");
                 var oldConfig = _appConfig.MlModelConfig;
-                var localVersions = await MLModel.GetInstalledVersions(oldConfig);
-                if (localVersions.Any())
-                {
-                    oldConfig.ModelVersion = localVersions.Max();
-                }
-                else
-                {
-                    throw new Exception($"Nothing ml models saved: {oldConfig.Image.Name}.");
-                }
                 var newConfig = oldConfig;
                 var netVersions = await MLModel.GetAvailableVersionsFromRegistry(newConfig);
                 if (netVersions.Any())
@@ -347,6 +320,13 @@ namespace LacmusApp.ViewModels
                 Log.Error(e,"Unable to update ml model.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+
+        public async void OpenModelManager()
+        {
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+            ModelManagerWindow window = new ModelManagerWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
+            _appConfig = await window.ShowResult();
         }
 
         /// <summary>
@@ -499,22 +479,22 @@ namespace LacmusApp.ViewModels
 
         private async void SaveAs()
         {
-            SaveAsWindow window = new SaveAsWindow();
-            var context = new SaveAsWindowViewModel(window, _photos, _applicationStatusManager);
+            SaveAsWindow window = new SaveAsWindow(_themeManager);
+            var context = new SaveAsWindowViewModel(window, _photos, _applicationStatusManager, LocalizationContext);
             window.DataContext = context;
             window.Show();
         }
 
-        public void OpenWizard()
+        public async void OpenWizard()
         {
             Locator.CurrentMutable.Register(() => new FirstWizardView(), typeof(IViewFor<FirstWizardViewModel>));
             Locator.CurrentMutable.Register(() => new SecondWizardView(), typeof(IViewFor<SecondWizardViewModel>));
             Locator.CurrentMutable.Register(() => new ThirdWizardView(), typeof(IViewFor<ThirdWizardViewModel>));
             Locator.CurrentMutable.Register(() => new FourthWizardView(), typeof(IViewFor<FourthWizardViewModel>));
-            var window = new WizardWindow();
-            var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex, _appConfig);
+            var window = new WizardWindow(_appConfig, LocalizationContext, _themeManager);
+            var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex);
             window.DataContext = context;
-            window.Show();
+            _appConfig = await window.ShowResult();
             Log.Debug("Open Wizard");
         }
 
@@ -525,8 +505,8 @@ namespace LacmusApp.ViewModels
 
         public void ShowGeoData()
         {
-            var window = new MetadataWindow();
-            var context = new MetadataViewModel(window, PhotoViewModel.Photo.MetaDataDirectories);
+            var window = new MetadataWindow(_themeManager);
+            var context = new MetadataViewModel(window, PhotoViewModel.Photo.MetaDataDirectories, LocalizationContext);
             window.DataContext = context;
             window.Show();
         }
@@ -553,8 +533,8 @@ namespace LacmusApp.ViewModels
 
         public void About()
         {
-            var window = new AboutWindow();
-            var context = new AboutViewModel(window);
+            var window = new AboutWindow(_themeManager);
+            var context = new AboutViewModel(window, LocalizationContext);
             window.DataContext = context;
             window.Show();
         }
@@ -634,7 +614,7 @@ namespace LacmusApp.ViewModels
         private async void OpenSettingsWindowAsync()
         {
             SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
-            settingsWindow.Show();
-	    }
+            _appConfig = await settingsWindow.ShowResult();
+        }
     }
 }

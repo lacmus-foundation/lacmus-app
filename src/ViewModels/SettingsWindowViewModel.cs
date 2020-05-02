@@ -17,6 +17,7 @@ using DynamicData;
 using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.ML;
+using LacmusApp.Services;
 using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -32,12 +33,15 @@ namespace LacmusApp.ViewModels
         private ThemeManager _settingsThemeManager, _mainThemeManager;
         private readonly ApplicationStatusManager _applicationStatusManager;
         private AppConfig _config, _newConfig;
-        public SettingsWindowViewModel(LocalizationContext context,
+        private SettingsWindow _window;
+        
+        public SettingsWindowViewModel(SettingsWindow window, LocalizationContext context,
                                         ref AppConfig config,
                                         ApplicationStatusManager manager,
                                         ThemeManager mainThemeManager,
                                         ThemeManager settingsThemeManager)
         {
+            _window = window;
             this.LocalizationContext = context;
             _settingsThemeManager = settingsThemeManager;
             _mainThemeManager = mainThemeManager;
@@ -99,6 +103,8 @@ namespace LacmusApp.ViewModels
                 
                 await _newConfig.Save();
                 _config = AppConfig.DeepCopy(_newConfig);
+                _window.AppConfig = _config;
+                _window.Close();
             }
             catch (Exception e)
             {
@@ -108,7 +114,7 @@ namespace LacmusApp.ViewModels
 
         private void Cancel()
         {
-            
+            _window.Close();
         }
         public async void UpdateModelStatus()
         {
@@ -138,10 +144,11 @@ namespace LacmusApp.ViewModels
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
-        private void OpenModelManager()
+        private async void OpenModelManager()
         {
+            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
             var window = new ModelManagerWindow(LocalizationContext, ref _newConfig, _applicationStatusManager, _mainThemeManager);
-            window.Show();
+            _newConfig = await window.ShowResult();
         }
         private void SwitchSettingsTheme()
         {

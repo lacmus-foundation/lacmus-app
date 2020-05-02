@@ -22,31 +22,25 @@
             <reactiveUi:RoutedViewHost.DefaultContent>
                 <Border Classes="Card">
                     <StackPanel>
-                        <TextBlock Classes="Heading" Text="Welcome to the photo recognition wizard!" />
+                        <TextBlock Classes="Heading" Text="{Binding LocalizationContext.WizardHeader}" />
                         <TextBlock Margin="0 5"
                                    TextWrapping="Wrap"
-                                   Text="To process your photos with the help of the nero network you need to go through 3 simple steps:"
-                                   ToolTip.Tip="Select input data" />
+                                   Text="{Binding LocalizationContext.WizardDescription1}" />
                         <TextBlock Margin="0 5"
                                    TextWrapping="Wrap"
-                                   Text="    Step 1: select photos to process"
-                                   ToolTip.Tip="Select input data" />
+                                   Text="{Binding LocalizationContext.WizardDescription2}" />
                         <TextBlock Margin="0 5"
                                    TextWrapping="Wrap"
-                                   Text="    Step 2: choosing a place to save the results"
-                                   ToolTip.Tip="Select input data" />
+                                   Text="{Binding LocalizationContext.WizardDescription3}" />
                         <TextBlock Margin="0 5"
                                    TextWrapping="Wrap"
-                                   Text="    Step 3: configure ml model"
-                                   ToolTip.Tip="Select input data" />
+                                   Text="{Binding LocalizationContext.WizardDescription4}" />
                         <TextBlock Margin="0 5"
                                    TextWrapping="Wrap"
-                                   Text="At any time, you can close this window and continue using the program through the main interface. Thank you for using the Lacmus program."
-                                   ToolTip.Tip="Select input data" />
+                                   Text="{Binding LocalizationContext.WizardDescription5}" />
                         <TextBlock Margin="0 5"
                                    TextWrapping="Wrap"
-                                   Text="Click 'Next' to continue."
-                                   ToolTip.Tip="Select input data" />
+                                   Text="{Binding LocalizationContext.WizardDescription6}" />
                     </StackPanel>
                 </Border>
             </reactiveUi:RoutedViewHost.DefaultContent>

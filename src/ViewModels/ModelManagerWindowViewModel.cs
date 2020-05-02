@@ -5,13 +5,16 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using DynamicData;
 using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.Docker;
 using LacmusApp.Models.ML;
+using LacmusApp.Services;
 using LacmusApp.Services.Files;
+using LacmusApp.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using Serilog;
@@ -33,7 +36,7 @@ namespace LacmusApp.ViewModels
         private ReadOnlyObservableCollection<MlModelData> _installedModelsCollection;
         public ReadOnlyObservableCollection<MlModelData> InstalledModelsCollection => _installedModelsCollection;
         
-        public ModelManagerWindowViewModel(Window window, LocalizationContext context,
+        public ModelManagerWindowViewModel(ModelManagerWindow window, LocalizationContext context,
                                         ref AppConfig config,
                                         ApplicationStatusManager manager)
         {
@@ -64,14 +67,13 @@ namespace LacmusApp.ViewModels
             {
                 _config = AppConfig.DeepCopy(_newConfig);
                 await _config.Save();
+                window.AppConfig = _config;
                 window.Close(); 
             }, CanExecute());
             
             CancelCommand = ReactiveCommand.Create(window.Close, CanExecute());
             
-            UpdateModelStatusCommand.Execute().Subscribe();
-            UpdateInstalledModelsCommand.Execute().Subscribe();
-            UpdateAvailableModelsCommand.Execute().Subscribe();
+            Task.Run(Init);
         }
         private IObservable<bool> CanExecute()
         {
@@ -95,6 +97,86 @@ namespace LacmusApp.ViewModels
         [Reactive] public string Status { get; set; } = "Not ready";
         [Reactive] public MlModelData SelectedAvailableModel { get; set; } = null;
         [Reactive] public MlModelData SelectedInstalledModel { get; set; } = null;
+
+        public async void Init()
+        {
+            //get model status
+            try
+            {
+                Status = "Loading ml model...";
+                var config = _newConfig.MlModelConfig;
+                // get local versions
+                var localVersions = await MLModel.GetInstalledVersions(config);
+                if(!localVersions.Contains(config.ModelVersion))
+                    throw new Exception($"There are no ml local model to init: {config.Image.Name}:{config.Image.Tag}");
+                if(config.ApiVersion != API_VERSION)
+                    throw new Exception($"Unsupported api {config.ApiVersion}. Only api v {API_VERSION} is supported.");
+                
+                Dispatcher.UIThread.Post(() =>
+                {
+                    Repository = config.Image.Name;
+                    Version = $"{config.ModelVersion}";
+                    Type = $"{config.Type}";
+                    Status = $"Ready";
+                });
+            }
+            catch (Exception e)
+            {
+                Status = $"Not ready.";
+                Log.Error(e, "Unable to init model.");
+            }
+            // get installed models
+            try
+            {
+                var models = await MLModel.GetInstalledModels();
+                Dispatcher.UIThread.Post(() =>
+                {
+                    foreach (var model in models)
+                    {
+                        _installedModels.Add(new MlModelData(model.Image.Name,
+                            model.Type,
+                            model.ModelVersion,
+                            model.ApiVersion));
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Unable to get installed models.");
+            }
+            //get available models
+            try
+            {
+                foreach (var repository in _newConfig.Repositories)
+                    try
+                    {
+                        var models = await MLModel.GetAvailableModelsFromRegistry(repository);
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            foreach (var model in models)
+                            {
+                                _avalableModels.Add(new MlModelData(model.Image.Name,
+                                    model.Type,
+                                    model.ModelVersion,
+                                    model.ApiVersion));
+                            }
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        Log.Warning(e,$"Unable to parse models from {repository}. Skipped.");
+                    }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Unable get available models.");
+            }
+            
+            Dispatcher.UIThread.Post(() =>
+            {
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+            });
+        }
         
         public async Task UpdateModelStatus()
         {
