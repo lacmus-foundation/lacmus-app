@@ -656,6 +656,27 @@ namespace LacmusApp.Services
             get { return _modelManagerManagerCloseButton; }
             set { this.RaiseAndSetIfChanged(ref _modelManagerManagerCloseButton, value); }
         }
+        
+        private string _modelManagerManagerRepositories;
+        [Reactive] public string ModelManagerRepositories
+        {
+            get { return _modelManagerManagerRepositories; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerManagerRepositories, value); }
+        }
+        
+        private string _modelManagerManagerRepositoryWatermark;
+        [Reactive] public string ModelManagerRepositoryWatermark
+        {
+            get { return _modelManagerManagerRepositoryWatermark; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerManagerRepositoryWatermark, value); }
+        }
+        
+        private string _modelManagerManagerAddRepositoryButton;
+        [Reactive] public string ModelManagerAddRepositoryButton
+        {
+            get { return _modelManagerManagerAddRepositoryButton; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerManagerAddRepositoryButton, value); }
+        }
 
         #endregion
 
@@ -895,7 +916,9 @@ namespace LacmusApp.Services
                     ModelManagerActivateSelectedButton = "Activate selected";
                     ModelManagerDownloadSelectedButton = "Download selected";
                     ModelManagerApplyButton = "Apply";
-                    ModelManagerCloseButton = "Close";
+                    ModelManagerRepositories = "Repositories";
+                    ModelManagerRepositoryWatermark = "Enter repository name here.";
+                    ModelManagerAddRepositoryButton = "Add";
                     
                     //Save as
                     SaveAsOptionsToSave = "Select options to save:";
@@ -1038,11 +1061,14 @@ namespace LacmusApp.Services
                     ModelManagerInstalledModels = "Установленные ml модели";
                     ModelManagerAvailableModels = "Доступные для загрузки ml модели";
                     ModelManagerRefreshButton = "Обновить информацию";
-                    ModelManagerRemoveSelectedButton = "Удалить выбранную";
+                    ModelManagerRemoveSelectedButton = "Удалить выбранное";
                     ModelManagerActivateSelectedButton = "Активировать выбранную";
                     ModelManagerDownloadSelectedButton = "Загрузить выбранную";
                     ModelManagerApplyButton = "Применить";
                     ModelManagerCloseButton = "Отмена";
+                    ModelManagerRepositories = "Репозитории ml моделей";
+                    ModelManagerRepositoryWatermark = "Ведите имя репозитория.";
+                    ModelManagerAddRepositoryButton = "Добавить";
                     
                     //Save as
                     SaveAsOptionsToSave = "Выбирете опции для сохранения:";

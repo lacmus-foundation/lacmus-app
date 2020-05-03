@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -17,11 +19,13 @@ using LacmusApp.Services.Files;
 using LacmusApp.Views;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using ReactiveUI.Validation.Extensions;
+using ReactiveUI.Validation.Helpers;
 using Serilog;
 
 namespace LacmusApp.ViewModels
 {
-    public class ModelManagerWindowViewModel : ReactiveObject
+    public class ModelManagerWindowViewModel : ReactiveValidationObject<ModelManagerWindowViewModel>
     {
         private const uint API_VERSION = 1;
         LocalizationContext LocalizationContext { get; set; }
@@ -35,6 +39,10 @@ namespace LacmusApp.ViewModels
         private SourceList<MlModelData> _installedModels { get; set; } = new SourceList<MlModelData>();
         private ReadOnlyObservableCollection<MlModelData> _installedModelsCollection;
         public ReadOnlyObservableCollection<MlModelData> InstalledModelsCollection => _installedModelsCollection;
+        
+        private SourceList<string> _repositories { get; set; } = new SourceList<string>();
+        private ReadOnlyObservableCollection<string> _repositoriesCollection;
+        public ReadOnlyObservableCollection<string> RepositoriesCollection => _repositoriesCollection;
         
         public ModelManagerWindowViewModel(ModelManagerWindow window, LocalizationContext context,
                                         ref AppConfig config,
@@ -56,12 +64,24 @@ namespace LacmusApp.ViewModels
                 .Bind(out _installedModelsCollection)
                 .Subscribe();
             
+            _repositories
+                .Connect()
+                .Bind(out _repositoriesCollection)
+                .Subscribe();
+
+            var repoRule = this.ValidationRule(
+                viewModel => viewModel.RepositoryToAdd,
+                x => string.IsNullOrWhiteSpace(x) == false,
+                x => $"Incorrect repository {x}");
+
             UpdateModelStatusCommand = ReactiveCommand.Create(async () => { await UpdateModelStatus(); }, CanExecute());
             UpdateInstalledModelsCommand = ReactiveCommand.Create(async () => { await UpdateInstalledModels(); }, CanExecute());
             UpdateAvailableModelsCommand = ReactiveCommand.Create(async () => { await UpdateAvailableModels(); }, CanExecute());
             DownloadModelCommand = ReactiveCommand.Create(async () => { await DownloadModel(); }, CanExecute());
             RemoveModelCommand = ReactiveCommand.Create(async () => { await RemoveModel(); }, CanExecute());
             ActivateModelCommand = ReactiveCommand.Create(async () => { await ActivateModel(); }, CanExecute());
+            AddRepositoryCommand = ReactiveCommand.Create(AddRepository, this.IsValid());
+            RemoveRepositoryCommand = ReactiveCommand.Create(RemoveRepository, CanExecute());
             
             ApplyCommand = ReactiveCommand.Create(async () =>
             {
@@ -89,6 +109,8 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Task> ActivateModelCommand { get; set; }
         public ReactiveCommand<Unit, Task> ApplyCommand { get; set; }
         public ReactiveCommand<Unit, Unit> CancelCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> AddRepositoryCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> RemoveRepositoryCommand { get; set; }
         
         [Reactive] public string Repository { get; set; } = "None";
         [Reactive] public string Type { get; set; } = "None";
@@ -97,6 +119,8 @@ namespace LacmusApp.ViewModels
         [Reactive] public string Status { get; set; } = "Not ready";
         [Reactive] public MlModelData SelectedAvailableModel { get; set; } = null;
         [Reactive] public MlModelData SelectedInstalledModel { get; set; } = null;
+        [Reactive] public string SelectedRepository { get; set; } = null;
+        [Reactive] public string RepositoryToAdd { get; set; }
 
         public async void Init()
         {
@@ -153,6 +177,7 @@ namespace LacmusApp.ViewModels
                         var models = await MLModel.GetAvailableModelsFromRegistry(repository);
                         Dispatcher.UIThread.Post(() =>
                         {
+                            _repositories.Add(repository);
                             foreach (var model in models)
                             {
                                 _avalableModels.Add(new MlModelData(model.Image.Name,
@@ -347,6 +372,22 @@ namespace LacmusApp.ViewModels
                 Log.Error(e, "Unable to activate ml model.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+
+        public void AddRepository()
+        {
+            _repositories.Add(RepositoryToAdd);
+            var repoList = _newConfig.Repositories.ToList();
+            repoList.Add(RepositoryToAdd);
+            _newConfig.Repositories = repoList.ToArray();
+        }
+
+        public void RemoveRepository()
+        {
+            _repositories.Remove(SelectedRepository);
+            var repoList = _newConfig.Repositories.ToList();
+            repoList.Remove(RepositoryToAdd);
+            _newConfig.Repositories = repoList.ToArray();
         }
     }
 }
