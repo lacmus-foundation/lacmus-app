@@ -50,6 +50,7 @@
           <MenuItem Name="mHelpOpen" Header="{Binding LocalizationContext.OpenUserGuide}" Command="{Binding HelpCommand}"/>
           <Separator></Separator>
           <MenuItem Name="mHelpAbout" Header="{Binding LocalizationContext.About}" Command="{Binding AboutCommand}"/>
+          <MenuItem Name="mHelpCheckUpdates" Header="{Binding LocalizationContext.CheckUpdate}" Command="{Binding CheckUpdateCommand}"/>
         </MenuItem>
       </Menu>
       <ToolTip>
@@ -117,9 +118,9 @@
                       <ColumnDefinition Width="*"/>
                       <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Image Grid.Column="0" IsVisible="{Binding IsHasObject}" Source="resm:LacmusApp.Assets.IsObject.png" Width="20" Height="20"/>
-                    <Image Grid.Column="2" IsVisible="{Binding IsFavorite}" Source="resm:LacmusApp.Assets.IsFavorite.png" Width="20" Height="20"/>
-                    <Image Grid.Column="4" IsVisible="{Binding IsWatched}" Source="resm:LacmusApp.Assets.IsWatched.png" Width="20" Height="20"/>
+                    <Image Grid.Column="0" IsVisible="{Binding IsHasObject}" Source="resm:LacmusApp.Assets.IsObject.png" Width="32" Height="32"/>
+                    <Image Grid.Column="2" IsVisible="{Binding IsFavorite}" Source="resm:LacmusApp.Assets.IsFavorite.png" Width="32" Height="32"/>
+                    <Image Grid.Column="4" IsVisible="{Binding IsWatched}" Source="resm:LacmusApp.Assets.IsWatched.png" Width="32" Height="32"/>
                   </Grid>
                 </StackPanel>
               </Grid>

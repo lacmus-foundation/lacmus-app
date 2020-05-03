@@ -1,12 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Cudafy;
+using Cudafy.Host;
+using Docker.DotNet.Models;
 using DynamicData;
+using GASS.CUDA;
 using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
@@ -15,13 +22,18 @@ using LacmusApp.Models.ML;
 using LacmusApp.Services;
 using LacmusApp.Services.Files;
 using LacmusApp.Views;
+using MessageBox.Avalonia;
+using MessageBox.Avalonia.DTO;
+using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using ReactiveUI.Validation.Extensions;
+using ReactiveUI.Validation.Helpers;
 using Serilog;
 
 namespace LacmusApp.ViewModels
 {
-    public class ModelManagerWindowViewModel : ReactiveObject
+    public class ModelManagerWindowViewModel : ReactiveValidationObject<ModelManagerWindowViewModel>
     {
         private const uint API_VERSION = 1;
         LocalizationContext LocalizationContext { get; set; }
@@ -35,6 +47,10 @@ namespace LacmusApp.ViewModels
         private SourceList<MlModelData> _installedModels { get; set; } = new SourceList<MlModelData>();
         private ReadOnlyObservableCollection<MlModelData> _installedModelsCollection;
         public ReadOnlyObservableCollection<MlModelData> InstalledModelsCollection => _installedModelsCollection;
+        
+        private SourceList<string> _repositories { get; set; } = new SourceList<string>();
+        private ReadOnlyObservableCollection<string> _repositoriesCollection;
+        public ReadOnlyObservableCollection<string> RepositoriesCollection => _repositoriesCollection;
         
         public ModelManagerWindowViewModel(ModelManagerWindow window, LocalizationContext context,
                                         ref AppConfig config,
@@ -56,12 +72,24 @@ namespace LacmusApp.ViewModels
                 .Bind(out _installedModelsCollection)
                 .Subscribe();
             
+            _repositories
+                .Connect()
+                .Bind(out _repositoriesCollection)
+                .Subscribe();
+
+            var repoRule = this.ValidationRule(
+                viewModel => viewModel.RepositoryToAdd,
+                x => string.IsNullOrWhiteSpace(x) == false,
+                x => $"Incorrect repository {x}");
+
             UpdateModelStatusCommand = ReactiveCommand.Create(async () => { await UpdateModelStatus(); }, CanExecute());
             UpdateInstalledModelsCommand = ReactiveCommand.Create(async () => { await UpdateInstalledModels(); }, CanExecute());
             UpdateAvailableModelsCommand = ReactiveCommand.Create(async () => { await UpdateAvailableModels(); }, CanExecute());
             DownloadModelCommand = ReactiveCommand.Create(async () => { await DownloadModel(); }, CanExecute());
             RemoveModelCommand = ReactiveCommand.Create(async () => { await RemoveModel(); }, CanExecute());
             ActivateModelCommand = ReactiveCommand.Create(async () => { await ActivateModel(); }, CanExecute());
+            AddRepositoryCommand = ReactiveCommand.Create(AddRepository, this.IsValid());
+            RemoveRepositoryCommand = ReactiveCommand.Create(RemoveRepository, CanExecute());
             
             ApplyCommand = ReactiveCommand.Create(async () =>
             {
@@ -89,6 +117,8 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Task> ActivateModelCommand { get; set; }
         public ReactiveCommand<Unit, Task> ApplyCommand { get; set; }
         public ReactiveCommand<Unit, Unit> CancelCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> AddRepositoryCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> RemoveRepositoryCommand { get; set; }
         
         [Reactive] public string Repository { get; set; } = "None";
         [Reactive] public string Type { get; set; } = "None";
@@ -97,6 +127,8 @@ namespace LacmusApp.ViewModels
         [Reactive] public string Status { get; set; } = "Not ready";
         [Reactive] public MlModelData SelectedAvailableModel { get; set; } = null;
         [Reactive] public MlModelData SelectedInstalledModel { get; set; } = null;
+        [Reactive] public string SelectedRepository { get; set; } = null;
+        [Reactive] public string RepositoryToAdd { get; set; }
 
         public async void Init()
         {
@@ -153,6 +185,7 @@ namespace LacmusApp.ViewModels
                         var models = await MLModel.GetAvailableModelsFromRegistry(repository);
                         Dispatcher.UIThread.Post(() =>
                         {
+                            _repositories.Add(repository);
                             foreach (var model in models)
                             {
                                 _avalableModels.Add(new MlModelData(model.Image.Name,
@@ -241,7 +274,6 @@ namespace LacmusApp.ViewModels
                 {
                     try
                     {
-                        Console.WriteLine(repository);
                         var models = await MLModel.GetAvailableModelsFromRegistry(repository);
                         foreach (var model in models)
                         {
@@ -271,6 +303,38 @@ namespace LacmusApp.ViewModels
             {
                 if(SelectedAvailableModel == null)
                     throw new Exception("No selected model.");
+                if (SelectedAvailableModel.Type == MLModelType.Gpu)
+                {
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                        {
+                            ButtonDefinitions = ButtonEnum.Ok,
+                            ContentTitle = "OSError",
+                            ContentMessage = LocalizationContext.OsErrorMesageGPU,
+                            Icon = MessageBox.Avalonia.Enums.Icon.Error,
+                            Style = Style.None,
+                            ShowInCenter = true
+                        });
+                        var result = await msgbox.Show();
+                        throw new Exception($"Incorrect OS for {SelectedAvailableModel.Type} inference type");
+                    }
+
+                    if (CudafyHost.GetDeviceCount(eGPUType.Emulator) == 0)
+                    {
+                        var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                        {
+                            ButtonDefinitions = ButtonEnum.Ok,
+                            ContentTitle = "CUDA Error",
+                            ContentMessage = "No CUDA devises.",
+                            Icon = MessageBox.Avalonia.Enums.Icon.Error,
+                            Style = Style.None,
+                            ShowInCenter = true
+                        });
+                        var result = await msgbox.Show();
+                        throw new Exception($"No CUDA devises.");
+                    }
+                }
                 
                 var config = new MLModelConfig();
                 config.Image.Name = SelectedAvailableModel.Name;
@@ -347,6 +411,36 @@ namespace LacmusApp.ViewModels
                 Log.Error(e, "Unable to activate ml model.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+
+        public void AddRepository()
+        {
+            try
+            {
+                _repositories.Add(RepositoryToAdd);
+                var repoList = _newConfig.Repositories.ToList();
+                repoList.Add(RepositoryToAdd);
+                _newConfig.Repositories = repoList.ToArray();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Unable to add repository");
+            }
+        }
+
+        public void RemoveRepository()
+        {
+            try
+            {
+                _repositories.Remove(SelectedRepository);
+                var repoList = _newConfig.Repositories.ToList();
+                repoList.Remove(RepositoryToAdd);
+                _newConfig.Repositories = repoList.ToArray();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Unable to remove repository");
+            }
         }
     }
 }

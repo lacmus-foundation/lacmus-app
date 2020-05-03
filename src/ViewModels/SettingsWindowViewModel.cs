@@ -55,6 +55,8 @@ namespace LacmusApp.ViewModels
             
             SetupCommands();
 
+            MLUrl = _newConfig.MlModelConfig.Url;
+
             UpdateModelStatusCommand.Execute().Subscribe();
         }
 
@@ -70,6 +72,7 @@ namespace LacmusApp.ViewModels
         [Reactive] public string Type { get; set; } = "None";
         [Reactive] public string Version { get; set; } = "None";
         [Reactive] public string Status { get; set; } = "Not ready";
+        [Reactive] public string MLUrl { get; set; } = "http://localhost:5000";
         private void SetupCommands()
         {
             ApplyCommand = ReactiveCommand.Create(Apply);
@@ -99,7 +102,7 @@ namespace LacmusApp.ViewModels
                 _newConfig.Language = LocalizationContext.Language;
                 _newConfig.Theme = _mainThemeManager.CurrentTheme;
                 _newConfig.BorderColor = HexColor;
-                //TODO: ml config settings
+                _newConfig.MlModelConfig.Url = MLUrl;
                 
                 await _newConfig.Save();
                 _config = AppConfig.DeepCopy(_newConfig);
