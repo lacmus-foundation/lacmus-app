@@ -263,7 +263,6 @@ namespace LacmusApp.Models.Docker
                     response = JsonConvert.DeserializeObject<DockerTagResponse>(jsonResp);
                     result.AddRange(response.Images.Select(image => image.Tag).ToList());
                 }
-                Console.WriteLine(result.Count);
                 return result;
             }
             catch(Exception e)

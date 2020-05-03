@@ -138,7 +138,7 @@ namespace LacmusApp.Views
                 ButtonDefinitions = ButtonEnum.Ok,
                 ContentTitle = "Info",
                 ContentMessage = message,
-                Icon = MessageBox.Avalonia.Enums.Icon.Lock,
+                Icon = MessageBox.Avalonia.Enums.Icon.Info,
                 Style = Style.None,
                 ShowInCenter = true
             });

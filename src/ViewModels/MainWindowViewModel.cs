@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
@@ -26,9 +27,11 @@ using LacmusApp.Services.Files;
 using LacmusApp.Services.IO;
 using LacmusApp.Services.VM;
 using LacmusApp.Views;
+using Octokit;
 using Serilog;
 using Splat;
 using Attribute = LacmusApp.Models.Photo.Attribute;
+using Language = LacmusApp.Services.Language;
 
 namespace LacmusApp.ViewModels
 {
@@ -111,6 +114,8 @@ namespace LacmusApp.ViewModels
             LocalizationContext.Language = _appConfig.Language;
             _themeManager.UseTheme(_appConfig.Theme);
 
+            Task.Run(CheckUpdate);
+
             Log.Information("Application started.");
         }
 
@@ -137,6 +142,7 @@ namespace LacmusApp.ViewModels
             AddToFavoritesCommand = ReactiveCommand.Create(AddToFavorites, canExecute);
             HelpCommand = ReactiveCommand.Create(Help);
             AboutCommand = ReactiveCommand.Create(About);
+            CheckUpdateCommand = ReactiveCommand.Create(CheckUpdate);
             OpenWizardCommand = ReactiveCommand.Create(OpenWizard);
             ExitCommand = ReactiveCommand.Create(Exit);
             OpenSettingsWindowCommand = ReactiveCommand.Create(OpenSettingsWindowAsync, canExecute);
@@ -187,6 +193,7 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> AddToFavoritesCommand { get; set; }
         public ReactiveCommand<Unit, Unit> HelpCommand { get; set; }
         public ReactiveCommand<Unit, Unit> AboutCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> CheckUpdateCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ExitCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenWizardCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand{get; set;}
@@ -615,6 +622,63 @@ namespace LacmusApp.ViewModels
         {
             SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
             _appConfig = await settingsWindow.ShowResult();
+        }
+
+        private async void CheckUpdate()
+        {
+            try
+            {
+                var github = new GitHubClient(new ProductHeaderValue("LacmusApp"));
+                var release = await github.Repository.Release.GetLatest("lacmus-foundation", "lacmus-app");
+                if (release.Prerelease == false)
+                {
+                    var newVersion = int.Parse(Regex.Replace(release.TagName, @"[^\d]", ""));
+
+                    var version = typeof(Program).Assembly.GetName().Version;
+                    if (version != null)
+                    {
+                        var currentVersion = version.Major * 100 +
+                                             version.Minor * 10 +
+                                             version.Build;
+                        if (newVersion > currentVersion)
+                        {
+                            Log.Information($"Fid new Lacmus Application version: {release.TagName}");
+                            
+                            Dispatcher.UIThread.Post(async () =>
+                            {
+                                var msg =
+                                    $"Find new release of Lacmus Application: {release.TagName}.\nPlease update your application.\nOpen new release?";
+                                if (LocalizationContext.Language == Language.Russian)
+                                    msg =
+                                        $"Найдена новая версия приложения Lacmus: {release.TagName}.\nПожалуйста обнвите ваше приложение.\nПерейти к загрузке новой версии?";
+                            
+                                var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                                {
+                                    ButtonDefinitions = ButtonEnum.YesNo,
+                                    ContentTitle = "Update",
+                                    ContentMessage = msg,
+                                    Icon = MessageBox.Avalonia.Enums.Icon.Info,
+                                    Style = Style.None,
+                                    ShowInCenter = true
+                                });
+                                var result = await msgbox.Show();
+                                if (result == ButtonResult.Yes)
+                                {
+                                    OpenUrl("https://github.com/lacmus-foundation/lacmus-app/releases/latest");
+                                }
+                            });
+                        }
+                        else
+                        {
+                            Log.Information($"Application is up to date.");
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Can not check for updates");
+            }
         }
     }
 }
