@@ -50,6 +50,7 @@
           <MenuItem Name="mHelpOpen" Header="{Binding LocalizationContext.OpenUserGuide}" Command="{Binding HelpCommand}"/>
           <Separator></Separator>
           <MenuItem Name="mHelpAbout" Header="{Binding LocalizationContext.About}" Command="{Binding AboutCommand}"/>
+          <MenuItem Name="mHelpCheckUpdates" Header="{Binding LocalizationContext.CheckUpdate}" Command="{Binding CheckUpdateCommand}"/>
         </MenuItem>
       </Menu>
       <ToolTip>

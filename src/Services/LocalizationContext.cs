@@ -136,7 +136,7 @@ namespace LacmusApp.Services
             set { this.RaiseAndSetIfChanged(ref _showGeoPosition, value); }
         }
         private string _selectLanguage;
-        [Reactive] public string SelectLanguage
+        [Reactive] public string OsErrorMesageGPU
         {
             get { return _selectLanguage; }
             set { this.RaiseAndSetIfChanged(ref _selectLanguage, value); }
@@ -182,6 +182,13 @@ namespace LacmusApp.Services
         {
             get { return _favoritesStateString; }
             set { this.RaiseAndSetIfChanged(ref _favoritesStateString, value); }
+        }
+        
+        private string _checkUpdate;
+        [Reactive] public string CheckUpdate
+        {
+            get { return _checkUpdate; }
+            set { this.RaiseAndSetIfChanged(ref _checkUpdate, value); }
         }
         #endregion
 
@@ -835,6 +842,7 @@ namespace LacmusApp.Services
                     Help="Help";
                     OpenUserGuide="Open user guide";
                     About="About";
+                    CheckUpdate = "Check for updates";
                     //ListView
                     AllPhotos="All photos";
                     PhotosWithObject="Photos with objects";
@@ -908,7 +916,7 @@ namespace LacmusApp.Services
                     MetadataAllMetadata = "All metadata";
                     
                     //Model manager
-                    ModelManagerApiVersion = "API version";
+                    ModelManagerApiVersion = "API version: ";
                     ModelManagerInstalledModels = "Installed ml models";
                     ModelManagerAvailableModels = "Available ml models";
                     ModelManagerRefreshButton = "Refresh";
@@ -951,6 +959,8 @@ namespace LacmusApp.Services
                     //WizardThirdModelStatusUpdateButton = "Refresh";
                     //ModelManagerApplyButton = "Apply";
                     //ModelManagerCloseButton = "Close";
+                    
+                    OsErrorMesageGPU = "Your OS is not support this ml model type.";
                     break;
                 }
                 case Language.Russian:
@@ -984,6 +994,7 @@ namespace LacmusApp.Services
                     Help="Помощь";
                     OpenUserGuide="Открыть руководство пользователя";
                     About="О программе";
+                    CheckUpdate = "Проверить обновления";
                     //ListView
                     AllPhotos="Все фото";
                     PhotosWithObject="Фото с объектами";
@@ -1057,7 +1068,7 @@ namespace LacmusApp.Services
                     MetadataAllMetadata = "Все метаданные";
                     
                     //Model manager
-                    ModelManagerApiVersion = "Версия API";
+                    ModelManagerApiVersion = "Версия API: ";
                     ModelManagerInstalledModels = "Установленные ml модели";
                     ModelManagerAvailableModels = "Доступные для загрузки ml модели";
                     ModelManagerRefreshButton = "Обновить информацию";
@@ -1090,7 +1101,7 @@ namespace LacmusApp.Services
                     SettingsBatchSize = "Число потоков:";
 
                     //Settings window
-                    SelectLanguage = "Select Language";
+                    OsErrorMesageGPU = "Ваша операционная система не поддерживает этот тип ml моделей.";
                     break;
                 }
             }

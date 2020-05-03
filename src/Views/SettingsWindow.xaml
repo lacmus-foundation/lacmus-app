@@ -74,23 +74,12 @@
                                         <ColumnDefinition Width="10"/>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <TextBlock Grid.Column="0" Classes="Heading" 
-                                               Text="{Binding LocalizationContext.SettingsHost}"
+                                               Text="Url:"
                                     />
                                     <TextBox Grid.Column="2" UseFloatingWatermark="True"
-                                             Watermark="localhost"
-                                             Text="{Binding MLHost, Mode=TwoWay}"/>
-                                    <TextBlock Grid.Column="4" Classes="Heading" 
-                                               Text="{Binding LocalizationContext.SettingsPort}"
-                                    />
-                                    <NumericUpDown Grid.Column="6"
-                                                   Maximum="10000"
-                                                   Minimum="80"
-                                                   Value="5000"/>
+                                             Text="{Binding MLUrl, Mode=TwoWay}"/>
                                 </Grid>
                                 <!-- <CheckBox IsChecked="False"
                                           Content="Use JVT for external usage"/> -->
@@ -113,13 +102,13 @@
                                         <ComboBoxItem Content="cpu no avx" />
                                         <ComboBoxItem Content="tpu" />
                                     </ComboBox> -->
-                                    <TextBlock Grid.Column="4" Classes="Heading" 
+                                    <!--<TextBlock Grid.Column="4" Classes="Heading" 
                                                Text="{Binding LocalizationContext.SettingsBatchSize}"
                                     />
                                     <NumericUpDown Grid.Column="6"
                                                    Maximum="4"
                                                    Minimum="1"
-                                                   Value="1"/>
+                                                   Value="1"/>-->
                                 </Grid>
                             </StackPanel>
                         </Border>

@@ -5,10 +5,15 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Threading;
+using Cudafy;
+using Cudafy.Host;
+using Docker.DotNet.Models;
 using DynamicData;
+using GASS.CUDA;
 using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
@@ -17,6 +22,9 @@ using LacmusApp.Models.ML;
 using LacmusApp.Services;
 using LacmusApp.Services.Files;
 using LacmusApp.Views;
+using MessageBox.Avalonia;
+using MessageBox.Avalonia.DTO;
+using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
@@ -266,7 +274,6 @@ namespace LacmusApp.ViewModels
                 {
                     try
                     {
-                        Console.WriteLine(repository);
                         var models = await MLModel.GetAvailableModelsFromRegistry(repository);
                         foreach (var model in models)
                         {
@@ -296,6 +303,38 @@ namespace LacmusApp.ViewModels
             {
                 if(SelectedAvailableModel == null)
                     throw new Exception("No selected model.");
+                if (SelectedAvailableModel.Type == MLModelType.Gpu)
+                {
+                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                    {
+                        var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                        {
+                            ButtonDefinitions = ButtonEnum.Ok,
+                            ContentTitle = "OSError",
+                            ContentMessage = LocalizationContext.OsErrorMesageGPU,
+                            Icon = MessageBox.Avalonia.Enums.Icon.Error,
+                            Style = Style.None,
+                            ShowInCenter = true
+                        });
+                        var result = await msgbox.Show();
+                        throw new Exception($"Incorrect OS for {SelectedAvailableModel.Type} inference type");
+                    }
+
+                    if (CudafyHost.GetDeviceCount(eGPUType.Emulator) == 0)
+                    {
+                        var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                        {
+                            ButtonDefinitions = ButtonEnum.Ok,
+                            ContentTitle = "CUDA Error",
+                            ContentMessage = "No CUDA devises.",
+                            Icon = MessageBox.Avalonia.Enums.Icon.Error,
+                            Style = Style.None,
+                            ShowInCenter = true
+                        });
+                        var result = await msgbox.Show();
+                        throw new Exception($"No CUDA devises.");
+                    }
+                }
                 
                 var config = new MLModelConfig();
                 config.Image.Name = SelectedAvailableModel.Name;
@@ -376,18 +415,32 @@ namespace LacmusApp.ViewModels
 
         public void AddRepository()
         {
-            _repositories.Add(RepositoryToAdd);
-            var repoList = _newConfig.Repositories.ToList();
-            repoList.Add(RepositoryToAdd);
-            _newConfig.Repositories = repoList.ToArray();
+            try
+            {
+                _repositories.Add(RepositoryToAdd);
+                var repoList = _newConfig.Repositories.ToList();
+                repoList.Add(RepositoryToAdd);
+                _newConfig.Repositories = repoList.ToArray();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Unable to add repository");
+            }
         }
 
         public void RemoveRepository()
         {
-            _repositories.Remove(SelectedRepository);
-            var repoList = _newConfig.Repositories.ToList();
-            repoList.Remove(RepositoryToAdd);
-            _newConfig.Repositories = repoList.ToArray();
+            try
+            {
+                _repositories.Remove(SelectedRepository);
+                var repoList = _newConfig.Repositories.ToList();
+                repoList.Remove(RepositoryToAdd);
+                _newConfig.Repositories = repoList.ToArray();
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, "Unable to remove repository");
+            }
         }
     }
 }
