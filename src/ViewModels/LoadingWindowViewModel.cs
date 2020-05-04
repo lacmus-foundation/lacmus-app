@@ -38,9 +38,8 @@ namespace LacmusApp.ViewModels
         
         private async Task<AppConfig> LoadConfig()
         {
-            var confDir = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "conf");
+            var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
             var configPath = Path.Join(confDir,"appConfig.json");
-            Console.WriteLine(configPath);
             if (File.Exists(configPath))
                 try
                 {

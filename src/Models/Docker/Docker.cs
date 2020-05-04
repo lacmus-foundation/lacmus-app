@@ -127,7 +127,7 @@ namespace LacmusApp.Models.Docker
                 {
                     var stdOut = "";
                     var bash = new BashCommand();
-                    stdOut = bash.Execute($"docker create --runtime=nvidia -p 5000:5000 {image.Name}:{image.Tag}", out var err);
+                    stdOut = bash.Execute($"docker create --gpus all -p 5000:5000 {image.Name}:{image.Tag}", out var err);
                     
                     await Task.Delay(800);
                     stdOut = stdOut.Replace(Environment.NewLine, String.Empty);
