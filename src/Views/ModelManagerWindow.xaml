@@ -2,14 +2,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="LacmusApp.Views.ModelManagerWindow" 
-        SizeToContent="WidthAndHeight"
+        x:Class="LacmusApp.Views.ModelManagerWindow"
         Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
         CanResize="True"
-        Width = "400"
-        Height = "350" Title="Models Manager">
+        Width = "550"
+        Height = "450"
+        Title="Models Manager">
     
     <Window.Styles>
         <Style Selector="DataGrid">

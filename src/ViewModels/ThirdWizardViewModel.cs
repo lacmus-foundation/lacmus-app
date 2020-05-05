@@ -54,8 +54,8 @@ namespace LacmusApp.ViewModels
             {
                 Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
-                var confDir = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-                var configPath = Path.Join(confDir, "lacmus", "appConfig.json");
+                var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
+                var configPath = Path.Join(confDir,"appConfig.json");
                 _appConfig = await AppConfig.Create(configPath);
                 var config = _appConfig.MlModelConfig;;
                 // get local versions
