@@ -27,7 +27,21 @@
                 <TextBox Margin="0 5" UseFloatingWatermark="True"
                          Watermark="{Binding LocalizationContext.WizardSecondOutputWatermark}"
                          Text="{Binding OutputPath, Mode=TwoWay}" />
-                <Button Margin="0 2 0 5" Content="{Binding LocalizationContext.WizardSecondSavePhotosButton}" Command="{Binding SaveCommand}"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Content="{Binding LocalizationContext.SaveAsSelectPath}"
+                            Command="{Binding SelectPathCommand}"
+                    />
+                    <Button Grid.Column="2"
+                            Classes="Primary"
+                            Content="{Binding LocalizationContext.WizardSecondSavePhotosButton}"
+                            Command="{Binding SaveCommand}"/>
+                </Grid>
             </StackPanel>
         </Border>
     </StackPanel>
