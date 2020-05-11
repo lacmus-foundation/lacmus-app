@@ -25,7 +25,6 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.9" />
     <PackageReference Include="Avalonia.Skia.Linux.Natives" Version="1.68.0.2" />
     <PackageReference Include="Citrus.Avalonia" Version="1.2.4" />
-    <PackageReference Include="CUDAfy.NET" Version="1.29.5576.13786" />
     <PackageReference Include="Docker.DotNet" Version="3.125.2" />
     <PackageReference Include="Material.Avalonia" Version="0.9.0" />
     <PackageReference Include="MessageBox.Avalonia" Version="0.9.6.1" />

@@ -320,6 +320,7 @@ namespace LacmusApp.ViewModels
                         throw new Exception($"Incorrect OS for {SelectedAvailableModel.Type} inference type");
                     }
 
+                    /*
                     if (CudafyHost.GetDeviceCount(eGPUType.Emulator) == 0)
                     {
                         var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
@@ -334,6 +335,7 @@ namespace LacmusApp.ViewModels
                         var result = await msgbox.Show();
                         throw new Exception($"No CUDA devises.");
                     }
+                    */
                 }
                 
                 var config = new MLModelConfig();

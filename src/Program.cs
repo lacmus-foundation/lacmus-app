@@ -51,13 +51,13 @@ namespace LacmusApp
         private static AppBuilder BuildAvaloniaApp()
         {
             //FOR TEST IN VirtualBox
-            //if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            //    return AppBuilder.Configure<App>()
-            //        .UsePlatformDetect()
-            //        .With(new Win32PlatformOptions {EnableMultitouch = true, AllowEglInitialization = true})
-            //        .With(new AvaloniaNativePlatformOptions {UseGpu = false})
-            //        .UseReactiveUI()
-            //        .LogToDebug();
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return AppBuilder.Configure<App>()
+                    .UsePlatformDetect()
+                    .With(new Win32PlatformOptions {EnableMultitouch = true, AllowEglInitialization = true})
+                    .With(new AvaloniaNativePlatformOptions {UseGpu = false})
+                    .UseReactiveUI()
+                    .LogToDebug();
 
             return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
