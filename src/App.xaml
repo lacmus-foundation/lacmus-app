@@ -16,7 +16,7 @@
     </Application.Styles>
     <NativeMenu.Menu>
         <NativeMenu>
-            <!-- empty menue -->
+            <NativeMenuItem Header="About Lacmus"/>
         </NativeMenu>
     </NativeMenu.Menu>
 </Application>
