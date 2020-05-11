@@ -51,6 +51,7 @@ namespace LacmusApp
         private static AppBuilder BuildAvaloniaApp()
         {
             //FOR TEST IN VirtualBox
+            /*
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                 return AppBuilder.Configure<App>()
                     .UsePlatformDetect()
@@ -58,6 +59,7 @@ namespace LacmusApp
                     .With(new AvaloniaNativePlatformOptions {UseGpu = false})
                     .UseReactiveUI()
                     .LogToDebug();
+            */
 
             return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
