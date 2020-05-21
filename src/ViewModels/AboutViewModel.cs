@@ -44,7 +44,11 @@ namespace LacmusApp.ViewModels
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    Process.Start(url);
+                    //https://stackoverflow.com/a/2796367/241446
+                    using (Process proc = new Process {StartInfo = {UseShellExecute = true, FileName = url}})
+                    {
+                        proc.Start();
+                    }
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
