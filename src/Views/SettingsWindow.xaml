@@ -4,12 +4,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="LacmusApp.Views.SettingsWindow" 
-        SizeToContent="WidthAndHeight"
+        x:Class="LacmusApp.Views.SettingsWindow"
         Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
         CanResize="True"
-        Width = "400"
-        Height = "350" Title="{Binding LocalizationContext.Settings}">
+        Width = "550"
+        Height = "400" Title="{Binding LocalizationContext.Settings}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>

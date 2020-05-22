@@ -730,6 +730,13 @@ namespace LacmusApp.Services
             get { return _saveAsCrops; }
             set { this.RaiseAndSetIfChanged(ref _saveAsCrops, value); }
         }
+        
+        private string _saveAsSelectPath;
+        [Reactive] public string SaveAsSelectPath
+        {
+            get { return _saveAsSelectPath; }
+            set { this.RaiseAndSetIfChanged(ref _saveAsSelectPath, value); }
+        }
 
         #endregion
 
@@ -924,6 +931,7 @@ namespace LacmusApp.Services
                     ModelManagerActivateSelectedButton = "Activate selected";
                     ModelManagerDownloadSelectedButton = "Download selected";
                     ModelManagerApplyButton = "Apply";
+                    ModelManagerCloseButton = "Close";
                     ModelManagerRepositories = "Repositories";
                     ModelManagerRepositoryWatermark = "Enter repository name here.";
                     ModelManagerAddRepositoryButton = "Add";
@@ -938,6 +946,7 @@ namespace LacmusApp.Services
                     SaveAsXmlAnnotations = "Save XML annotations.";
                     SaveAsDrawBbox = "Save photo with drawn bounded boxes.";
                     SaveAsCrops = "Save bbox crops.";
+                    SaveAsSelectPath = "Browse...";
                     //WizardSecondOutputWatermark = "Enter output path here.";
                     //WizardSecondSavePhotosButton = "Save photos";
                     
@@ -984,7 +993,7 @@ namespace LacmusApp.Services
                     //Image
                     Image="Изображение";
                     PredictAll="Обработать все";
-                    Increase="Увеличеть";
+                    Increase="Увеличить";
                     Shrink="Уменьшить";
                     Reset="Сбросить";
                     Next="Следующее";
@@ -1002,24 +1011,24 @@ namespace LacmusApp.Services
                     //Context menu
                     ShowGeoPosition="Показать геопозицию";
                     FavoritesStateString = "Добавить \\ удалить из избранных";
-                    
+
                     //About Window
                     AboutAppName = "Приложение Lacmus.";
                     AboutVersion = "Версия: ";
                     AboutGintubPage = "Страница Github: ";
                     AboutPoweredBy = "При поддержке: ";
-                    AboutLicense = "Данное ПО поставляется АБСОЛЮТНО БЕЗ ГАРАНТИЙ; Это свободное ПО, оно распостраняется под лиценизией GNU GPL; Нажмите `Лицензия` для просмотра.";
+                    AboutLicense = "Данное ПО поставляется АБСОЛЮТНО БЕЗ ГАРАНТИЙ; Это свободное ПО, оно распространяется под лицензией GNU GPL; Нажмите `Лицензия` для просмотра.";
                     AboutLicenseButton = "Лицензия";
                     AboutGinhubButton = "Github";
                     AboutVisitWebSiteButton = "Веб-сайт";
-                    
+
                     //Wizard Window
-                    WizardHeader = "Добро пожаловать в мастер распзнования фото!";
-                    WizardDescription1 = "Чтобы обработать фотографии с помощью нейронной сети (ml модели) вам необходимо выполнить 3 простых шага:";
-                    WizardDescription2 = "    Шаг 1: выбирете фото для обработки";
-                    WizardDescription3 = "    Шаг 2: выберете место для сохранения результатов";
+                    WizardHeader = "Добро пожаловать в мастер распознавания фото!";
+                    WizardDescription1 = "Чтобы обработать фотографии с помощью нейронной сети (ml модели) Вам необходимо выполнить 3 простых шага:";
+                    WizardDescription2 = "    Шаг 1: выберите фото для обработки";
+                    WizardDescription3 = "    Шаг 2: выберите место для сохранения результатов";
                     WizardDescription4 = "    Шаг 3: выберите и настройте ml модель";
-                    WizardDescription5 = "В любое время вы можете загрыть это окно и веруться к основному интерфейсу программы. Спосибо что используете Lacmus!";
+                    WizardDescription5 = "В любое время вы можете закрыть это окно и вернуться к основному интерфейсу программы. Спасибо что используете Lacmus!";
                     WizardDescription6 = "Нажмите 'Далее' чтобы продолжить.";
                     WizardBackButtonText = "Назад";
                     WizardNextButtonText = "Далее";
@@ -1032,17 +1041,17 @@ namespace LacmusApp.Services
                     WizardFirstInputWatermark = "Введите путь к входной папке сюда.";
                     WizardFirstOpenPhotosButton = "Выбрать фото";
                     //Page 2
-                    WizardSecondHeader = "Шаг 2: выберете выходные данные";
-                    WizardSecondDescription1 = "Теперь выберете папку для сознанения результатов, нажав на кнопку 'Сохранить фотографии' или введя полный путь к выходной папке в текстовом поле ниже.";
-                    WizardSecondDescription2 = "После завершения процесса обработки приложение сохнанит результаты в выбранную папку. Вы сможете вновь открыть и просмотреть результаты в любой момент, выбрав меню 'Файл - Импортировать из XML'.";
+                    WizardSecondHeader = "Шаг 2: выберите выходные данные";
+                    WizardSecondDescription1 = "Теперь выберите папку для сохранения результатов, нажав на кнопку 'Сохранить фотографии' или введя полный путь к выходной папке в текстовом поле ниже.";
+                    WizardSecondDescription2 = "После завершения процесса обработки приложение сохранит результаты в выбранную папку. Вы сможете вновь открыть и просмотреть результаты в любой момент, выбрав меню 'Файл - Импортировать из XML'.";
                     WizardSecondOutputWatermark = "Введите путь к выходной папке сюда.";
                     WizardSecondSavePhotosButton = "Сохранить фотографии";
                     //Page 3
                     WizardThirdHeader = "Шаг 3: сконфигурируйте ml модель";
-                    WizardThirdDescription1 = "Перед началом обработки убедитесь что вы ml модель сконфигурирована правильо и готова к использованию.";
-                    WizardThirdDescription2 = "Если ml модель не готова или вы хотите выбрать другую ml модель, сконфигурируйте ее выбрав меню 'Файл - Настройки'.";
-                    WizardThirdDescription3 = "Если модель не готова, вы можете сконфигурировать и загрузить ее в менеджере моделей нажав кнопку 'Менеджер ml моделей'. Помните: для загрузки ml модели из Интернета необходимо загрузить от 2 до 6 GB. Убедитесь что ваше интернет соединение надежно и что на вашем компьютере присутсвует нобходимый объем дискового пространства.";
-                    WizardThirdDescription4 = "Если все хорошо и модель готова - нажмите кнопку 'Начать обработку' чтобы запустить процесс. После завершения процесса распознования результаты будут сохранены в выбранной ранее выходной папке.";
+                    WizardThirdDescription1 = "Перед началом обработки убедитесь, что ml модель сконфигурирована правильно и готова к использованию.";
+                    WizardThirdDescription2 = "Если ml модель не готова, или Вы хотите выбрать другую ml модель, сконфигурируйте ее, выбрав меню 'Файл - Настройки'.";
+                    WizardThirdDescription3 = "Если модель не готова, Вы можете сконфигурировать и загрузить ее в менеджере моделей, нажав кнопку 'Менеджер ml моделей'. Помните: для загрузки ml модели из Интернета необходимо загрузить от 2 до 6 GB. Убедитесь, что ваше интернет соединение надежно, и что на вашем компьютере присутствует необходимый объем дискового пространства.";
+                    WizardThirdDescription4 = "Если все хорошо, и модель готова - нажмите кнопку 'Начать обработку', чтобы запустить процесс. После завершения процесса распознавания результаты будут сохранены в выбранной ранее выходной папке.";
                     WizardThirdModelRepository = "Репозиторий ml модели: ";
                     WizardThirdModelType = "Тип ml модели: ";
                     WizardThirdModelVersion= "Версия ml модели: ";
@@ -1050,23 +1059,23 @@ namespace LacmusApp.Services
                     WizardThirdModelManagerButton = "Менеджер ml моделей";
                     WizardThirdModelStatusUpdateButton = "Обновить информацию";
                     //Page 4
-                    WizardFourthHeader = "Обработка фотографмй";
-                    WizardFourthDescription = "Выполняется процесс обработки изображений. Пожалуйста не закрывайте программу и дождитесь окончания процесса. Для принудительной остановки обработки нажчите кнопку 'Остановить ml модель' (весь прогресс будет сохранен).";
+                    WizardFourthHeader = "Обработка фотографий";
+                    WizardFourthDescription = "Выполняется процесс обработки изображений. Пожалуйста, не закрывайте программу и дождитесь окончания процесса. Для принудительной остановки обработки нажмите кнопку 'Остановить ml модель' (весь прогресс будет сохранен).";
                     WizardFourthTotalStatus = "Статус выполнения: ";
                     WizardFourthLoadingPhotos = "Загрузка фотографий: ";
                     WizardFourthProcessingPhotos = "Обработка фотографий: ";
                     WizardFourthSavingResults = "Сохранение результатов: ";
                     WizardFourthStopButton = "Остановить ml модель";
                     WizardFourthLogsExpander = "Детали обработки";
-                    
+
                     //Metadata
-                    MetadataHeader = "GPS коордиаты центра изображения";
+                    MetadataHeader = "GPS координаты центра изображения";
                     MetadataLatitude = "Широта: ";
                     MetadataLongitude = "Долгота: ";
                     MetadataAltitude = "Высота: ";
                     MetadataOpenWith = "Показать на карте:";
                     MetadataAllMetadata = "Все метаданные";
-                    
+
                     //Model manager
                     ModelManagerApiVersion = "Версия API: ";
                     ModelManagerInstalledModels = "Установленные ml модели";
@@ -1080,27 +1089,28 @@ namespace LacmusApp.Services
                     ModelManagerRepositories = "Репозитории ml моделей";
                     ModelManagerRepositoryWatermark = "Ведите имя репозитория.";
                     ModelManagerAddRepositoryButton = "Добавить";
-                    
+
                     //Save as
-                    SaveAsOptionsToSave = "Выбирете опции для сохранения:";
-                    SaveAsTypesToSave = "Тип сохраняемых отографий:";
+                    SaveAsOptionsToSave = "Выберите опции для сохранения:";
+                    SaveAsTypesToSave = "Тип сохраняемых фотографий:";
                     SaveAsSourcePhotos = "Сохранить исходные фото.";
                     SaveAsXmlAnnotations = "Сохранить XML аннотации.";
                     SaveAsDrawBbox = "Сохранить фотографии с нарисованными рамками объектов.";
-                    SaveAsCrops = "Сохранить вырезанные обьекты.";
-                    
+                    SaveAsCrops = "Сохранить вырезанные объекты.";
+                    SaveAsSelectPath = "Выбрать папку";
+
                     //Settings
                     SettingsGeneral = "Общие";
                     SettingsLanguage = "Язык:";
-                    SettingsTheme = "Тема оффорления:";
+                    SettingsTheme = "Тема оформления:";
                     SettingsMlModel = "ML модель";
                     SettingsMlModelGeneral = "Общие настройки ml модели.";
                     SettingsHost = "Хост:";
                     SettingsPort = "Порт:";
                     SettingsJWT = "Внешнее использование (включить JVT шифрование)";
-                    SettingsBatchSize = "Число потоков:";
+                    SettingsBatchSize = "Число потоков";
 
-                    //Settings window
+                    //Erroes
                     OsErrorMesageGPU = "Ваша операционная система не поддерживает этот тип ml моделей.";
                     break;
                 }

@@ -34,8 +34,9 @@ namespace LacmusApp.ViewModels
                 viewModel => viewModel.OutputPath,
                 Directory.Exists,
                 path => $"Incorrect path {path}");
-            
-            SaveCommand = ReactiveCommand.Create(SavePhotos);
+
+            SelectPathCommand = ReactiveCommand.Create(SelectOutputFolder);
+            SaveCommand = ReactiveCommand.Create(SavePhotos, this.IsValid());
         }
         [Reactive] public string OutputPath { get; set; }
         [Reactive] public int FilterIndex { get; set; } = 0;
@@ -44,13 +45,13 @@ namespace LacmusApp.ViewModels
         [Reactive] public bool IsDraw { get; set; } = false;
         [Reactive] public bool IsCrop { get; set; } = false;
         [Reactive] public LocalizationContext LocalizationContext { get; set; }
+        public ReactiveCommand<Unit, Unit> SelectPathCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveCommand { get; set; }
-        
-        public async void SavePhotos()
+
+        private async void SelectOutputFolder()
         {
             try
             {
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 var dig = new OpenFolderDialog()
                 {
                     //TODO: Multi language support
@@ -58,6 +59,19 @@ namespace LacmusApp.ViewModels
                 };
                 var dirPath = await dig.ShowAsync(new Window());
                 OutputPath = dirPath;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+        }
+        
+        private async void SavePhotos()
+        {
+            try
+            {
+                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 if(!Directory.Exists(OutputPath))
                     throw new Exception($"No such directory: {OutputPath}.");
                     

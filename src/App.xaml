@@ -14,4 +14,9 @@
         <StyleInclude Source="resm:Avalonia.Themes.Default.Accents.BaseLight.xaml?assembly=Avalonia.Themes.Default"/>
         -->
     </Application.Styles>
+    <NativeMenu.Menu>
+        <NativeMenu>
+            <NativeMenuItem Header="About Lacmus"/>
+        </NativeMenu>
+    </NativeMenu.Menu>
 </Application>

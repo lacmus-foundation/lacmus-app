@@ -568,7 +568,7 @@ namespace LacmusApp.ViewModels
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    Process.Start(url);
+                    Process.Start("cmd", $"/C start {url}");
                 }
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {

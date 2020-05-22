@@ -82,7 +82,7 @@ namespace LacmusApp.Models
         
         public async Task Save()
         {
-            var confDir = Path.Join(AppDomain.CurrentDomain.BaseDirectory, "conf");
+            var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
             var configPath = Path.Join(confDir,"appConfig.json");
             await Save(configPath);
         }

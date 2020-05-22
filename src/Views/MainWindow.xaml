@@ -11,6 +11,11 @@
         Title="LacmusApp"
         Width="800"
         Height="600">
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="About Lacmus" Command="{Binding AboutCommand}"/>
+    </NativeMenu>
+  </NativeMenu.Menu>
   <Grid Name="Main">
     <Grid.RowDefinitions>
       <RowDefinition Height="auto"></RowDefinition>

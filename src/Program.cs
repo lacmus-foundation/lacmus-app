@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Logging.Serilog;
@@ -21,10 +22,11 @@ namespace LacmusApp
             Console.WriteLine("This is free software, and you are welcome to redistribute it under GNU GPL license;\nClick `help` -> `about' for details.");
             Console.WriteLine("------------------------------------");
             
+            var logPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus", "log.log");
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
                 .WriteTo.Console()
-                .WriteTo.File("log.txt",
+                .WriteTo.File(logPath,
                     rollingInterval: RollingInterval.Day,
                     rollOnFileSizeLimit: true)
                 .CreateLogger();
@@ -48,6 +50,17 @@ namespace LacmusApp
         
         private static AppBuilder BuildAvaloniaApp()
         {
+            //FOR TEST IN VirtualBox
+            /*
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return AppBuilder.Configure<App>()
+                    .UsePlatformDetect()
+                    .With(new Win32PlatformOptions {EnableMultitouch = true, AllowEglInitialization = true})
+                    .With(new AvaloniaNativePlatformOptions {UseGpu = false})
+                    .UseReactiveUI()
+                    .LogToDebug();
+            */
+
             return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .With(new Win32PlatformOptions {EnableMultitouch = true, AllowEglInitialization = true})
