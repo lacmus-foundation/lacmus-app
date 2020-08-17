@@ -130,6 +130,7 @@ namespace LacmusApp.ViewModels
             LoadModelCommand = ReactiveCommand.Create(LoadModel, canExecute);
             UpdateModelCommand = ReactiveCommand.Create(UpdateModel, canExecute);
             OpenModelManagerCommand = ReactiveCommand.Create(OpenModelManager, canExecute);
+            OpenBugReportCommand = ReactiveCommand.Create(OpenBugReport, canExecute);
             
             NextPageCommand = ReactiveCommand.Create(ShowNextPage);
             PreviousPageCommand = ReactiveCommand.Create(ShowPreviousPage);
@@ -184,6 +185,7 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; set; }
         public ReactiveCommand<Unit, Unit> UpdateModelCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenModelManagerCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> OpenBugReportCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAsCommand { get; set; }
         public ReactiveCommand<Unit, Unit> FirstPageCommand { get; set; }
         public ReactiveCommand<Unit, Unit> PreviousPageCommand { get; set; }
@@ -334,6 +336,14 @@ namespace LacmusApp.ViewModels
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
             ModelManagerWindow window = new ModelManagerWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
             _appConfig = await window.ShowResult();
+        }
+
+        public async void OpenBugReport()
+        {
+            BugReportWindow window = new BugReportWindow(_themeManager);
+            var context = new BugReportViewModel(window, LocalizationContext);
+            window.DataContext = context;
+            window.Show();
         }
 
         /// <summary>

@@ -63,6 +63,12 @@ namespace LacmusApp.Services
             get { return _modelManager; }
             set { this.RaiseAndSetIfChanged(ref _modelManager, value); }
         }
+        private string _bugReport;
+        [Reactive] public string BugReport
+        {
+            get { return _bugReport; }
+            set { this.RaiseAndSetIfChanged(ref _bugReport, value); }
+        }
         private string _image;
         [Reactive] public string Image
         {
@@ -807,6 +813,29 @@ namespace LacmusApp.Services
 
         #endregion
 
+        #region BUG REPORT WINDOW
+
+        private string _labelingWindowCapture;
+        [Reactive] public string LabelingWindowCapture
+        {
+            get { return _labelingWindowCapture; }
+            set { this.RaiseAndSetIfChanged(ref _labelingWindowCapture, value); }
+        }
+        private string _labelingWindowFalsePositive;
+        [Reactive] public string LabelingWindowFalsePositive
+        {
+            get { return _labelingWindowFalsePositive; }
+            set { this.RaiseAndSetIfChanged(ref _labelingWindowFalsePositive, value); }
+        }
+        private string _labelingWindowFalseNegative;
+        [Reactive] public string LabelingWindowFalseNegative
+        {
+            get { return _labelingWindowFalseNegative; }
+            set { this.RaiseAndSetIfChanged(ref _labelingWindowFalseNegative, value); }
+        }
+        
+        #endregion
+
         public LocalizationContext()
         {
             this.WhenAnyValue(vm=>vm.Language).Subscribe(_=>UpdateText());
@@ -836,6 +865,7 @@ namespace LacmusApp.Services
                     LoadModel="Load model";
                     UpdateModel="Update model";
                     ModelManager="Model manager...";
+                    BugReport = "Send bug report...";
                     //Image
                     Image="Image";
                     PredictAll="Predict All";
@@ -969,6 +999,11 @@ namespace LacmusApp.Services
                     //ModelManagerApplyButton = "Apply";
                     //ModelManagerCloseButton = "Close";
                     
+                    //BugReportWindow
+                    LabelingWindowCapture = "By submitting reports on neural network errors, you improve our recognition algorithm. Thank you for helping us develop!\n\nPlease select an error type:";
+                    LabelingWindowFalsePositive = "No person found in the photo (False Negative).";
+                    LabelingWindowFalseNegative = "An object was found in the photo but it is not a person (False Positive).";
+
                     OsErrorMesageGPU = "Your OS is not support this ml model type.";
                     break;
                 }
@@ -990,6 +1025,7 @@ namespace LacmusApp.Services
                     LoadModel="Загрузить";
                     UpdateModel="Обновить";
                     ModelManager="Менеджер моделей...";
+                    BugReport = "Сообщить об ошибке...";
                     //Image
                     Image="Изображение";
                     PredictAll="Обработать все";
@@ -1109,6 +1145,11 @@ namespace LacmusApp.Services
                     SettingsPort = "Порт:";
                     SettingsJWT = "Внешнее использование (включить JVT шифрование)";
                     SettingsBatchSize = "Число потоков";
+                    
+                    //BugReportWindow
+                    LabelingWindowCapture = "Отправляя нам отчеты об ошибках в работе нейронной сети, вы обучаете и улучшаете наш алгоритм распознования! Спасибо что используете Lacmus и помогаете нам развиваться!\n\nПожалуйста выбирете тип ошибки:";
+                    LabelingWindowFalsePositive = "На фото не найден человек (False Negative).";
+                    LabelingWindowFalseNegative = "На фото обнаружен объект, но это не человек (False Positive).";
 
                     //Erroes
                     OsErrorMesageGPU = "Ваша операционная система не поддерживает этот тип ml моделей.";
