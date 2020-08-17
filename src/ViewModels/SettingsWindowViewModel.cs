@@ -48,6 +48,7 @@ namespace LacmusApp.ViewModels
             _config = config;
             _newConfig = AppConfig.DeepCopy(_config);
             _applicationStatusManager = manager;
+            InitView();
 
             this.WhenAnyValue(x => x.ThemeIndex)
                 .Skip(1)
@@ -79,6 +80,38 @@ namespace LacmusApp.ViewModels
             CancelCommand = ReactiveCommand.Create(Cancel);
             UpdateModelStatusCommand = ReactiveCommand.Create(UpdateModelStatus);
             OpenModelMnagerCommand = ReactiveCommand.Create(OpenModelManager);
+        }
+
+        private void InitView()
+        {
+            switch (LocalizationContext.Language)
+            {
+                case Language.English:
+                    LanguageIndex = 0;
+                    break;
+                case Language.Russian:
+                    LanguageIndex = 1;
+                    break;
+            }
+
+            switch (_settingsThemeManager.CurrentTheme)
+            {
+                case ThemeManager.Theme.Citrus:
+                    ThemeIndex = 0;
+                    break;
+                case ThemeManager.Theme.Rust:
+                    ThemeIndex = 1;
+                    break;
+                case ThemeManager.Theme.Sea:
+                    ThemeIndex = 2;
+                    break;
+                case ThemeManager.Theme.Candy:
+                    ThemeIndex = 3;
+                    break;
+                case ThemeManager.Theme.Magma:
+                    ThemeIndex = 4;
+                    break;
+            }
         }
         
         private async void Apply()

@@ -32,7 +32,7 @@
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="{Binding LocalizationContext.MetadataHeader}"/>
+                               Text="{Binding LocalizationContext.WizardThirdModelRepository}"/>
                     <TextBlock Classes="Caption"
                                Text="{Binding Repository}"/>
                 </StackPanel>

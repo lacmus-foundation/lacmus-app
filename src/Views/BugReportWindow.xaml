@@ -1,0 +1,35 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
+        x:Class="LacmusApp.Views.BugReportWindow"
+        CanResize="True"
+        Title="Bug Report"
+        Width="650"
+        Height="300">
+    
+    <Grid>
+        <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Hidden">
+            <Border Classes="Card">
+                <Grid>
+                    <StackPanel Margin="10, 10">
+                        <TextBlock TextWrapping="Wrap" Classes="Heading" Text="{Binding LocalizationContext.LabelingWindowCapture}" />
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="10" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Button Grid.Row="0"
+                                    Content="{Binding LocalizationContext.LabelingWindowFalsePositive}"
+                                    Command="{Binding OpenFalsePositiveCommand}"/>
+                            <Button Grid.Row="2"
+                                    Content="{Binding LocalizationContext.LabelingWindowFalseNegative}" 
+                                    Command="{Binding OpenFalseNegativeCommand}"/>
+                        </Grid>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </ScrollViewer>
+    </Grid>
+</Window>
