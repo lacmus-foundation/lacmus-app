@@ -2,7 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using Avalonia;
-using Avalonia.Logging.Serilog;
+using Avalonia.Logging;
 using Avalonia.ReactiveUI;
 using Avalonia.Rendering;
 using LacmusApp.Models;
