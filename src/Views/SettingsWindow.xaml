@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="LacmusApp.Views.SettingsWindow"
         Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
@@ -20,9 +19,6 @@
                     <StackPanel>
                         <Border Classes="Card">
                             <StackPanel>
-                                <StackPanel.Resources>
-                                    <cp:HexToColorConverter x:Key="HexToColorConverter"/>
-                                </StackPanel.Resources>
                                 <TextBlock Classes="Heading" 
                                            Text="{Binding LocalizationContext.SettingsLanguage}"
                                 />

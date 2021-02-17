@@ -1,5 +1,4 @@
 using System;
-using System.Reactive.Linq;
 using Avalonia.Media;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;

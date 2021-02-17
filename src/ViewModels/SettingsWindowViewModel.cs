@@ -1,27 +1,12 @@
 using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Logging;
-using Avalonia.Logging.Serilog;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
-using Avalonia.Threading;
-using DynamicData;
 using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.ML;
 using LacmusApp.Services;
-using MetadataExtractor;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using LacmusApp.Services.Files;
 using LacmusApp.Views;
 using Serilog;
 

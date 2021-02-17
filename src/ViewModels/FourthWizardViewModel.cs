@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
-using Avalonia.Threading;
 using DynamicData;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -15,7 +14,6 @@ using LacmusApp.Models.ML;
 using LacmusApp.Models.Photo;
 using LacmusApp.Services;
 using LacmusApp.Services.IO;
-using LacmusApp.Services.VM;
 using Serilog;
 using Attribute = LacmusApp.Models.Photo.Attribute;
 

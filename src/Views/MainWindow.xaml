@@ -4,7 +4,6 @@
         xmlns:models="clr-namespace:LacmusApp.Models"
         xmlns:models_photo="clr-namespace:LacmusApp.Models.Photo"
         xmlns:paz="clr-namespace:Avalonia.Controls.PanAndZoom;assembly=Avalonia.Controls.PanAndZoom"
-        xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
         Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
         x:Class="LacmusApp.Views.MainWindow"
         UseLayoutRounding="True"
@@ -205,9 +204,6 @@
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Items="{Binding PhotoViewModel.BoundBoxes}">
-            <ItemsControl.Resources>
-              <cp:HexToColorConverter x:Key="HexToColorConverter"/>
-            </ItemsControl.Resources>
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <Canvas

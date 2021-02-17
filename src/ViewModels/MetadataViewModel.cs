@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Reactive;
 using System.Runtime.InteropServices;
-using Avalonia.Collections;
 using Avalonia.Controls;
 using DynamicData;
 using LacmusApp.Models;

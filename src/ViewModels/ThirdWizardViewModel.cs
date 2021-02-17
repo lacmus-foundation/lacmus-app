@@ -1,15 +1,12 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Reactive;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Models.ML;
 using LacmusApp.Services;
-using LacmusApp.Services.Files;
 using LacmusApp.Views;
 using Serilog;
 
