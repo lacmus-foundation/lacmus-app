@@ -3,7 +3,6 @@ using System.Reactive;
 using System.Reactive.Linq;
 using LacmusApp.Managers;
 using LacmusApp.Models;
-using LacmusApp.Models.ML;
 using LacmusApp.Services;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -41,7 +40,7 @@ namespace LacmusApp.ViewModels
             
             SetupCommands();
 
-            MLUrl = _newConfig.MlModelConfig.Url;
+            MLUrl = "_newConfig.MlModelConfig.Url";
 
             UpdateModelStatusCommand.Execute().Subscribe();
         }
@@ -120,7 +119,6 @@ namespace LacmusApp.ViewModels
                 _newConfig.Language = LocalizationContext.Language;
                 _newConfig.Theme = _mainThemeManager.CurrentTheme;
                 _newConfig.BorderColor = HexColor;
-                _newConfig.MlModelConfig.Url = MLUrl;
                 
                 await _newConfig.Save();
                 _config = AppConfig.DeepCopy(_newConfig);
@@ -145,15 +143,6 @@ namespace LacmusApp.ViewModels
             {
                 Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
-                var config = _newConfig.MlModelConfig;;
-                // get local versions
-                var localVersions = await MLModel.GetInstalledVersions(config);
-                if(!localVersions.Contains(config.ModelVersion))
-                    throw new Exception($"There are no ml local model to init: {config.Image.Name}:{config.Image.Tag}");
-                
-                Repository = config.Image.Name;
-                Version = $"{config.ModelVersion}";
-                Type = $"{config.Type}";
                 Status = $"Ready";
                 Log.Information("Successfully init ml model.");
             }

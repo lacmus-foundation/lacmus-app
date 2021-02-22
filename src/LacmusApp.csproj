@@ -29,6 +29,7 @@
     <PackageReference Include="Avalonia.Skia.Linux.Natives" Version="1.68.0.2" />
     <PackageReference Include="Citrus.Avalonia" Version="1.2.6" />
     <PackageReference Include="Docker.DotNet" Version="3.125.2" />
+    <PackageReference Include="LacmusPlugin" Version="2.0.2" />
     <PackageReference Include="Material.Avalonia" Version="0.9.0" />
     <PackageReference Include="MessageBox.Avalonia" Version="0.9.6.1" />
     <PackageReference Include="MetadataExtractor" Version="2.4.3" />

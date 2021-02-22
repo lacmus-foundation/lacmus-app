@@ -5,7 +5,6 @@ using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using LacmusApp.Managers;
 using LacmusApp.Models;
-using LacmusApp.Models.ML;
 using LacmusApp.Services;
 using LacmusApp.Views;
 using Serilog;
@@ -54,23 +53,6 @@ namespace LacmusApp.ViewModels
                 var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
                 var configPath = Path.Join(confDir,"appConfig.json");
                 _appConfig = await AppConfig.Create(configPath);
-                var config = _appConfig.MlModelConfig;;
-                // get local versions
-                var localVersions = await MLModel.GetInstalledVersions(config);
-                if(localVersions.Contains(config.ModelVersion))
-                {
-                    Log.Information($"Find local version: {config.Image.Name}:{config.Image.Tag}.");
-                }
-                else
-                {
-                    IsShowLoadModelButton = true;
-                    throw new Exception($"There are no ml local models to init: {config.Image.Name}:{config.Image.Tag}");
-                }
-                Repository = config.Image.Name;
-                Version = $"{config.ModelVersion}";
-                Type = $"{config.Type}";
-                using(var model = new MLModel(config))
-                    await model.Download();
                 Status = $"Ready";
                 IsError = false;
                 Log.Information("Successfully loads ml model.");
@@ -94,23 +76,6 @@ namespace LacmusApp.ViewModels
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 ModelManagerWindow window = new ModelManagerWindow(_window.LocalizationContext, ref _appConfig, _applicationStatusManager, _window.ThemeManager);
                 _appConfig = await window.ShowResult();
-                var config = _appConfig.MlModelConfig;
-                // init local model or download and init it from docker registry
-                var localVersions = await MLModel.GetInstalledVersions(config);
-                if(localVersions.Contains(config.ModelVersion))
-                {
-                    Log.Information($"Find local version: {config.Image.Name}:{config.Image.Tag}.");
-                }
-                else
-                {
-                    IsShowLoadModelButton = true;
-                    throw new Exception($"There are no ml local models to init: {config.Image.Name}:{config.Image.Tag}");
-                }
-                Repository = config.Image.Name;
-                Version = $"{config.ModelVersion}";
-                Type = $"{config.Type}";
-                using(var model = new MLModel(config))
-                    await model.Download();
                 Status = $"Ready";
                 IsError = false;
                 _window.AppConfig = _appConfig;

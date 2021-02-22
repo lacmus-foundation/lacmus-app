@@ -2,14 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Avalonia.Media;
 using LacmusApp.Managers;
-using LacmusApp.Models.Docker;
-using LacmusApp.Models.ML;
-using LacmusApp.Services;
-using LacmusApp.Services.Files;
+using LacmusApp.Models.Plugins;
+using LacmusApp.Services.Plugin;
 using Newtonsoft.Json;
+using Octokit;
 using Serilog;
+using Language = LacmusApp.Services.Language;
 
 namespace LacmusApp.Models
 {
@@ -17,11 +16,9 @@ namespace LacmusApp.Models
     public class AppConfig
     {
         private string _borderColor = "#FFFF0000";
-        private MLModelConfig _mlModelConfig = new MLModelConfig();
-        private string[] _repositories = 
+        private PluginRepository[] _repositories = 
         {
-            "gosha20777/lacmus",
-            "gosha20777/lacmus-kseniia"
+            new("lacmus", "http://localhost:5000")
         };
 
         public Language Language { get; set; } = Language.English;
@@ -41,7 +38,9 @@ namespace LacmusApp.Models
         } 
         public ThemeManager.Theme Theme { get; set; }
 
-        public string[]  Repositories
+        public PluginInfo CurrentPlugin { get; set; } = new();
+
+        public PluginRepository[] Repositories
         {
             get => _repositories;
             set
@@ -51,15 +50,6 @@ namespace LacmusApp.Models
                     throw new Exception($"invalid Repositories: {_repositories}");
                 }
                 _repositories = value;
-            }
-        } 
-
-        public MLModelConfig MlModelConfig
-        {
-            get => _mlModelConfig;
-            set
-            {
-                _mlModelConfig = value ?? throw new Exception($"MlModelConfig is null");
             }
         }
         
@@ -107,20 +97,8 @@ namespace LacmusApp.Models
             //deep copy ml config
             var newConfig = new AppConfig();
             newConfig.Language = config.Language;
-            newConfig.Repositories = new List<string>(config.Repositories).ToArray();
+            newConfig.Repositories = new List<PluginRepository>(config.Repositories).ToArray();
             newConfig.BorderColor = config.BorderColor;
-            newConfig.MlModelConfig = new MLModelConfig();
-            newConfig.MlModelConfig.Accaunt = new DockerAccaunt();
-            newConfig.MlModelConfig.Accaunt.Email = config.MlModelConfig.Accaunt.Email;
-            newConfig.MlModelConfig.Accaunt.Password = config.MlModelConfig.Accaunt.Password;
-            newConfig.MlModelConfig.Accaunt.Username = config.MlModelConfig.Accaunt.Username;
-            newConfig.MlModelConfig.Image = new DockerImage();
-            newConfig.MlModelConfig.Image.Name = config.MlModelConfig.Image.Name;
-            newConfig.MlModelConfig.Image.Tag = config.MlModelConfig.Image.Tag;
-            newConfig.MlModelConfig.Type = config.MlModelConfig.Type;
-            newConfig.MlModelConfig.Url = config.MlModelConfig.Url;
-            newConfig.MlModelConfig.ApiVersion = config.MlModelConfig.ApiVersion;
-            newConfig.MlModelConfig.ModelVersion = config.MlModelConfig.ModelVersion;
             return newConfig;
         }
     }

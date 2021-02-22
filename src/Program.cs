@@ -1,11 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.InteropServices;
 using Avalonia;
 using Avalonia.Logging.Serilog;
 using Avalonia.ReactiveUI;
-using Avalonia.Rendering;
-using LacmusApp.Models;
 using Serilog;
 
 namespace LacmusApp

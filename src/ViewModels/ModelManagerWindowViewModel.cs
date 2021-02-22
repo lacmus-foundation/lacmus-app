@@ -1,21 +1,15 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using DynamicData;
-using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
-using LacmusApp.Models.ML;
 using LacmusApp.Services;
+using LacmusApp.Services.Plugin;
 using LacmusApp.Views;
-using MessageBox.Avalonia;
-using MessageBox.Avalonia.DTO;
-using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
@@ -31,13 +25,13 @@ namespace LacmusApp.ViewModels
         private readonly ApplicationStatusManager _applicationStatusManager;
         private AppConfig _config, _newConfig;
         
-        private SourceList<MlModelData> _avalableModels { get; set; } = new SourceList<MlModelData>();
-        private ReadOnlyObservableCollection<MlModelData> _avalableModelsCollection;
-        public ReadOnlyObservableCollection<MlModelData> AvalableModelsCollection => _avalableModelsCollection;
+        private SourceList<PluginInfo> _avalableModels { get; set; }
+        private ReadOnlyObservableCollection<PluginInfo> _avalableModelsCollection;
+        public ReadOnlyObservableCollection<PluginInfo> AvalableModelsCollection => _avalableModelsCollection;
         
-        private SourceList<MlModelData> _installedModels { get; set; } = new SourceList<MlModelData>();
-        private ReadOnlyObservableCollection<MlModelData> _installedModelsCollection;
-        public ReadOnlyObservableCollection<MlModelData> InstalledModelsCollection => _installedModelsCollection;
+        private SourceList<PluginInfo> _installedModels { get; set; }
+        private ReadOnlyObservableCollection<PluginInfo> _installedModelsCollection;
+        public ReadOnlyObservableCollection<PluginInfo> InstalledModelsCollection => _installedModelsCollection;
         
         private SourceList<string> _repositories { get; set; } = new SourceList<string>();
         private ReadOnlyObservableCollection<string> _repositoriesCollection;
@@ -116,8 +110,8 @@ namespace LacmusApp.ViewModels
         [Reactive] public string Version { get; set; } = "None";
         public string ApiVersion => $"{API_VERSION}";
         [Reactive] public string Status { get; set; } = "Not ready";
-        [Reactive] public MlModelData SelectedAvailableModel { get; set; } = null;
-        [Reactive] public MlModelData SelectedInstalledModel { get; set; } = null;
+        [Reactive] public PluginInfo SelectedAvailableModel { get; set; } = null;
+        [Reactive] public PluginInfo SelectedInstalledModel { get; set; } = null;
         [Reactive] public string SelectedRepository { get; set; } = null;
         [Reactive] public string RepositoryToAdd { get; set; }
 
@@ -127,19 +121,14 @@ namespace LacmusApp.ViewModels
             try
             {
                 Status = "Loading ml model...";
-                var config = _newConfig.MlModelConfig;
+                var config = _newConfig;
                 // get local versions
-                var localVersions = await MLModel.GetInstalledVersions(config);
-                if(!localVersions.Contains(config.ModelVersion))
-                    throw new Exception($"There are no ml local model to init: {config.Image.Name}:{config.Image.Tag}");
-                if(config.ApiVersion != API_VERSION)
-                    throw new Exception($"Unsupported api {config.ApiVersion}. Only api v {API_VERSION} is supported.");
                 
                 Dispatcher.UIThread.Post(() =>
                 {
-                    Repository = config.Image.Name;
-                    Version = $"{config.ModelVersion}";
-                    Type = $"{config.Type}";
+                    Repository = "q";
+                    Version = $"q";
+                    Type = $"q";
                     Status = $"Ready";
                 });
             }
@@ -151,16 +140,16 @@ namespace LacmusApp.ViewModels
             // get installed models
             try
             {
-                var models = await MLModel.GetInstalledModels();
+                //var models = await MLModel.GetInstalledModels();
                 Dispatcher.UIThread.Post(() =>
                 {
-                    foreach (var model in models)
-                    {
-                        _installedModels.Add(new MlModelData(model.Image.Name,
-                            model.Type,
-                            model.ModelVersion,
-                            model.ApiVersion));
-                    }
+                    //foreach (var model in models)
+                    //{
+                    //    _installedModels.Add(new MlModelData(model.Image.Name,
+                    //        model.Type,
+                    //        model.ModelVersion,
+                    //        model.ApiVersion));
+                    //}
                 });
             }
             catch (Exception e)
@@ -173,17 +162,17 @@ namespace LacmusApp.ViewModels
                 foreach (var repository in _newConfig.Repositories)
                     try
                     {
-                        var models = await MLModel.GetAvailableModelsFromRegistry(repository);
+                        //var models = await MLModel.GetAvailableModelsFromRegistry(repository);
                         Dispatcher.UIThread.Post(() =>
                         {
-                            _repositories.Add(repository);
-                            foreach (var model in models)
-                            {
-                                _avalableModels.Add(new MlModelData(model.Image.Name,
-                                    model.Type,
-                                    model.ModelVersion,
-                                    model.ApiVersion));
-                            }
+                            //_repositories.Add(repository);
+                            //foreach (var model in models)
+                            //{
+                            //    _avalableModels.Add(new MlModelData(model.Image.Name,
+                            //        model.Type,
+                            //        model.ModelVersion,
+                            //        model.ApiVersion));
+                            //}
                         });
                     }
                     catch (Exception e)
@@ -210,17 +199,17 @@ namespace LacmusApp.ViewModels
             {
                 Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
-                var config = _newConfig.MlModelConfig;
+                //var config = _newConfig.MlModelConfig;
                 // get local versions
-                var localVersions = await MLModel.GetInstalledVersions(config);
-                if(!localVersions.Contains(config.ModelVersion))
-                    throw new Exception($"There are no ml local model to init: {config.Image.Name}:{config.Image.Tag}");
-                if(config.ApiVersion != API_VERSION)
-                    throw new Exception($"Unsupported api {config.ApiVersion}. Only api v {API_VERSION} is supported.");
+                //var localVersions = await MLModel.GetInstalledVersions(config);
+                //if(!localVersions.Contains(config.ModelVersion))
+                //    throw new Exception($"There are no ml local model to init: {config.Image.Name}:{config.Image.Tag}");
+                //if(config.ApiVersion != API_VERSION)
+                //    throw new Exception($"Unsupported api {config.ApiVersion}. Only api v {API_VERSION} is supported.");
                 
-                Repository = config.Image.Name;
-                Version = $"{config.ModelVersion}";
-                Type = $"{config.Type}";
+                //Repository = config.Image.Name;
+                //Version = $"{config.ModelVersion}";
+                //Type = $"{config.Type}";
                 Status = $"Ready";
                 Log.Information("Successfully init ml model.");
             }
@@ -238,14 +227,14 @@ namespace LacmusApp.ViewModels
             try
             {
                 Log.Information("Get installed ml models.");
-                var models = await MLModel.GetInstalledModels();
-                foreach (var model in models)
-                {
-                    _installedModels.Add(new MlModelData(model.Image.Name,
-                        model.Type,
-                        model.ModelVersion,
-                        model.ApiVersion));
-                }
+                //var models = await MLModel.GetInstalledModels();
+                //foreach (var model in models)
+                //{
+                //    _installedModels.Add(new MlModelData(model.Image.Name,
+                //        model.Type,
+                //        model.ModelVersion,
+                //        model.ApiVersion));
+                //}
                 Log.Information("Successfully get installed ml models.");
             }
             catch (Exception e)
@@ -265,14 +254,14 @@ namespace LacmusApp.ViewModels
                 {
                     try
                     {
-                        var models = await MLModel.GetAvailableModelsFromRegistry(repository);
-                        foreach (var model in models)
-                        {
-                            _avalableModels.Add(new MlModelData(model.Image.Name,
-                                model.Type,
-                                model.ModelVersion,
-                                model.ApiVersion));
-                        }
+                        //var models = await MLModel.GetAvailableModelsFromRegistry(repository);
+                        //foreach (var model in models)
+                        //{
+                        //    _avalableModels.Add(new MlModelData(model.Image.Name,
+                        //        model.Type,
+                        //        model.ModelVersion,
+                        //        model.ApiVersion));
+                        //}
                     }
                     catch (Exception e)
                     {
@@ -294,22 +283,22 @@ namespace LacmusApp.ViewModels
             {
                 if(SelectedAvailableModel == null)
                     throw new Exception("No selected model.");
-                if (SelectedAvailableModel.Type == MLModelType.Gpu)
-                {
-                    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    {
-                        var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                        {
-                            ButtonDefinitions = ButtonEnum.Ok,
-                            ContentTitle = "OSError",
-                            ContentMessage = LocalizationContext.OsErrorMesageGPU,
-                            Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                            Style = Style.None,
-                            ShowInCenter = true
-                        });
-                        var result = await msgbox.Show();
-                        throw new Exception($"Incorrect OS for {SelectedAvailableModel.Type} inference type");
-                    }
+                //if (SelectedAvailableModel.Type == MLModelType.Gpu)
+                //{
+                //    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                //    {
+                //        var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                //        {
+                //            ButtonDefinitions = ButtonEnum.Ok,
+                //            ContentTitle = "OSError",
+                //            ContentMessage = LocalizationContext.OsErrorMesageGPU,
+                //            Icon = MessageBox.Avalonia.Enums.Icon.Error,
+                //            Style = Style.None,
+                //            ShowInCenter = true
+                //        });
+                //        var result = await msgbox.Show();
+                //        throw new Exception($"Incorrect OS for {SelectedAvailableModel.Type} inference type");
+                //    }
 
                     /*
                     if (CudafyHost.GetDeviceCount(eGPUType.Emulator) == 0)
@@ -327,17 +316,17 @@ namespace LacmusApp.ViewModels
                         throw new Exception($"No CUDA devises.");
                     }
                     */
-                }
+                //}
                 
-                var config = new MLModelConfig();
-                config.Image.Name = SelectedAvailableModel.Name;
-                config.Type = SelectedAvailableModel.Type;
-                config.ModelVersion = SelectedAvailableModel.Version;
-                config.ApiVersion = SelectedAvailableModel.ApiVersion;
-                config.Image.Tag = config.GetDockerTag();
+                //var config = new MLModelConfig();
+                //config.Image.Name = SelectedAvailableModel.Name;
+                //config.Type = SelectedAvailableModel.Type;
+                //config.ModelVersion = SelectedAvailableModel.Version;
+                //config.ApiVersion = SelectedAvailableModel.ApiVersion;
+                //config.Image.Tag = config.GetDockerTag();
                 
-                using(var model = new MLModel(config))
-                    await model.Download();
+                //using(var model = new MLModel(config))
+                //    await model.Download();
             }
             catch (Exception e)
             {
@@ -348,6 +337,7 @@ namespace LacmusApp.ViewModels
         public async Task RemoveModel()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | remove model...");
+            /*
             try
             {
                 if(SelectedInstalledModel == null)
@@ -379,11 +369,13 @@ namespace LacmusApp.ViewModels
             {
                 Log.Error(e, "Unable to remove ml model.");
             }
+            */
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
         public async Task ActivateModel()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | activate model...");
+            /*
             try
             {
                 if(SelectedInstalledModel == null)
@@ -403,6 +395,7 @@ namespace LacmusApp.ViewModels
             {
                 Log.Error(e, "Unable to activate ml model.");
             }
+            */
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
@@ -410,10 +403,10 @@ namespace LacmusApp.ViewModels
         {
             try
             {
-                _repositories.Add(RepositoryToAdd);
-                var repoList = _newConfig.Repositories.ToList();
-                repoList.Add(RepositoryToAdd);
-                _newConfig.Repositories = repoList.ToArray();
+                //_repositories.Add(RepositoryToAdd);
+                //var repoList = _newConfig.Repositories.ToList();
+                //repoList.Add(RepositoryToAdd);
+                //_newConfig.Repositories = repoList.ToArray();
             }
             catch (Exception e)
             {
@@ -425,10 +418,10 @@ namespace LacmusApp.ViewModels
         {
             try
             {
-                _repositories.Remove(SelectedRepository);
-                var repoList = _newConfig.Repositories.ToList();
-                repoList.Remove(RepositoryToAdd);
-                _newConfig.Repositories = repoList.ToArray();
+                //_repositories.Remove(SelectedRepository);
+                //var repoList = _newConfig.Repositories.ToList();
+                //repoList.Remove(RepositoryToAdd);
+                //_newConfig.Repositories = repoList.ToArray();
             }
             catch (Exception e)
             {
