@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -55,8 +56,8 @@ namespace LacmusApp.ViewModels
             _window = window;
             _appConfig = appConfig;
             _themeManager = new ThemeManager(window);
-            _pluginManager = new PluginManager(appConfig);
-            
+            _pluginManager = new PluginManager(appConfig.PluginDir, appConfig.Repositories);
+
 
             var pageFilter = this
                 .WhenValueChanged(x => x.CurrentPage)
@@ -291,12 +292,14 @@ namespace LacmusApp.ViewModels
         /// <summary>
         /// 
         /// </summary>
+        [SuppressMessage("ReSharper.DPA", "DPA0003: Excessive memory allocations in LOH", MessageId = "type: System.Byte[]")]
+        [SuppressMessage("ReSharper.DPA", "DPA0003: Excessive memory allocations in LOH")]
         private async void PredictAll()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
             try
             {
-                var plugin = _pluginManager.GetCurrentPlugin();
+                var plugin = _pluginManager.GetPlugin(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);
                 using (var model = plugin.LoadModel(0.15f))
                 {
                     var count = 0;
@@ -306,9 +309,13 @@ namespace LacmusApp.ViewModels
                         try
                         {
                             photoViewModel.Annotation.Objects = new List<Object>();
-                            var detections = await model.InferAsync(photoViewModel.Path,
-                                photoViewModel.Annotation.Size.Width,
-                                photoViewModel.Annotation.Size.Height);
+                            var detections = await Dispatcher.UIThread.InvokeAsync(async () =>
+                                await model.InferAsync(photoViewModel.Path,
+                                    photoViewModel.Photo.Width,
+                                    photoViewModel.Photo.Height));
+                            //var detections = model.Infer(photoViewModel.Path,
+                            //    photoViewModel.Photo.Width,
+                            //    photoViewModel.Photo.Height);
                             foreach (var det in detections)
                             {
                                 photoViewModel.Annotation.Objects.Add(new Object()
@@ -347,6 +354,7 @@ namespace LacmusApp.ViewModels
             {
                 Log.Error(e, "Unable to get prediction.");
             }
+            GC.Collect();
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 

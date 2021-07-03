@@ -11,7 +11,7 @@ namespace LacmusApp
     {
         private static void Main(string[] args)
         {
-            Console.WriteLine($"Lacmus desktop application. Version {GetVersion()} alpha.");
+            Console.WriteLine($"Lacmus desktop application. Version {GetVersion()} beta.");
             Console.WriteLine("Copyright (c) 2020 Lacmus Foundation <gosha20777@live.ru>.");
             Console.WriteLine("Github page: https://github.com/lacmus-foundation.");
             Console.WriteLine("Powered by Immers Cloud <https://immers.cloud/> and ODS <https://ods.ai>.");

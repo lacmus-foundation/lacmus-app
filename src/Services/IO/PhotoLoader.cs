@@ -25,9 +25,11 @@ namespace LacmusApp.Services.IO
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(source);
                     var photo = new Photo
                     {
-                        ImageBrush = imageBrush,
+                        ImageBrush = imageBrush.ImageBrush,
                         Attribute = Attribute.NotProcessed,
-                        MetaDataDirectories = metaDataDirectories
+                        MetaDataDirectories = metaDataDirectories,
+                        Height = imageBrush.Height,
+                        Width = imageBrush.Width
                     };
                     return photo;
                 }
@@ -43,13 +45,15 @@ namespace LacmusApp.Services.IO
             {
                 try
                 {
-                    var imageBrush = await Task<ImageBrush>.Factory.StartNew( () =>  ReadImageBrushFromFile(stream, loadType).Result);
+                    var imageBrush = await Task<LacmusImageBrush>.Factory.StartNew( () =>  ReadImageBrushFromFile(stream, loadType).Result);
                     var metaDataDirectories = ImageMetadataReader.ReadMetadata(source);
                     var photo = new Photo
                     {
-                        ImageBrush = imageBrush,
+                        ImageBrush = imageBrush.ImageBrush,
                         Attribute = Attribute.NotProcessed,
-                        MetaDataDirectories = metaDataDirectories
+                        MetaDataDirectories = metaDataDirectories,
+                        Height = imageBrush.Height,
+                        Width = imageBrush.Width
                     };
                     return photo;
                 }
@@ -60,17 +64,19 @@ namespace LacmusApp.Services.IO
             }
         }
         
-        private async Task<ImageBrush> ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)
+        private async Task<LacmusImageBrush> ReadImageBrushFromFile(Stream stream, PhotoLoadType loadType)
         {
             switch (loadType)
             {
                 case PhotoLoadType.Miniature:
                     using (var src = SKBitmap.Decode(stream))
                     {
-                        var scale = 100f / src.Width;
+                        var width = src.Width;
+                        var height = src.Height;
+                        var scale = 100f / width;
                         var resized = new SKBitmap(
-                            (int)(src.Width * scale),
-                            (int)(src.Height * scale), 
+                            (int)(width * scale),
+                            (int)(height * scale), 
                             src.ColorType, 
                             src.AlphaType);
                         src.ScalePixels(resized, SKFilterQuality.Low);
@@ -80,11 +86,18 @@ namespace LacmusApp.Services.IO
                             new PixelSize(resized.Width, resized.Height), 
                             SkiaPlatform.DefaultDpi, 
                             resized.RowBytes);
-                        return await Dispatcher.UIThread.InvokeAsync(() => new ImageBrush(bitmap));
+                        var imageBrush = await Dispatcher.UIThread.InvokeAsync(() => new ImageBrush(bitmap));
+                        return new LacmusImageBrush{ Height = height, Width = width, ImageBrush = imageBrush };
                     }
                     break;
                 case PhotoLoadType.Full:
-                    return new ImageBrush(new Bitmap(stream));
+                    var imageBrushFull = await Dispatcher.UIThread.InvokeAsync(() => new ImageBrush(new Bitmap(stream)));
+                    return new LacmusImageBrush
+                    {
+                        Height = imageBrushFull.Source.PixelSize.Height,
+                        Width = imageBrushFull.Source.PixelSize.Width,
+                        ImageBrush = imageBrushFull
+                    };
                     break;
                 default:
                     throw new Exception($"invalid PhotoLoadType: {loadType.ToString()}");

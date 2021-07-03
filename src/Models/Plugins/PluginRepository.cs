@@ -1,5 +1,8 @@
+using Newtonsoft.Json;
+
 namespace LacmusApp.Models.Plugins
 {
+    [JsonObject]
     public readonly struct PluginRepository
     {
         public PluginRepository(string name, string url)

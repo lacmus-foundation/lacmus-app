@@ -9,5 +9,7 @@ namespace LacmusApp.Models.Photo
         ImageBrush ImageBrush { get; set; }
         Attribute Attribute { get; set; }
         IReadOnlyList<Directory> MetaDataDirectories { get; set; }
+        int Height { get; set; }
+        int Width { get; set; }
     }
 }

@@ -124,8 +124,8 @@ namespace LacmusApp.ViewModels
                 var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
                 var configPath = Path.Join(confDir,"appConfig.json");
                 _appConfig = await AppConfig.Create(configPath);
-                var pluginManager = new PluginManager(_appConfig);
-                var plugin = pluginManager.GetCurrentPlugin();
+                var pluginManager = new PluginManager(_appConfig.PluginDir, _appConfig.Repositories);
+                var plugin = pluginManager.GetPlugin(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);
                 using (var model = plugin.LoadModel(0.15f))
                 {
                     var count = 0;
@@ -137,8 +137,8 @@ namespace LacmusApp.ViewModels
                         {
                             photoViewModel.Annotation.Objects = new List<Object>();
                             var detections = await model.InferAsync(photoViewModel.Path,
-                                 photoViewModel.Annotation.Size.Width,
-                                 photoViewModel.Annotation.Size.Height);
+                                 photoViewModel.Photo.Width,
+                                 photoViewModel.Photo.Height);
                             foreach (var det in detections)
                             {
                                 photoViewModel.Annotation.Objects.Add(new Object()

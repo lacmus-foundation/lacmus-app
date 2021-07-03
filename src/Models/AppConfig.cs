@@ -5,10 +5,13 @@ using System.Threading.Tasks;
 using LacmusApp.Managers;
 using LacmusApp.Models.Plugins;
 using LacmusApp.Services.Plugin;
+using LacmusPlugin.Enums;
 using Newtonsoft.Json;
 using Octokit;
 using Serilog;
 using Language = LacmusApp.Services.Language;
+using OperatingSystem = LacmusPlugin.OperatingSystem;
+using Version = LacmusPlugin.Version;
 
 namespace LacmusApp.Models
 {
@@ -21,6 +24,29 @@ namespace LacmusApp.Models
             new("lacmus", "http://localhost:5000")
         };
 
+        private string _configDir =
+            Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
+        private string _pluginDir = 
+            Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus", "plugins");
+        
+        private PluginInfo _pluginInfo = new()
+        {
+            Author = "gosha20777",
+            Company = "Lacmus Foundation",
+            Description = "Resnet50+deepFPN neural network",
+            Name = "Lacmus Retinanet",
+            Tag = "LacmusRetinanetPlugin.Cpu",
+            Url = "https://github.com/lacmus-foundation/lacmus",
+            Version = new(api: 2, major: 1, minor: 0),
+            InferenceType = InferenceType.Cpu,
+            OperatingSystems = new HashSet<OperatingSystem>()
+            {
+                OperatingSystem.LinuxAmd64,
+                OperatingSystem.WindowsAmd64,
+                OperatingSystem.OsxAmd64
+            }
+        };
+        
         public Language Language { get; set; } = Language.English;
 
         public string BorderColor
@@ -38,8 +64,6 @@ namespace LacmusApp.Models
         } 
         public ThemeManager.Theme Theme { get; set; }
 
-        public PluginInfo CurrentPlugin { get; set; } = new();
-
         public PluginRepository[] Repositories
         {
             get => _repositories;
@@ -53,6 +77,18 @@ namespace LacmusApp.Models
             }
         }
         
+        public string PluginDir
+        {
+            get => _pluginDir;
+            set => _pluginDir = value;
+        }
+
+        public PluginInfo PluginInfo
+        {
+            get => _pluginInfo;
+            set => _pluginInfo = value;
+        }
+
         public async Task Save(string path)
         {
             try
@@ -72,8 +108,7 @@ namespace LacmusApp.Models
         
         public async Task Save()
         {
-            var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
-            var configPath = Path.Join(confDir,"appConfig.json");
+            var configPath = Path.Join(_configDir,"appConfig.json");
             await Save(configPath);
         }
         
