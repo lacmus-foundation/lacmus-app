@@ -21,7 +21,7 @@ namespace LacmusApp.Models
         private string _borderColor = "#FFFF0000";
         private PluginRepository[] _repositories = 
         {
-            new("lacmus", "http://localhost:5000")
+            new("lacmus", "http://localhost:80")
         };
 
         private string _configDir =

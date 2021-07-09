@@ -2,10 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
+using Flurl;
 using LacmusApp.Models.Plugins;
 using LacmusPlugin;
+using Newtonsoft.Json;
 using Serilog;
 using Version = LacmusPlugin.Version;
 
@@ -14,11 +19,9 @@ namespace LacmusApp.Services.Plugin
     public class PluginManager
     {
         private string _baseDirectory;
-        private PluginRepository[] _repositories;
-        public PluginManager(string baseDirectory, PluginRepository[] repositories)
+        public PluginManager(string baseDirectory)
         { 
             _baseDirectory = baseDirectory;
-            _repositories = repositories;
         }
         
         public List<IObjectDetectionPlugin> GetInstalledPlugins()
@@ -43,16 +46,27 @@ namespace LacmusApp.Services.Plugin
             return await Task.Run(GetInstalledPlugins);
         }
         
-        public IEnumerable<IObjectDetectionPlugin> GetPluginsFromRepository(PluginRepository repository)
+        public async Task<List<IObjectDetectionPlugin>> GetPluginsFromRepositoryAsync(PluginRepository repository)
         {
-            throw new System.NotImplementedException();
+            var result = new List<IObjectDetectionPlugin>();
+            var maxPageUrl = Url.Combine(repository.Url, "/plugin-repository/api/v1/pagesCount");
+            var pageCount = JsonConvert.DeserializeObject<PluginPageCount>(await GetAsync(maxPageUrl));
+            for (int i = 0; i < pageCount.Count; i++)
+            {
+                var pluginInfoUrl = Url.Combine(repository.Url, $"/plugin-repository/api/v1/plugins?page={i}");
+                var plugins =
+                    JsonConvert.DeserializeObject<IEnumerable<PluginInfo>>(await GetAsync(pluginInfoUrl));
+                result.AddRange(plugins);
+            }
+
+            return result;
         }
 
         public IObjectDetectionPlugin GetPlugin(string tag, Version version)
         {
             var dir = Path.Join(_baseDirectory, tag, version.ToString());
             if (!Directory.Exists(dir))
-                throw new InvalidOperationException("no such plugin");
+                throw new InvalidOperationException($"no such plugin {tag}-{version.ToString()}");
             
             var pluginPaths = Directory.GetFiles(dir, "*.dll", new EnumerationOptions() {RecurseSubdirectories = true});
             var plugins = pluginPaths.SelectMany(pluginPath =>
@@ -72,7 +86,7 @@ namespace LacmusApp.Services.Plugin
             {
                 if (plugin.Tag == tag && plugin.Version.ToString() == version.ToString())
                     Log.Information($"Load plugin {tag}-{version.ToString()}");
-                    return plugin;
+                return plugin;
             }
 
             throw new InvalidOperationException($"No such plugin {tag}-{version.ToString()}");
@@ -106,6 +120,11 @@ namespace LacmusApp.Services.Plugin
                     }
                 }
             }
+        }
+        private async Task<string> GetAsync(string uri)
+        {
+            using (var httpClient = new HttpClient())
+                return await httpClient.GetStringAsync(uri);
         }
     }
 }

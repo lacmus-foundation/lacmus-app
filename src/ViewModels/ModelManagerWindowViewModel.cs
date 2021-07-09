@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -7,35 +8,39 @@ using Avalonia.Threading;
 using DynamicData;
 using LacmusApp.Managers;
 using LacmusApp.Models;
+using LacmusApp.Models.Plugins;
 using LacmusApp.Services;
 using LacmusApp.Services.Plugin;
 using LacmusApp.Views;
+using LacmusPlugin;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
 using ReactiveUI.Validation.Helpers;
 using Serilog;
+using OperatingSystem = LacmusPlugin.OperatingSystem;
 
 namespace LacmusApp.ViewModels
 {
     public class ModelManagerWindowViewModel : ReactiveValidationObject<ModelManagerWindowViewModel>
     {
         private const uint API_VERSION = 1;
+        private PluginManager _pluginManager;
         LocalizationContext LocalizationContext { get; set; }
         private readonly ApplicationStatusManager _applicationStatusManager;
         private AppConfig _config, _newConfig;
-        
-        private SourceList<PluginInfo> _avalableModels { get; set; }
+
+        private SourceList<PluginInfo> _avalableModels { get; set; } = new SourceList<PluginInfo>();
         private ReadOnlyObservableCollection<PluginInfo> _avalableModelsCollection;
         public ReadOnlyObservableCollection<PluginInfo> AvalableModelsCollection => _avalableModelsCollection;
         
-        private SourceList<PluginInfo> _installedModels { get; set; }
+        private SourceList<PluginInfo> _installedModels { get; set; } = new SourceList<PluginInfo>();
         private ReadOnlyObservableCollection<PluginInfo> _installedModelsCollection;
         public ReadOnlyObservableCollection<PluginInfo> InstalledModelsCollection => _installedModelsCollection;
         
-        private SourceList<string> _repositories { get; set; } = new SourceList<string>();
-        private ReadOnlyObservableCollection<string> _repositoriesCollection;
-        public ReadOnlyObservableCollection<string> RepositoriesCollection => _repositoriesCollection;
+        private SourceList<PluginRepository> _repositories { get; set; } = new SourceList<PluginRepository>();
+        private ReadOnlyObservableCollection<PluginRepository> _repositoriesCollection;
+        public ReadOnlyObservableCollection<PluginRepository> RepositoriesCollection => _repositoriesCollection;
         
         public ModelManagerWindowViewModel(ModelManagerWindow window, LocalizationContext context,
                                         ref AppConfig config,
@@ -44,6 +49,7 @@ namespace LacmusApp.ViewModels
             this.LocalizationContext = context;
             _config = config;
             _newConfig = AppConfig.DeepCopy(_config);
+            _pluginManager = new PluginManager(_newConfig.PluginDir);
             
             _applicationStatusManager = manager;
             
@@ -62,10 +68,10 @@ namespace LacmusApp.ViewModels
                 .Bind(out _repositoriesCollection)
                 .Subscribe();
 
-            var repoRule = this.ValidationRule(
-                viewModel => viewModel.RepositoryToAdd,
-                x => string.IsNullOrWhiteSpace(x) == false,
-                x => $"Incorrect repository {x}");
+            //var repoRule = this.ValidationRule(
+            //    viewModel => viewModel.RepositoryToAdd,
+            //    x => string.IsNullOrWhiteSpace(x) == false,
+            //    x => $"Incorrect repository {x}");
 
             UpdateModelStatusCommand = ReactiveCommand.Create(async () => { await UpdateModelStatus(); }, CanExecute());
             UpdateInstalledModelsCommand = ReactiveCommand.Create(async () => { await UpdateInstalledModels(); }, CanExecute());
@@ -105,10 +111,17 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> AddRepositoryCommand { get; set; }
         public ReactiveCommand<Unit, Unit> RemoveRepositoryCommand { get; set; }
         
-        [Reactive] public string Repository { get; set; } = "None";
-        [Reactive] public string Type { get; set; } = "None";
+        [Reactive] public string Name { get; set; } = "None";
+        [Reactive] public string Author { get; set; } = "None";
+        [Reactive] public string Company { get; set; } = "None";
+        [Reactive] public string Description { get; set; } = "None";
+        [Reactive] public string Tag { get; set; } = "None";
+        [Reactive] public string InferenceType { get; set; } = "None";
         [Reactive] public string Version { get; set; } = "None";
-        public string ApiVersion => $"{API_VERSION}";
+        [Reactive] public string Url { get; set; } = "None";
+        [Reactive] public string OperatingSystems { get; set; } = "None";
+
+
         [Reactive] public string Status { get; set; } = "Not ready";
         [Reactive] public PluginInfo SelectedAvailableModel { get; set; } = null;
         [Reactive] public PluginInfo SelectedInstalledModel { get; set; } = null;
@@ -117,44 +130,39 @@ namespace LacmusApp.ViewModels
 
         public async void Init()
         {
+            Log.Information("init...");
             //get model status
             try
             {
                 Status = "Loading ml model...";
                 var config = _newConfig;
                 // get local versions
+                var installedPlugins = await _pluginManager.GetInstalledPluginsAsync();
                 
-                Dispatcher.UIThread.Post(() =>
+                foreach (var plugin in installedPlugins)
                 {
-                    Repository = "q";
-                    Version = $"q";
-                    Type = $"q";
-                    Status = $"Ready";
-                });
+                    if (plugin.Tag == config.PluginInfo.Tag && plugin.Version.ToString() == config.PluginInfo.Version.ToString())
+                    {
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            Name = plugin.Name;
+                            Author = plugin.Author;
+                            Company = plugin.Company;
+                            Description = plugin.Description;
+                            Tag = plugin.Tag;
+                            InferenceType = plugin.InferenceType.ToString();
+                            Version = plugin.Version.ToString();
+                            Url = plugin.Url;
+                            OperatingSystems = ConvertOperatingSystemsToString(plugin.OperatingSystems);
+                            Status = $"Ready";
+                        });
+                    }
+                    Dispatcher.UIThread.Post(() => _installedModels.Add(new PluginInfo(plugin)));
+                }
             }
             catch (Exception e)
             {
-                Status = $"Not ready.";
-                Log.Error(e, "Unable to init model.");
-            }
-            // get installed models
-            try
-            {
-                //var models = await MLModel.GetInstalledModels();
-                Dispatcher.UIThread.Post(() =>
-                {
-                    //foreach (var model in models)
-                    //{
-                    //    _installedModels.Add(new MlModelData(model.Image.Name,
-                    //        model.Type,
-                    //        model.ModelVersion,
-                    //        model.ApiVersion));
-                    //}
-                });
-            }
-            catch (Exception e)
-            {
-                Log.Error(e, "Unable to get installed models.");
+                Log.Error(e, "Unable get installed mdels.");
             }
             //get available models
             try
@@ -162,17 +170,15 @@ namespace LacmusApp.ViewModels
                 foreach (var repository in _newConfig.Repositories)
                     try
                     {
+                        var plugins = await _pluginManager.GetPluginsFromRepositoryAsync(repository);
                         //var models = await MLModel.GetAvailableModelsFromRegistry(repository);
                         Dispatcher.UIThread.Post(() =>
                         {
-                            //_repositories.Add(repository);
-                            //foreach (var model in models)
-                            //{
-                            //    _avalableModels.Add(new MlModelData(model.Image.Name,
-                            //        model.Type,
-                            //        model.ModelVersion,
-                            //        model.ApiVersion));
-                            //}
+                            _repositories.Add(repository);
+                            foreach (var plugin in plugins)
+                            {
+                                _avalableModels.Add(new PluginInfo(plugin));
+                            }
                         });
                     }
                     catch (Exception e)
@@ -427,6 +433,47 @@ namespace LacmusApp.ViewModels
             {
                 Log.Error(e, "Unable to remove repository");
             }
+        }
+        
+        private string ConvertOperatingSystemsToString(IEnumerable<OperatingSystem> operatingSystems)
+        {
+            var result = "";
+            foreach (var os in operatingSystems)
+            {
+                switch (os)
+                {
+                    case OperatingSystem.AndroidArm:
+                        result += "Android";
+                        break;
+                    case OperatingSystem.IosArm:
+                        result += "IOS";
+                        break;
+                    case OperatingSystem.LinuxAmd64:
+                        result += "Linux";
+                        break;
+                    case OperatingSystem.LinuxArm:
+                        result += "Linux (ARM)";
+                        break;
+                    case OperatingSystem.OsxAmd64:
+                        result += "OSX (amd64)";
+                        break;
+                    case OperatingSystem.OsxArm:
+                        result += "OSX (Apple Silicon)";
+                        break;
+                    case OperatingSystem.WindowsAmd64:
+                        result += "Windows";
+                        break;
+                    case OperatingSystem.WindowsArm:
+                        result += "Windows (ARM)";
+                        break;
+                    default:
+                        result += os.ToString();
+                        break;
+                }
+                result += ";";
+            }
+
+            return result;
         }
     }
 }
