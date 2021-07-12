@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
@@ -171,7 +173,6 @@ namespace LacmusApp.ViewModels
                     try
                     {
                         var plugins = await _pluginManager.GetPluginsFromRepositoryAsync(repository);
-                        //var models = await MLModel.GetAvailableModelsFromRegistry(repository);
                         Dispatcher.UIThread.Post(() =>
                         {
                             _repositories.Add(repository);
@@ -199,24 +200,28 @@ namespace LacmusApp.ViewModels
         
         public async Task UpdateModelStatus()
         {
+            var config = _newConfig;
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
             //get the last version of ml model with specific config
             try
             {
                 Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
-                //var config = _newConfig.MlModelConfig;
-                // get local versions
-                //var localVersions = await MLModel.GetInstalledVersions(config);
-                //if(!localVersions.Contains(config.ModelVersion))
-                //    throw new Exception($"There are no ml local model to init: {config.Image.Name}:{config.Image.Tag}");
-                //if(config.ApiVersion != API_VERSION)
-                //    throw new Exception($"Unsupported api {config.ApiVersion}. Only api v {API_VERSION} is supported.");
+                var plugin = await _pluginManager.GetPluginsAsync(config.PluginInfo.Tag, config.PluginInfo.Version);
                 
-                //Repository = config.Image.Name;
-                //Version = $"{config.ModelVersion}";
-                //Type = $"{config.Type}";
-                Status = $"Ready";
+                Dispatcher.UIThread.Post(() =>
+                {
+                    Name = plugin.Name;
+                    Author = plugin.Author;
+                    Company = plugin.Company;
+                    Description = plugin.Description;
+                    Tag = plugin.Tag;
+                    InferenceType = plugin.InferenceType.ToString();
+                    Version = plugin.Version.ToString();
+                    Url = plugin.Url;
+                    OperatingSystems = ConvertOperatingSystemsToString(plugin.OperatingSystems);
+                    Status = $"Ready";
+                });
                 Log.Information("Successfully init ml model.");
             }
             catch (Exception e)
@@ -233,14 +238,13 @@ namespace LacmusApp.ViewModels
             try
             {
                 Log.Information("Get installed ml models.");
-                //var models = await MLModel.GetInstalledModels();
-                //foreach (var model in models)
-                //{
-                //    _installedModels.Add(new MlModelData(model.Image.Name,
-                //        model.Type,
-                //        model.ModelVersion,
-                //        model.ApiVersion));
-                //}
+                // get local versions
+                var installedPlugins = await _pluginManager.GetInstalledPluginsAsync();
+                
+                foreach (var plugin in installedPlugins)
+                {
+                    Dispatcher.UIThread.Post(() => _installedModels.Add(new PluginInfo(plugin)));
+                }
                 Log.Information("Successfully get installed ml models.");
             }
             catch (Exception e)
@@ -260,14 +264,14 @@ namespace LacmusApp.ViewModels
                 {
                     try
                     {
-                        //var models = await MLModel.GetAvailableModelsFromRegistry(repository);
-                        //foreach (var model in models)
-                        //{
-                        //    _avalableModels.Add(new MlModelData(model.Image.Name,
-                        //        model.Type,
-                        //        model.ModelVersion,
-                        //        model.ApiVersion));
-                        //}
+                        var plugins = await _pluginManager.GetPluginsFromRepositoryAsync(repository);
+                        Dispatcher.UIThread.Post(() =>
+                        {
+                            foreach (var plugin in plugins)
+                            {
+                                _avalableModels.Add(new PluginInfo(plugin));
+                            }
+                        });
                     }
                     catch (Exception e)
                     {
@@ -289,50 +293,7 @@ namespace LacmusApp.ViewModels
             {
                 if(SelectedAvailableModel == null)
                     throw new Exception("No selected model.");
-                //if (SelectedAvailableModel.Type == MLModelType.Gpu)
-                //{
-                //    if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                //    {
-                //        var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                //        {
-                //            ButtonDefinitions = ButtonEnum.Ok,
-                //            ContentTitle = "OSError",
-                //            ContentMessage = LocalizationContext.OsErrorMesageGPU,
-                //            Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                //            Style = Style.None,
-                //            ShowInCenter = true
-                //        });
-                //        var result = await msgbox.Show();
-                //        throw new Exception($"Incorrect OS for {SelectedAvailableModel.Type} inference type");
-                //    }
-
-                    /*
-                    if (CudafyHost.GetDeviceCount(eGPUType.Emulator) == 0)
-                    {
-                        var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
-                        {
-                            ButtonDefinitions = ButtonEnum.Ok,
-                            ContentTitle = "CUDA Error",
-                            ContentMessage = "No CUDA devises.",
-                            Icon = MessageBox.Avalonia.Enums.Icon.Error,
-                            Style = Style.None,
-                            ShowInCenter = true
-                        });
-                        var result = await msgbox.Show();
-                        throw new Exception($"No CUDA devises.");
-                    }
-                    */
-                //}
-                
-                //var config = new MLModelConfig();
-                //config.Image.Name = SelectedAvailableModel.Name;
-                //config.Type = SelectedAvailableModel.Type;
-                //config.ModelVersion = SelectedAvailableModel.Version;
-                //config.ApiVersion = SelectedAvailableModel.ApiVersion;
-                //config.Image.Tag = config.GetDockerTag();
-                
-                //using(var model = new MLModel(config))
-                //    await model.Download();
+                await _pluginManager.InstallPlugin(SelectedAvailableModel, _newConfig.Repositories.First());
             }
             catch (Exception e)
             {
@@ -343,57 +304,44 @@ namespace LacmusApp.ViewModels
         public async Task RemoveModel()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | remove model...");
-            /*
             try
             {
                 if(SelectedInstalledModel == null)
                     throw new Exception("No selected model.");
                 
-                var config = new MLModelConfig();
-                config.Image.Name = SelectedInstalledModel.Name;
-                config.Type = SelectedInstalledModel.Type;
-                config.ModelVersion = SelectedInstalledModel.Version;
-                config.ApiVersion = SelectedInstalledModel.ApiVersion;
-                config.Image.Tag = config.GetDockerTag();
+                Directory.Delete(Path.Combine(_newConfig.PluginDir, SelectedInstalledModel.Tag, SelectedInstalledModel.Version.ToString()), true);
 
-                using (var model = new MLModel(config))
-                    await model.Remove();
-
-                if (SelectedInstalledModel.Name == Repository &&
-                    Version == $"{SelectedInstalledModel.Version}" &&
-                    API_VERSION == SelectedInstalledModel.ApiVersion &&
-                    Type == $"{config.Type}")
+                if (SelectedInstalledModel.Tag == Tag &&
+                    Version == SelectedInstalledModel.Version.ToString())
                 {
-                    Repository = "None";
-                    Type  = "None";
+                    Name = "None";
+                    Author = "None";
+                    Company = "None";
+                    Description = "None";
+                    Tag = "None";
+                    InferenceType = "None";
                     Version = "None";
-                    Status = "Not ready";
-                    await UpdateModelStatus();
+                    Url = "None";
+                    OperatingSystems = "None";
+                    Status = $"Not ready";
                 }
             }
             catch (Exception e)
             {
                 Log.Error(e, "Unable to remove ml model.");
             }
-            */
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
         public async Task ActivateModel()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | activate model...");
-            /*
+            
             try
             {
                 if(SelectedInstalledModel == null)
                     throw new Exception("No selected model.");
-                if(SelectedInstalledModel.ApiVersion != API_VERSION)
-                    throw new Exception($"Unsupported api {SelectedInstalledModel.ApiVersion}. Only api v {API_VERSION} is supported.");
-                
-                _newConfig.MlModelConfig.Image.Name = SelectedInstalledModel.Name;
-                _newConfig.MlModelConfig.Type = SelectedInstalledModel.Type;
-                _newConfig.MlModelConfig.ModelVersion = SelectedInstalledModel.Version;
-                _newConfig.MlModelConfig.ApiVersion = SelectedInstalledModel.ApiVersion;
-                _newConfig.MlModelConfig.Image.Tag = _newConfig.MlModelConfig.GetDockerTag();
+
+                _newConfig.PluginInfo = new PluginInfo(SelectedInstalledModel);
 
                 await UpdateModelStatus();
             }
@@ -401,7 +349,6 @@ namespace LacmusApp.ViewModels
             {
                 Log.Error(e, "Unable to activate ml model.");
             }
-            */
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 

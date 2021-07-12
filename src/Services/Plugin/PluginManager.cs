@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -10,6 +11,7 @@ using System.Threading.Tasks;
 using Flurl;
 using LacmusApp.Models.Plugins;
 using LacmusPlugin;
+using Microsoft.VisualBasic.CompilerServices;
 using Newtonsoft.Json;
 using Serilog;
 using Version = LacmusPlugin.Version;
@@ -91,10 +93,37 @@ namespace LacmusApp.Services.Plugin
 
             throw new InvalidOperationException($"No such plugin {tag}-{version.ToString()}");
         }
-
-        public void InstallPlugin(IObjectDetectionPlugin plugin)
+        
+        public async Task<IObjectDetectionPlugin> GetPluginsAsync(string tag, Version version)
         {
-            throw new System.NotImplementedException();
+            return await Task.Run(() => GetPlugin(tag, version));
+        }
+
+        public async Task InstallPlugin(IObjectDetectionPlugin plugin, PluginRepository repository)
+        {
+            var url = Url.Combine(repository.Url, "/plugin-repository/api/v1/plugin?",
+                $"tag={plugin.Tag}", $"api={plugin.Version.Api}", 
+                $"major={plugin.Version.Major}", $"minor={plugin.Version.Minor}");
+            Log.Information($"Downloading {plugin.Tag}-{plugin.Version.ToString()} plugin");
+            await using (var stream = await GetFileAsync(url))
+            {
+                Log.Information($"Extracting {plugin.Tag}-{plugin.Version.ToString()} plugin");
+                using (var archive = new ZipArchive(stream))
+                {
+                    var baseDir = Path.Combine(_baseDirectory,
+                        plugin.Tag, plugin.Version.ToString());
+                    Directory.CreateDirectory(baseDir);
+                    foreach (ZipArchiveEntry entry in archive.Entries)
+                    {
+                        var fullPath = Path.Combine(baseDir, entry.FullName);
+                        if (String.IsNullOrEmpty(entry.Name))
+                            Directory.CreateDirectory(fullPath);
+                        else
+                            entry.ExtractToFile(fullPath);
+                    }
+                }
+            }
+            GC.Collect();
         }
 
         public void RemovePlugin(IObjectDetectionPlugin plugin)
@@ -126,5 +155,12 @@ namespace LacmusApp.Services.Plugin
             using (var httpClient = new HttpClient())
                 return await httpClient.GetStringAsync(uri);
         }
+        
+        private async Task<Stream> GetFileAsync(string uri)
+        {
+            using (var httpClient = new HttpClient())
+                return await httpClient.GetStreamAsync(uri);
+        }
+
     }
 }
