@@ -304,10 +304,10 @@ namespace LacmusApp.ViewModels
                         try
                         {
                             photoViewModel.Annotation.Objects = new List<Object>();
-                            var detections = await Dispatcher.UIThread.InvokeAsync(async () =>
-                                await model.InferAsync(photoViewModel.Path,
+                            var detections = await Dispatcher.UIThread.InvokeAsync( () =>
+                                Task.Run(() =>  model.Infer(photoViewModel.Path,
                                     photoViewModel.Photo.Width,
-                                    photoViewModel.Photo.Height));
+                                    photoViewModel.Photo.Height)));
                             foreach (var det in detections)
                             {
                                 photoViewModel.Annotation.Objects.Add(new Object()

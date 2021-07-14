@@ -99,6 +99,7 @@ namespace LacmusApp.Models
                     Directory.CreateDirectory(dir);
                 await File.WriteAllTextAsync(path, str);
                 Log.Debug($"Config saved to {path}.");
+                Log.Debug(_pluginInfo.Tag);
             }
             catch (Exception e)
             {
@@ -134,6 +135,9 @@ namespace LacmusApp.Models
             newConfig.Language = config.Language;
             newConfig.Repositories = new List<PluginRepository>(config.Repositories).ToArray();
             newConfig.BorderColor = config.BorderColor;
+            newConfig.Theme = config.Theme;
+            newConfig.PluginDir = config.PluginDir;
+            newConfig.PluginInfo = config.PluginInfo;
             return newConfig;
         }
     }

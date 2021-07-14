@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using DynamicData;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
@@ -136,9 +137,10 @@ namespace LacmusApp.ViewModels
                         try
                         {
                             photoViewModel.Annotation.Objects = new List<Object>();
-                            var detections = await model.InferAsync(photoViewModel.Path,
-                                 photoViewModel.Photo.Width,
-                                 photoViewModel.Photo.Height);
+                            var detections = await Dispatcher.UIThread.InvokeAsync( () =>
+                                Task.Run(() =>  model.Infer(photoViewModel.Path,
+                                    photoViewModel.Photo.Width,
+                                    photoViewModel.Photo.Height)));
                             foreach (var det in detections)
                             {
                                 photoViewModel.Annotation.Objects.Add(new Object()
@@ -162,6 +164,8 @@ namespace LacmusApp.ViewModels
                             }
                             objectCount += photoViewModel.BoundBoxes.Count();
                             count++;
+                            PredictProgress = (double) count / _photos.Items.Count() * 100;
+                            PredictTextProgress = $"{Convert.ToInt32(PredictProgress)} %";
                             Console.WriteLine($"\tProgress: {(double) count / _photos.Items.Count() * 100} %");
                             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / _photos.Items.Count() * 100)} %, [{count} of {_photos.Items.Count()}]");
                         }
