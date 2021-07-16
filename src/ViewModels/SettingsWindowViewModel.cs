@@ -1,13 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
+using Avalonia.Threading;
 using LacmusApp.Managers;
 using LacmusApp.Models;
 using LacmusApp.Services;
+using LacmusApp.Services.Plugin;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using LacmusApp.Views;
 using Serilog;
+using OperatingSystem = LacmusPlugin.OperatingSystem;
 
 namespace LacmusApp.ViewModels
 {
@@ -53,9 +57,17 @@ namespace LacmusApp.ViewModels
         [Reactive] public int LanguageIndex { get; set; } = 0;
         [Reactive] public int ThemeIndex { get; set; } = 0;
         [Reactive] public string HexColor { get; set; } = "#FFFF0000";
-        [Reactive] public string Repository { get; set; } = "None";
-        [Reactive] public string Type { get; set; } = "None";
+        
+        [Reactive] public string Name { get; set; } = "None";
+        [Reactive] public string Author { get; set; } = "None";
+        [Reactive] public string Company { get; set; } = "None";
+        [Reactive] public string Description { get; set; } = "None";
+        [Reactive] public string Tag { get; set; } = "None";
+        [Reactive] public string InferenceType { get; set; } = "None";
         [Reactive] public string Version { get; set; } = "None";
+        [Reactive] public string Url { get; set; } = "None";
+        [Reactive] public string OperatingSystems { get; set; } = "None";
+        
         [Reactive] public string Status { get; set; } = "Not ready";
         [Reactive] public string MLUrl { get; set; } = "http://localhost:5000";
         private void SetupCommands()
@@ -141,9 +153,24 @@ namespace LacmusApp.ViewModels
             //get the last version of ml model with specific config
             try
             {
-                Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
-                Status = $"Ready";
+                var pluginManager = new PluginManager(_newConfig.PluginDir);
+                var config = _newConfig;
+                var plugin = await pluginManager.GetPluginsAsync(config.PluginInfo.Tag, config.PluginInfo.Version);
+                
+                Dispatcher.UIThread.Post(() =>
+                {
+                    Name = plugin.Name;
+                    Author = plugin.Author;
+                    Company = plugin.Company;
+                    Description = plugin.Description;
+                    Tag = plugin.Tag;
+                    InferenceType = plugin.InferenceType.ToString();
+                    Version = plugin.Version.ToString();
+                    Url = plugin.Url;
+                    OperatingSystems = ConvertOperatingSystemsToString(plugin.OperatingSystems);
+                    Status = $"Ready";
+                });
                 Log.Information("Successfully init ml model.");
             }
             catch (Exception e)
@@ -189,6 +216,47 @@ namespace LacmusApp.ViewModels
             {
                 Log.Error("Unable to change theme.", e);
             }
+        }
+        
+        private string ConvertOperatingSystemsToString(IEnumerable<OperatingSystem> operatingSystems)
+        {
+            var result = "";
+            foreach (var os in operatingSystems)
+            {
+                switch (os)
+                {
+                    case OperatingSystem.AndroidArm:
+                        result += "Android";
+                        break;
+                    case OperatingSystem.IosArm:
+                        result += "IOS";
+                        break;
+                    case OperatingSystem.LinuxAmd64:
+                        result += "Linux";
+                        break;
+                    case OperatingSystem.LinuxArm:
+                        result += "Linux (ARM)";
+                        break;
+                    case OperatingSystem.OsxAmd64:
+                        result += "OSX (amd64)";
+                        break;
+                    case OperatingSystem.OsxArm:
+                        result += "OSX (Apple Silicon)";
+                        break;
+                    case OperatingSystem.WindowsAmd64:
+                        result += "Windows";
+                        break;
+                    case OperatingSystem.WindowsArm:
+                        result += "Windows (ARM)";
+                        break;
+                    default:
+                        result += os.ToString();
+                        break;
+                }
+                result += ";";
+            }
+
+            return result;
         }
     }
 }

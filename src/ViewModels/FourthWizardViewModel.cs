@@ -123,7 +123,7 @@ namespace LacmusApp.ViewModels
                 Status = "starting ml model...";
                 //load config
                 var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
-                var configPath = Path.Join(confDir,"appConfig.json");
+                var configPath = Path.Join(confDir,"appConfig-v2.json");
                 _appConfig = await AppConfig.Create(configPath);
                 var pluginManager = new PluginManager(_appConfig.PluginDir);
                 var plugin = pluginManager.GetPlugin(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);

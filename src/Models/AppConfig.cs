@@ -19,10 +19,7 @@ namespace LacmusApp.Models
     public class AppConfig
     {
         private string _borderColor = "#FFFF0000";
-        private PluginRepository[] _repositories = 
-        {
-            new("lacmus", "http://localhost:80")
-        };
+        private PluginRepository _repository = new("lacmus", "http://localhost:80");
 
         private string _configDir =
             Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
@@ -64,17 +61,10 @@ namespace LacmusApp.Models
         } 
         public ThemeManager.Theme Theme { get; set; }
 
-        public PluginRepository[] Repositories
+        public PluginRepository Repository
         {
-            get => _repositories;
-            set
-            {
-                if(value == null || value.Length < 1)
-                {
-                    throw new Exception($"invalid Repositories: {_repositories}");
-                }
-                _repositories = value;
-            }
+            get => _repository;
+            set => _repository = value;
         }
         
         public string PluginDir
@@ -109,7 +99,7 @@ namespace LacmusApp.Models
         
         public async Task Save()
         {
-            var configPath = Path.Join(_configDir,"appConfig.json");
+            var configPath = Path.Join(_configDir,"appConfig-v2.json");
             await Save(configPath);
         }
         
@@ -133,7 +123,7 @@ namespace LacmusApp.Models
             //deep copy ml config
             var newConfig = new AppConfig();
             newConfig.Language = config.Language;
-            newConfig.Repositories = new List<PluginRepository>(config.Repositories).ToArray();
+            newConfig.Repository = config.Repository;
             newConfig.BorderColor = config.BorderColor;
             newConfig.Theme = config.Theme;
             newConfig.PluginDir = config.PluginDir;

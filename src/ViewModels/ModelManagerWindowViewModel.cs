@@ -15,6 +15,9 @@ using LacmusApp.Services;
 using LacmusApp.Services.Plugin;
 using LacmusApp.Views;
 using LacmusPlugin;
+using MessageBox.Avalonia;
+using MessageBox.Avalonia.DTO;
+using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
@@ -26,7 +29,7 @@ namespace LacmusApp.ViewModels
 {
     public class ModelManagerWindowViewModel : ReactiveValidationObject<ModelManagerWindowViewModel>
     {
-        private const uint API_VERSION = 1;
+        private bool isModelChanged = false;
         private PluginManager _pluginManager;
         LocalizationContext LocalizationContext { get; set; }
         private readonly ApplicationStatusManager _applicationStatusManager;
@@ -39,10 +42,6 @@ namespace LacmusApp.ViewModels
         private SourceList<PluginInfo> _installedModels { get; set; } = new SourceList<PluginInfo>();
         private ReadOnlyObservableCollection<PluginInfo> _installedModelsCollection;
         public ReadOnlyObservableCollection<PluginInfo> InstalledModelsCollection => _installedModelsCollection;
-        
-        private SourceList<PluginRepository> _repositories { get; set; } = new SourceList<PluginRepository>();
-        private ReadOnlyObservableCollection<PluginRepository> _repositoriesCollection;
-        public ReadOnlyObservableCollection<PluginRepository> RepositoriesCollection => _repositoriesCollection;
         
         public ModelManagerWindowViewModel(ModelManagerWindow window, LocalizationContext context,
                                         ref AppConfig config,
@@ -64,11 +63,6 @@ namespace LacmusApp.ViewModels
                 .Connect()
                 .Bind(out _installedModelsCollection)
                 .Subscribe();
-            
-            _repositories
-                .Connect()
-                .Bind(out _repositoriesCollection)
-                .Subscribe();
 
             //var repoRule = this.ValidationRule(
             //    viewModel => viewModel.RepositoryToAdd,
@@ -81,13 +75,26 @@ namespace LacmusApp.ViewModels
             DownloadModelCommand = ReactiveCommand.Create(async () => { await DownloadModel(); }, CanExecute());
             RemoveModelCommand = ReactiveCommand.Create(async () => { await RemoveModel(); }, CanExecute());
             ActivateModelCommand = ReactiveCommand.Create(async () => { await ActivateModel(); }, CanExecute());
-            AddRepositoryCommand = ReactiveCommand.Create(AddRepository, this.IsValid());
-            RemoveRepositoryCommand = ReactiveCommand.Create(RemoveRepository, CanExecute());
-            
+            EditRepositoryCommand = ReactiveCommand.Create(EditRepository, this.IsValid());
+
             ApplyCommand = ReactiveCommand.Create(async () =>
             {
                 _config = AppConfig.DeepCopy(_newConfig);
                 await _config.Save();
+                if (isModelChanged)
+                {
+                    var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                    {
+                        ButtonDefinitions = ButtonEnum.Ok,
+                        ContentTitle = "Need to restart",
+                        ContentMessage = "To use new configuration of the ML Model you need to restart application.",
+                        Icon = MessageBox.Avalonia.Enums.Icon.Info,
+                        Style = Style.None,
+                        ShowInCenter = true
+                    });
+                    var result = await msgbox.Show();
+                }
+                
                 window.AppConfig = _config;
                 window.Close(); 
             }, CanExecute());
@@ -110,8 +117,7 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Task> ActivateModelCommand { get; set; }
         public ReactiveCommand<Unit, Task> ApplyCommand { get; set; }
         public ReactiveCommand<Unit, Unit> CancelCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> AddRepositoryCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> RemoveRepositoryCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> EditRepositoryCommand { get; set; }
         
         [Reactive] public string Name { get; set; } = "None";
         [Reactive] public string Author { get; set; } = "None";
@@ -122,7 +128,8 @@ namespace LacmusApp.ViewModels
         [Reactive] public string Version { get; set; } = "None";
         [Reactive] public string Url { get; set; } = "None";
         [Reactive] public string OperatingSystems { get; set; } = "None";
-
+        
+        [Reactive] private PluginRepository Repository { get; set; }
 
         [Reactive] public string Status { get; set; } = "Not ready";
         [Reactive] public PluginInfo SelectedAvailableModel { get; set; } = null;
@@ -169,23 +176,22 @@ namespace LacmusApp.ViewModels
             //get available models
             try
             {
-                foreach (var repository in _newConfig.Repositories)
-                    try
+                try
+                {
+                    var plugins = await _pluginManager.GetPluginsFromRepositoryAsync(_newConfig.Repository);
+                    Dispatcher.UIThread.Post(() =>
                     {
-                        var plugins = await _pluginManager.GetPluginsFromRepositoryAsync(repository);
-                        Dispatcher.UIThread.Post(() =>
+                        Repository = _newConfig.Repository;
+                        foreach (var plugin in plugins)
                         {
-                            _repositories.Add(repository);
-                            foreach (var plugin in plugins)
-                            {
-                                _avalableModels.Add(new PluginInfo(plugin));
-                            }
-                        });
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Warning(e,$"Unable to parse models from {repository}. Skipped.");
-                    }
+                            _avalableModels.Add(new PluginInfo(plugin));
+                        }
+                    });
+                }
+                catch (Exception e)
+                {
+                    Log.Warning(e,$"Unable to parse models from {_newConfig.Repository}. Skipped.");
+                }
             }
             catch (Exception e)
             {
@@ -260,23 +266,20 @@ namespace LacmusApp.ViewModels
             {
                 Log.Information("Get available ml models from registry.");
                 _avalableModels.Clear();
-                foreach (var repository in _newConfig.Repositories)
+                try
                 {
-                    try
+                    var plugins = await _pluginManager.GetPluginsFromRepositoryAsync(_newConfig.Repository);
+                    Dispatcher.UIThread.Post(() =>
                     {
-                        var plugins = await _pluginManager.GetPluginsFromRepositoryAsync(repository);
-                        Dispatcher.UIThread.Post(() =>
+                        foreach (var plugin in plugins)
                         {
-                            foreach (var plugin in plugins)
-                            {
-                                _avalableModels.Add(new PluginInfo(plugin));
-                            }
-                        });
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Warning(e,$"Unable to parse models from {repository}. Skipped.");
-                    }
+                            _avalableModels.Add(new PluginInfo(plugin));
+                        }
+                    });
+                }
+                catch (Exception e)
+                {
+                    Log.Warning(e,$"Unable to parse models from {_newConfig.Repository}. Skipped.");
                 }
                 Log.Information("Successfully get available ml models.");
             }
@@ -293,7 +296,7 @@ namespace LacmusApp.ViewModels
             {
                 if(SelectedAvailableModel == null)
                     throw new Exception("No selected model.");
-                await _pluginManager.InstallPlugin(SelectedAvailableModel, _newConfig.Repositories.First());
+                await _pluginManager.InstallPlugin(SelectedAvailableModel, _newConfig.Repository);
             }
             catch (Exception e)
             {
@@ -342,6 +345,7 @@ namespace LacmusApp.ViewModels
                     throw new Exception("No selected model.");
 
                 _newConfig.PluginInfo = new PluginInfo(SelectedInstalledModel);
+                isModelChanged = true;
 
                 await UpdateModelStatus();
             }
@@ -352,14 +356,11 @@ namespace LacmusApp.ViewModels
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 
-        public void AddRepository()
+        public void EditRepository()
         {
             try
             {
-                //_repositories.Add(RepositoryToAdd);
-                //var repoList = _newConfig.Repositories.ToList();
-                //repoList.Add(RepositoryToAdd);
-                //_newConfig.Repositories = repoList.ToArray();
+                _newConfig.Repository = Repository;
             }
             catch (Exception e)
             {
@@ -367,21 +368,6 @@ namespace LacmusApp.ViewModels
             }
         }
 
-        public void RemoveRepository()
-        {
-            try
-            {
-                //_repositories.Remove(SelectedRepository);
-                //var repoList = _newConfig.Repositories.ToList();
-                //repoList.Remove(RepositoryToAdd);
-                //_newConfig.Repositories = repoList.ToArray();
-            }
-            catch (Exception e)
-            {
-                Log.Error(e, "Unable to remove repository");
-            }
-        }
-        
         private string ConvertOperatingSystemsToString(IEnumerable<OperatingSystem> operatingSystems)
         {
             var result = "";
