@@ -1,18 +1,11 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Reactive;
-using System.Reactive.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Avalonia.Controls;
-using Avalonia.Threading;
 using DynamicData;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using LacmusApp.Managers;
-using LacmusApp.Models;
 using LacmusApp.Services;
-using LacmusApp.Services.Files;
 using LacmusApp.Views;
 using Serilog;
 

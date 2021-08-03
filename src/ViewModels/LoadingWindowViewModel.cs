@@ -39,7 +39,7 @@ namespace LacmusApp.ViewModels
         private async Task<AppConfig> LoadConfig()
         {
             var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
-            var configPath = Path.Join(confDir,"appConfig.json");
+            var configPath = Path.Join(confDir,"appConfig-v2.json");
             if (File.Exists(configPath))
                 try
                 {
@@ -70,7 +70,7 @@ namespace LacmusApp.ViewModels
             var revision = "";
             if (typeof(Program).Assembly.GetName().Version.Revision != 0)
                 revision = $"preview-{typeof(Program).Assembly.GetName().Version.Revision}";
-            return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build}.{revision} alpha";
+            return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build}.{revision} beta";
         }
     }
 }

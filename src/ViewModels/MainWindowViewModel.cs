@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reactive;
@@ -20,11 +22,10 @@ using ReactiveUI.Fody.Helpers;
 using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
-using LacmusApp.Models.ML;
 using LacmusApp.Models.Photo;
 using LacmusApp.Services;
-using LacmusApp.Services.Files;
 using LacmusApp.Services.IO;
+using LacmusApp.Services.Plugin;
 using LacmusApp.Services.VM;
 using LacmusApp.Views;
 using Octokit;
@@ -32,6 +33,7 @@ using Serilog;
 using Splat;
 using Attribute = LacmusApp.Models.Photo.Attribute;
 using Language = LacmusApp.Services.Language;
+using Object = LacmusApp.Models.Object;
 
 namespace LacmusApp.ViewModels
 {
@@ -42,6 +44,7 @@ namespace LacmusApp.ViewModels
         private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
         private AppConfig _appConfig;
         private ThemeManager _themeManager;
+        private PluginManager _pluginManager;
         private int itemPerPage = 500;
         private int itemcount;
         private int _totalPages;
@@ -53,6 +56,8 @@ namespace LacmusApp.ViewModels
             _window = window;
             _appConfig = appConfig;
             _themeManager = new ThemeManager(window);
+            _pluginManager = new PluginManager(appConfig.PluginDir);
+
 
             var pageFilter = this
                 .WhenValueChanged(x => x.CurrentPage)
@@ -127,8 +132,6 @@ namespace LacmusApp.ViewModels
             PredictAllCommand = ReactiveCommand.Create(PredictAll, canExecute);
             OpenFileCommand = ReactiveCommand.Create(OpenFile, canExecute);
             SaveAllCommand = ReactiveCommand.Create(SaveAll, canExecute);
-            LoadModelCommand = ReactiveCommand.Create(LoadModel, canExecute);
-            UpdateModelCommand = ReactiveCommand.Create(UpdateModel, canExecute);
             OpenModelManagerCommand = ReactiveCommand.Create(OpenModelManager, canExecute);
             OpenBugReportCommand = ReactiveCommand.Create(OpenBugReport, canExecute);
             
@@ -182,8 +185,6 @@ namespace LacmusApp.ViewModels
         public ReactiveCommand<Unit, Unit> OpenFileCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> LoadModelCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> UpdateModelCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenModelManagerCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenBugReportCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAsCommand { get; set; }
@@ -272,65 +273,7 @@ namespace LacmusApp.ViewModels
                 TotalPages = (itemcount / itemPerPage);
             }
         }
-
-        private async void LoadModel()
-        {
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
-            //ml model with specific config
-            try
-            {
-                Log.Information("Loading ml model.");
-                var config = _appConfig.MlModelConfig;
-                // init local model or download and init it from docker registry
-                using(var model = new MLModel(config))
-                    await model.Download(); //download if it necessary
-                Log.Information("Successfully loads ml model.");
-            }
-            catch (Exception e)
-            {
-                Log.Error(e, "Unable to load model.");
-            }
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-        }
-
-        private async void UpdateModel()
-        {
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | updating model...");
-            try
-            {
-                Log.Information("Updating ml model.");
-                var oldConfig = _appConfig.MlModelConfig;
-                var newConfig = oldConfig;
-                var netVersions = await MLModel.GetAvailableVersionsFromRegistry(newConfig);
-                if (netVersions.Any())
-                    newConfig.ModelVersion = netVersions.Max();
-                else
-                {
-                    throw new Exception($"Nothing ml models in registry: {oldConfig.Image.Name}.");
-                }
-                if (newConfig.ModelVersion > oldConfig.ModelVersion)
-                {
-                    Log.Information($"Find never version of ml model {oldConfig.Image.Name}: ver {newConfig.ModelVersion} > ver {oldConfig.ModelVersion}");
-                    using(var newModel = new MLModel(newConfig))
-                        await newModel.Download();
-                    using(var oldModel = new MLModel(oldConfig))
-                        await oldModel.Remove();
-                    _appConfig.MlModelConfig = newConfig;
-                    await _appConfig.Save();
-                    Log.Information("Successfully updates ml model.");
-                }
-                else
-                {
-                    Log.Information($"Ml model {oldConfig.Image.Name} is up to date: ver {newConfig.ModelVersion}.");
-                }
-            }
-            catch (Exception e)
-            {
-                Log.Error(e,"Unable to update ml model.");
-            }
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
-        }
-
+        
         public async void OpenModelManager()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
@@ -345,27 +288,41 @@ namespace LacmusApp.ViewModels
             window.DataContext = context;
             window.Show();
         }
-
-        /// <summary>
-        /// 
-        /// </summary>
+        
         private async void PredictAll()
         {
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
             try
             {
-                //load config
-                var config = _appConfig.MlModelConfig;
-                using (var model = new MLModel(config))
+                var plugin = _pluginManager.GetPlugin(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);
+                using (var model = plugin.LoadModel(0.15f))
                 {
-                    await model.Init();
                     var count = 0;
                     var objectCount = 0;
                     foreach (var photoViewModel in _photos.Items)
                     {
                         try
                         {
-                            photoViewModel.Annotation.Objects = await model.Predict(photoViewModel);
+                            photoViewModel.Annotation.Objects = new List<Object>();
+                            var detections = await Dispatcher.UIThread.InvokeAsync( () =>
+                                Task.Run(() =>  model.Infer(photoViewModel.Path,
+                                    photoViewModel.Photo.Width,
+                                    photoViewModel.Photo.Height)));
+                            foreach (var det in detections)
+                            {
+                                photoViewModel.Annotation.Objects.Add(new Object()
+                                {
+                                    Box = new Box()
+                                    {
+                                        Xmax = det.XMax,
+                                        Xmin = det.XMin,
+                                        Ymax = det.YMax,
+                                        Ymin = det.YMin
+                                    },
+                                    Difficult = 0,
+                                    Name = det.Label
+                                });
+                            }
                             photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
                             if (photoViewModel.BoundBoxes.Any())
                             {
@@ -382,14 +339,15 @@ namespace LacmusApp.ViewModels
                             Log.Error(e,$"Unable to process file {photoViewModel.Path}. Slipped.");
                         }
                     }
-                    await model.Stop();
                     Log.Information($"Successfully predict {_photos.Items.Count()} photos. Find {objectCount} objects.");
                 }
+                plugin = null;
             }
             catch (Exception e)
             {
                 Log.Error(e, "Unable to get prediction.");
             }
+            GC.Collect();
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
 

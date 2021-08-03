@@ -2,7 +2,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:cp="clr-namespace:ThemeEditor.Controls.ColorPicker;assembly=ThemeEditor.Controls.ColorPicker"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="LacmusApp.Views.SettingsWindow"
         Icon="resm:LacmusApp.Assets.avalonia-logo.ico"
@@ -20,9 +19,6 @@
                     <StackPanel>
                         <Border Classes="Card">
                             <StackPanel>
-                                <StackPanel.Resources>
-                                    <cp:HexToColorConverter x:Key="HexToColorConverter"/>
-                                </StackPanel.Resources>
                                 <TextBlock Classes="Heading" 
                                            Text="{Binding LocalizationContext.SettingsLanguage}"
                                 />
@@ -59,77 +55,59 @@
                                 <TextBlock Classes="Heading" 
                                            Text="{Binding LocalizationContext.SettingsMlModelGeneral}"
                                 />
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    
-                                </Grid>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="10"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Grid.Column="0" Classes="Heading" 
-                                               Text="Url:"
-                                    />
-                                    <TextBox Grid.Column="2" UseFloatingWatermark="True"
-                                             Text="{Binding MLUrl, Mode=TwoWay}"/>
-                                </Grid>
-                                <!-- <CheckBox IsChecked="False"
-                                          Content="Use JVT for external usage"/> -->
-                                <Grid> 
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="auto"/>
-                                        <ColumnDefinition Width="10"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <!-- <TextBlock Grid.Column="0" Classes="Heading" 
-                                               Text="Inference type:"
-                                    />
-                                    <ComboBox Grid.Column="2" SelectedIndex="{Binding InferenceIndex, Mode=TwoWay}">
-                                        <ComboBoxItem Content="cpu" />
-                                        <ComboBoxItem Content="gpu" />
-                                        <ComboBoxItem Content="cpu no avx" />
-                                        <ComboBoxItem Content="tpu" />
-                                    </ComboBox> -->
-                                    <!--<TextBlock Grid.Column="4" Classes="Heading" 
-                                               Text="{Binding LocalizationContext.SettingsBatchSize}"
-                                    />
-                                    <NumericUpDown Grid.Column="6"
-                                                   Maximum="4"
-                                                   Minimum="1"
-                                                   Value="1"/>-->
-                                </Grid>
-                            </StackPanel>
-                        </Border>
-                        <Border Classes="Card">
-                            <StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0 5">
                                     <TextBlock Classes="Caption"
-                                               Text="{Binding LocalizationContext.WizardThirdModelRepository}"/>
+                                               Text="{Binding LocalizationContext.ModelManagerName}"/>
                                     <TextBlock Classes="Caption"
-                                               Text="{Binding Repository}"/>
+                                               Text="{Binding Name}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0 5">
                                     <TextBlock Classes="Caption"
-                                               Text="{Binding LocalizationContext.WizardThirdModelType}"/>
+                                               Text="{Binding LocalizationContext.ModelManagerVersion}"/>
                                     <TextBlock Classes="Caption"
-                                               Text="{Binding Type}"/>
+                                               Text="{Binding Version}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0 5">
                                     <TextBlock Classes="Caption"
-                                        Text="{Binding LocalizationContext.WizardThirdModelVersion}"/>
+                                               Text="{Binding LocalizationContext.ModelManagerInferenceType}"/>
                                     <TextBlock Classes="Caption"
-                                        Text="{Binding Version}"/>
+                                               Text="{Binding InferenceType}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5">
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding LocalizationContext.ModelManagerAuthor}"/>
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding Author}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5">
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding LocalizationContext.ModelManagerCompany}"/>
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding Company}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5">
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding LocalizationContext.ModelManagerDescription}"/>
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding Description}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5">
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding LocalizationContext.ModelManagerUrl}"/>
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding Url}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5">
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding LocalizationContext.ModelManagerTag}"/>
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding Tag}"/>
+                                </StackPanel>
+                                <StackPanel Orientation="Horizontal" Margin="0 5">
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding LocalizationContext.ModelManagerSupportedOs}"/>
+                                    <TextBlock Classes="Caption"
+                                               Text="{Binding OperatingSystems}"/>
                                 </StackPanel>
                                 <StackPanel Orientation="Horizontal" Margin="0 5">
                                     <TextBlock Classes="Caption"

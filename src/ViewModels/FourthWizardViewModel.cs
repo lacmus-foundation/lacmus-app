@@ -11,13 +11,13 @@ using ReactiveUI.Fody.Helpers;
 using LacmusApp.Extensions;
 using LacmusApp.Managers;
 using LacmusApp.Models;
-using LacmusApp.Models.ML;
 using LacmusApp.Models.Photo;
 using LacmusApp.Services;
 using LacmusApp.Services.IO;
-using LacmusApp.Services.VM;
+using LacmusApp.Services.Plugin;
 using Serilog;
 using Attribute = LacmusApp.Models.Photo.Attribute;
+using Object = LacmusApp.Models.Object;
 
 namespace LacmusApp.ViewModels
 {
@@ -123,12 +123,12 @@ namespace LacmusApp.ViewModels
                 Status = "starting ml model...";
                 //load config
                 var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
-                var configPath = Path.Join(confDir,"appConfig.json");
+                var configPath = Path.Join(confDir,"appConfig-v2.json");
                 _appConfig = await AppConfig.Create(configPath);
-                var config = _appConfig.MlModelConfig;
-                using (var model = new MLModel(config))
+                var pluginManager = new PluginManager(_appConfig.PluginDir);
+                var plugin = pluginManager.GetPlugin(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);
+                using (var model = plugin.LoadModel(0.15f))
                 {
-                    await model.Init();
                     var count = 0;
                     var objectCount = 0;
                     Status = "processing...";
@@ -136,7 +136,26 @@ namespace LacmusApp.ViewModels
                     {
                         try
                         {
-                            photoViewModel.Annotation.Objects = await model.Predict(photoViewModel);
+                            photoViewModel.Annotation.Objects = new List<Object>();
+                            var detections = await Dispatcher.UIThread.InvokeAsync( () =>
+                                Task.Run(() =>  model.Infer(photoViewModel.Path,
+                                    photoViewModel.Photo.Width,
+                                    photoViewModel.Photo.Height)));
+                            foreach (var det in detections)
+                            {
+                                photoViewModel.Annotation.Objects.Add(new Object()
+                                {
+                                    Box = new Box()
+                                    {
+                                        Xmax = det.XMax,
+                                        Xmin = det.XMin,
+                                        Ymax = det.YMax,
+                                        Ymin = det.YMin
+                                    },
+                                    Difficult = 0,
+                                    Name = det.Label
+                                });
+                            }
                             photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
                             if (photoViewModel.BoundBoxes.Any())
                             {
@@ -147,18 +166,15 @@ namespace LacmusApp.ViewModels
                             count++;
                             PredictProgress = (double) count / _photos.Items.Count() * 100;
                             PredictTextProgress = $"{Convert.ToInt32(PredictProgress)} %";
-                            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / _photos.Items.Count() * 100)} %, [{count} of {_photos.Items.Count()}]");
                             Console.WriteLine($"\tProgress: {(double) count / _photos.Items.Count() * 100} %");
+                            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / _photos.Items.Count() * 100)} %, [{count} of {_photos.Items.Count()}]");
                         }
                         catch (Exception e)
                         {
                             Log.Error(e,$"Unable to process file {photoViewModel.Path}. Slipped.");
                         }
                     }
-                    Status = "stopping ml model...";
-                    await model.Stop();
-                    PredictTextProgress = $"predict {_photos.Count} photos.";
-                    Log.Information($"Successfully predict {_photos.Count} photos. Find {objectCount} objects.");
+                    Log.Information($"Successfully predict {_photos.Items.Count()} photos. Find {objectCount} objects.");
                 }
             }
             catch (Exception e)
@@ -233,11 +249,7 @@ namespace LacmusApp.ViewModels
 
         private async void Stop()
         {
-            var config = await MLModelConfigExtension.Load(_mlConfigPath);
-            using (var model = new MLModel(config))
-            {
-                await model.Stop();
-            }
+            //TODO: cancel long operations
         }
         private static IEnumerable<string> GetFilesFromDir(string dirPath, bool isRecursive)
         {

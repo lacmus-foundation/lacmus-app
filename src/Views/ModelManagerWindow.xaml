@@ -32,27 +32,57 @@
             <StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="{Binding LocalizationContext.WizardThirdModelRepository}"/>
+                               Text="{Binding LocalizationContext.ModelManagerName}"/>
                     <TextBlock Classes="Caption"
-                               Text="{Binding Repository}"/>
+                               Text="{Binding Name}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="{Binding LocalizationContext.WizardThirdModelType}"/>
+                               Text="{Binding LocalizationContext.ModelManagerVersion}"/>
                     <TextBlock Classes="Caption"
-                               Text="{Binding Type}"/>
+                               Text="{Binding Version}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                        Text="{Binding LocalizationContext.WizardThirdModelVersion}"/>
+                               Text="{Binding LocalizationContext.ModelManagerInferenceType}"/>
                     <TextBlock Classes="Caption"
-                        Text="{Binding Version}"/>
+                               Text="{Binding InferenceType}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
-                               Text="{Binding LocalizationContext.ModelManagerApiVersion}"/>
+                               Text="{Binding LocalizationContext.ModelManagerAuthor}"/>
                     <TextBlock Classes="Caption"
-                               Text="{Binding ApiVersion}"/>
+                               Text="{Binding Author}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                        Text="{Binding LocalizationContext.ModelManagerCompany}"/>
+                    <TextBlock Classes="Caption"
+                        Text="{Binding Company}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="{Binding LocalizationContext.ModelManagerDescription}"/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Description}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="{Binding LocalizationContext.ModelManagerUrl}"/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Url}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="{Binding LocalizationContext.ModelManagerTag}"/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Tag}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               Text="{Binding LocalizationContext.ModelManagerSupportedOs}"/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding OperatingSystems}"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" Margin="0 5">
                     <TextBlock Classes="Caption"
@@ -101,10 +131,10 @@
                                   SelectedItem="{Binding SelectedInstalledModel, Mode=TwoWay}"
                                   SelectionMode="Single">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Repository" Binding="{Binding Name}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="Type" Binding="{Binding Type}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="Version" Binding="{Binding Version}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="Api Version" Binding="{Binding ApiVersion}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Author" Binding="{Binding Author}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Type" Binding="{Binding InferenceType}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Version" Binding="{Binding StringVersion}"></DataGridTextColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>
@@ -135,44 +165,10 @@
                                   SelectedItem="{Binding SelectedAvailableModel, Mode=TwoWay}"
                                   SelectionMode="Single">
                             <DataGrid.Columns>
-                                <DataGridTextColumn Header="Repository" Binding="{Binding Name}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="Type" Binding="{Binding Type}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="Version" Binding="{Binding Version}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="Api Version" Binding="{Binding ApiVersion}"></DataGridTextColumn>
-                            </DataGrid.Columns>
-                        </DataGrid>
-                    </Grid>
-                </Expander>
-                <Expander Header="{Binding LocalizationContext.ModelManagerRepositories}" IsExpanded="False" Margin="0 5 0 0">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition/>
-                            <RowDefinition/>
-                        </Grid.RowDefinitions>
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="2*"/>
-                                <ColumnDefinition Width="1*"/>
-                                <ColumnDefinition Width="1*"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBox Grid.Column="0" UseFloatingWatermark="True"
-                                     Watermark="{Binding LocalizationContext.ModelManagerRepositoryWatermark}"
-                                     Text="{Binding RepositoryToAdd, Mode=TwoWay}"/>
-                            <Button Grid.Column="1" Margin="5"
-                                    Content="{Binding LocalizationContext.ModelManagerAddRepositoryButton}"
-                                    Command="{Binding AddRepositoryCommand}"
-                            />
-                            <Button Grid.Column="2" Margin="5"
-                                    Content="{Binding LocalizationContext.ModelManagerRemoveSelectedButton}"
-                                    Command="{Binding RemoveRepositoryCommand}"
-                            />
-                        </Grid>
-                        <DataGrid Grid.Row="1" 
-                                  Items="{Binding RepositoriesCollection}"
-                                  SelectedItem="{Binding SelectedRepository, Mode=TwoWay}"
-                                  SelectionMode="Single">
-                            <DataGrid.Columns>
-                                <DataGridTextColumn Header="Repository" Binding="{Binding}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Author" Binding="{Binding Author}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Type" Binding="{Binding InferenceType}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Version" Binding="{Binding StringVersion}"></DataGridTextColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Grid>

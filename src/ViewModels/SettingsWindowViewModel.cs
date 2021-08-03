@@ -1,29 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Logging;
-using Avalonia.Logging.Serilog;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using DynamicData;
 using LacmusApp.Managers;
 using LacmusApp.Models;
-using LacmusApp.Models.ML;
 using LacmusApp.Services;
-using MetadataExtractor;
+using LacmusApp.Services.Plugin;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using LacmusApp.Services.Files;
 using LacmusApp.Views;
 using Serilog;
+using OperatingSystem = LacmusPlugin.OperatingSystem;
 
 namespace LacmusApp.ViewModels
 {
@@ -56,7 +44,7 @@ namespace LacmusApp.ViewModels
             
             SetupCommands();
 
-            MLUrl = _newConfig.MlModelConfig.Url;
+            MLUrl = "_newConfig.MlModelConfig.Url";
 
             UpdateModelStatusCommand.Execute().Subscribe();
         }
@@ -69,9 +57,17 @@ namespace LacmusApp.ViewModels
         [Reactive] public int LanguageIndex { get; set; } = 0;
         [Reactive] public int ThemeIndex { get; set; } = 0;
         [Reactive] public string HexColor { get; set; } = "#FFFF0000";
-        [Reactive] public string Repository { get; set; } = "None";
-        [Reactive] public string Type { get; set; } = "None";
+        
+        [Reactive] public string Name { get; set; } = "None";
+        [Reactive] public string Author { get; set; } = "None";
+        [Reactive] public string Company { get; set; } = "None";
+        [Reactive] public string Description { get; set; } = "None";
+        [Reactive] public string Tag { get; set; } = "None";
+        [Reactive] public string InferenceType { get; set; } = "None";
         [Reactive] public string Version { get; set; } = "None";
+        [Reactive] public string Url { get; set; } = "None";
+        [Reactive] public string OperatingSystems { get; set; } = "None";
+        
         [Reactive] public string Status { get; set; } = "Not ready";
         [Reactive] public string MLUrl { get; set; } = "http://localhost:5000";
         private void SetupCommands()
@@ -135,7 +131,6 @@ namespace LacmusApp.ViewModels
                 _newConfig.Language = LocalizationContext.Language;
                 _newConfig.Theme = _mainThemeManager.CurrentTheme;
                 _newConfig.BorderColor = HexColor;
-                _newConfig.MlModelConfig.Url = MLUrl;
                 
                 await _newConfig.Save();
                 _config = AppConfig.DeepCopy(_newConfig);
@@ -158,18 +153,24 @@ namespace LacmusApp.ViewModels
             //get the last version of ml model with specific config
             try
             {
-                Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
-                var config = _newConfig.MlModelConfig;;
-                // get local versions
-                var localVersions = await MLModel.GetInstalledVersions(config);
-                if(!localVersions.Contains(config.ModelVersion))
-                    throw new Exception($"There are no ml local model to init: {config.Image.Name}:{config.Image.Tag}");
+                var pluginManager = new PluginManager(_newConfig.PluginDir);
+                var config = _newConfig;
+                var plugin = await pluginManager.GetPluginsAsync(config.PluginInfo.Tag, config.PluginInfo.Version);
                 
-                Repository = config.Image.Name;
-                Version = $"{config.ModelVersion}";
-                Type = $"{config.Type}";
-                Status = $"Ready";
+                Dispatcher.UIThread.Post(() =>
+                {
+                    Name = plugin.Name;
+                    Author = plugin.Author;
+                    Company = plugin.Company;
+                    Description = plugin.Description;
+                    Tag = plugin.Tag;
+                    InferenceType = plugin.InferenceType.ToString();
+                    Version = plugin.Version.ToString();
+                    Url = plugin.Url;
+                    OperatingSystems = ConvertOperatingSystemsToString(plugin.OperatingSystems);
+                    Status = $"Ready";
+                });
                 Log.Information("Successfully init ml model.");
             }
             catch (Exception e)
@@ -215,6 +216,47 @@ namespace LacmusApp.ViewModels
             {
                 Log.Error("Unable to change theme.", e);
             }
+        }
+        
+        private string ConvertOperatingSystemsToString(IEnumerable<OperatingSystem> operatingSystems)
+        {
+            var result = "";
+            foreach (var os in operatingSystems)
+            {
+                switch (os)
+                {
+                    case OperatingSystem.AndroidArm:
+                        result += "Android";
+                        break;
+                    case OperatingSystem.IosArm:
+                        result += "IOS";
+                        break;
+                    case OperatingSystem.LinuxAmd64:
+                        result += "Linux";
+                        break;
+                    case OperatingSystem.LinuxArm:
+                        result += "Linux (ARM)";
+                        break;
+                    case OperatingSystem.OsxAmd64:
+                        result += "OSX (amd64)";
+                        break;
+                    case OperatingSystem.OsxArm:
+                        result += "OSX (Apple Silicon)";
+                        break;
+                    case OperatingSystem.WindowsAmd64:
+                        result += "Windows";
+                        break;
+                    case OperatingSystem.WindowsArm:
+                        result += "Windows (ARM)";
+                        break;
+                    default:
+                        result += os.ToString();
+                        break;
+                }
+                result += ";";
+            }
+
+            return result;
         }
     }
 }
