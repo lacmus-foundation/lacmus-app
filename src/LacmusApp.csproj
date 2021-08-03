@@ -28,7 +28,6 @@
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.12" />
     <PackageReference Include="Avalonia.Skia.Linux.Natives" Version="1.68.0.2" />
     <PackageReference Include="Citrus.Avalonia" Version="1.2.6" />
-    <PackageReference Include="Docker.DotNet" Version="3.125.2" />
     <PackageReference Include="Flurl" Version="3.0.2" />
     <PackageReference Include="LacmusPlugin" Version="2.0.2" />
     <PackageReference Include="Material.Avalonia" Version="0.9.0" />

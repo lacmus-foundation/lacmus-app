@@ -19,7 +19,7 @@ namespace LacmusApp.Models
     public class AppConfig
     {
         private string _borderColor = "#FFFF0000";
-        private PluginRepository _repository = new("lacmus", "http://localhost:80");
+        private PluginRepository _repository = new("lacmus", "http://176.99.131.182:80");
 
         private string _configDir =
             Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
