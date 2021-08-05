@@ -11,18 +11,20 @@ namespace LacmusApp.Models
         public static void Init(ZoomBorder zoomBorder)
         {
             _zoomBorder = zoomBorder;
+            _zoomBorder.PanButton = ButtonName.Left;
+            _zoomBorder.EnablePan = true;
         }
 
         public static void Zoom(double scale)
         {
-            _zoomBorder?.ZoomTo(scale, 0, 0);
+            _zoomBorder?.ZoomTo(scale, 0, 0, false);
         }
 
         public static void MoveTo(double x, double y)
         {
             /* Thanks to @wieslawsoltes https://github.com/wieslawsoltes/PanAndZoom/issues/27 */
-            _zoomBorder?.StartPan(0,0);
-            _zoomBorder?.PanTo(x,y);
+            _zoomBorder?.Pan(0,0, false);
+            _zoomBorder?.PanDelta(x,y, false);
         }
 
         public static double GetZoomX()
