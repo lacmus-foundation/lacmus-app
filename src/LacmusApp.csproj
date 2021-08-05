@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <Company>Lacmus Foundation</Company>
-    <AssemblyVersion>0.4.3.0</AssemblyVersion>
-    <FileVersion>0.4.3.0</FileVersion>
+    <AssemblyVersion>0.5.0.1</AssemblyVersion>
+    <FileVersion>0.5.0.1</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
@@ -21,13 +21,16 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.0" />
     <PackageReference Include="Avalonia.Angle.Natives" Version="2.0.0" />
-    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Controls.PanAndZoom" Version="3.0.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.0" />
-    <PackageReference Include="Avalonia.Native" Version="0.10.0" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.0" />
-    <PackageReference Include="Citrus.Avalonia" Version="1.4.3" />
-    <PackageReference Include="Docker.DotNet" Version="3.125.2" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="0.9.12" />
+    <PackageReference Include="Avalonia.Controls.PanAndZoom" Version="2.3.2" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.9.12" />
+    <PackageReference Include="Avalonia.Native" Version="0.9.12" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.9.12" />
+    <PackageReference Include="Avalonia.Skia.Linux.Natives" Version="1.68.0.2" />
+    <PackageReference Include="Citrus.Avalonia" Version="1.2.6" />
+    <PackageReference Include="Flurl" Version="3.0.2" />
+    <PackageReference Include="LacmusPlugin" Version="2.0.2" />
+    <PackageReference Include="Material.Avalonia" Version="0.9.0" />
     <PackageReference Include="MessageBox.Avalonia" Version="0.9.6.1" />
     <PackageReference Include="MetadataExtractor" Version="2.4.3" />
     <PackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="3.1.6" />

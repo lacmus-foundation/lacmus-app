@@ -1,28 +1,36 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reactive;
+using Avalonia.Threading;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using LacmusApp.Managers;
 using LacmusApp.Models;
-using LacmusApp.Models.ML;
 using LacmusApp.Services;
+using LacmusApp.Services.Plugin;
 using LacmusApp.Views;
 using Serilog;
+using OperatingSystem = LacmusPlugin.OperatingSystem;
 
 namespace LacmusApp.ViewModels
 {
     public class ThirdWizardViewModel : ReactiveObject, IRoutableViewModel
     {
-        private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
         private readonly ApplicationStatusManager _applicationStatusManager;
         private WizardWindow _window;
         private AppConfig _appConfig;
         public IScreen HostScreen { get; }
         public string UrlPathSegment { get; } = Guid.NewGuid().ToString().Substring(0, 5);
-        [Reactive] public string Repository { get; set; } = "None";
-        [Reactive] public string Type { get; set; } = "None";
+        [Reactive] public string Name { get; set; } = "None";
+        [Reactive] public string Author { get; set; } = "None";
+        [Reactive] public string Company { get; set; } = "None";
+        [Reactive] public string Description { get; set; } = "None";
+        [Reactive] public string Tag { get; set; } = "None";
+        [Reactive] public string InferenceType { get; set; } = "None";
         [Reactive] public string Version { get; set; } = "None";
+        [Reactive] public string Url { get; set; } = "None";
+        [Reactive] public string OperatingSystems { get; set; } = "None";
         [Reactive] public string Status { get; set; } = "Not ready";
         [Reactive] public string Error { get; set; }
         [Reactive] public bool IsError { get; set; } = false;
@@ -52,26 +60,24 @@ namespace LacmusApp.ViewModels
                 Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
                 var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
-                var configPath = Path.Join(confDir,"appConfig.json");
+                var configPath = Path.Join(confDir, "appConfig-v2.json");
                 _appConfig = await AppConfig.Create(configPath);
-                var config = _appConfig.MlModelConfig;;
-                // get local versions
-                var localVersions = await MLModel.GetInstalledVersions(config);
-                if(localVersions.Contains(config.ModelVersion))
+                var pluginManager = new PluginManager(_appConfig.PluginDir);
+                var plugin = await pluginManager.GetPluginsAsync(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);
+                
+                Dispatcher.UIThread.Post(() =>
                 {
-                    Log.Information($"Find local version: {config.Image.Name}:{config.Image.Tag}.");
-                }
-                else
-                {
-                    IsShowLoadModelButton = true;
-                    throw new Exception($"There are no ml local models to init: {config.Image.Name}:{config.Image.Tag}");
-                }
-                Repository = config.Image.Name;
-                Version = $"{config.ModelVersion}";
-                Type = $"{config.Type}";
-                using(var model = new MLModel(config))
-                    await model.Download();
-                Status = $"Ready";
+                    Name = plugin.Name;
+                    Author = plugin.Author;
+                    Company = plugin.Company;
+                    Description = plugin.Description;
+                    Tag = plugin.Tag;
+                    InferenceType = plugin.InferenceType.ToString();
+                    Version = plugin.Version.ToString();
+                    Url = plugin.Url;
+                    OperatingSystems = ConvertOperatingSystemsToString(plugin.OperatingSystems);
+                    Status = $"Ready";
+                });
                 IsError = false;
                 Log.Information("Successfully loads ml model.");
             }
@@ -80,6 +86,7 @@ namespace LacmusApp.ViewModels
                 Status = $"Not ready.";
                 IsError = true;
                 Error = $"Error: {e.Message}";
+                IsShowLoadModelButton = true;
                 Log.Error(e, "Unable to load model.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
@@ -94,23 +101,24 @@ namespace LacmusApp.ViewModels
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 ModelManagerWindow window = new ModelManagerWindow(_window.LocalizationContext, ref _appConfig, _applicationStatusManager, _window.ThemeManager);
                 _appConfig = await window.ShowResult();
-                var config = _appConfig.MlModelConfig;
-                // init local model or download and init it from docker registry
-                var localVersions = await MLModel.GetInstalledVersions(config);
-                if(localVersions.Contains(config.ModelVersion))
+                
+                var pluginManager = new PluginManager(_appConfig.PluginDir);
+                var plugin = await pluginManager.GetPluginsAsync(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);
+                
+                Dispatcher.UIThread.Post(() =>
                 {
-                    Log.Information($"Find local version: {config.Image.Name}:{config.Image.Tag}.");
-                }
-                else
-                {
-                    IsShowLoadModelButton = true;
-                    throw new Exception($"There are no ml local models to init: {config.Image.Name}:{config.Image.Tag}");
-                }
-                Repository = config.Image.Name;
-                Version = $"{config.ModelVersion}";
-                Type = $"{config.Type}";
-                using(var model = new MLModel(config))
-                    await model.Download();
+                    Name = plugin.Name;
+                    Author = plugin.Author;
+                    Company = plugin.Company;
+                    Description = plugin.Description;
+                    Tag = plugin.Tag;
+                    InferenceType = plugin.InferenceType.ToString();
+                    Version = plugin.Version.ToString();
+                    Url = plugin.Url;
+                    OperatingSystems = ConvertOperatingSystemsToString(plugin.OperatingSystems);
+                    Status = $"Ready";
+                });
+                
                 Status = $"Ready";
                 IsError = false;
                 _window.AppConfig = _appConfig;
@@ -123,6 +131,46 @@ namespace LacmusApp.ViewModels
                 Log.Error(e, "Unable to load model.");
             }
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+        }
+        private string ConvertOperatingSystemsToString(IEnumerable<OperatingSystem> operatingSystems)
+        {
+            var result = "";
+            foreach (var os in operatingSystems)
+            {
+                switch (os)
+                {
+                    case OperatingSystem.AndroidArm:
+                        result += "Android";
+                        break;
+                    case OperatingSystem.IosArm:
+                        result += "IOS";
+                        break;
+                    case OperatingSystem.LinuxAmd64:
+                        result += "Linux";
+                        break;
+                    case OperatingSystem.LinuxArm:
+                        result += "Linux (ARM)";
+                        break;
+                    case OperatingSystem.OsxAmd64:
+                        result += "OSX (amd64)";
+                        break;
+                    case OperatingSystem.OsxArm:
+                        result += "OSX (Apple Silicon)";
+                        break;
+                    case OperatingSystem.WindowsAmd64:
+                        result += "Windows";
+                        break;
+                    case OperatingSystem.WindowsArm:
+                        result += "Windows (ARM)";
+                        break;
+                    default:
+                        result += os.ToString();
+                        break;
+                }
+                result += ";";
+            }
+
+            return result;
         }
     }
 }

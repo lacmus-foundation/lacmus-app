@@ -10,5 +10,7 @@ namespace LacmusApp.Models.Photo
         public ImageBrush ImageBrush { get; set; }
         public Attribute Attribute { get; set; } = Attribute.NotProcessed;
         public IReadOnlyList<Directory> MetaDataDirectories { get; set; }
+        public int Height { get; set; }
+        public int Width { get; set; }
     }
 }

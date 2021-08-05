@@ -1,7 +1,6 @@
 using System.IO;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using LacmusApp.Interfaces;
 
 namespace LacmusApp.Services.Files
 {

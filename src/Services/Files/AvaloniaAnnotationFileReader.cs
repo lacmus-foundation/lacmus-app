@@ -4,7 +4,6 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Avalonia.Controls;
-using LacmusApp.Interfaces;
 using LacmusApp.Models;
 
 namespace LacmusApp.Services.Files

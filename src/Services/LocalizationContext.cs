@@ -606,14 +606,60 @@ namespace LacmusApp.Services
         #endregion
 
         #region MODEL MANAGER WINDOW
-
-        private string _modelManagerApiVersion;
-        [Reactive] public string ModelManagerApiVersion
+        private string _modelManagerName;
+        [Reactive] public string ModelManagerName
         {
-            get { return _modelManagerApiVersion; }
-            set { this.RaiseAndSetIfChanged(ref _modelManagerApiVersion, value); }
+            get { return _modelManagerName; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerName, value); }
         }
-        
+        private string _modelManagerAuthor;
+        [Reactive] public string ModelManagerAuthor
+        {
+            get { return _modelManagerAuthor; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerAuthor, value); }
+        }
+        private string _modelManagerCompany;
+        [Reactive] public string ModelManagerCompany
+        {
+            get { return _modelManagerCompany; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerCompany, value); }
+        }
+        private string _modelManagerDescription;
+        [Reactive] public string ModelManagerDescription
+        {
+            get { return _modelManagerDescription; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerDescription, value); }
+        }
+        private string _modelManagerTag;
+        [Reactive] public string ModelManagerTag
+        {
+            get { return _modelManagerTag; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerTag, value); }
+        }
+        private string _modelManagerVersion;
+        [Reactive] public string ModelManagerVersion
+        {
+            get { return _modelManagerVersion; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerVersion, value); }
+        }
+        private string _modelManagerSupportedOs;
+        [Reactive] public string ModelManagerSupportedOs
+        {
+            get { return _modelManagerSupportedOs; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerSupportedOs, value); }
+        }
+        private string _modelManagerInferenceType;
+        [Reactive] public string ModelManagerInferenceType
+        {
+            get { return _modelManagerInferenceType; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerInferenceType, value); }
+        }
+        private string _modelManagerUrl;
+        [Reactive] public string ModelManagerUrl
+        {
+            get { return _modelManagerUrl; }
+            set { this.RaiseAndSetIfChanged(ref _modelManagerUrl, value); }
+        }
         private string _modelManagerInstalledModels;
         [Reactive] public string ModelManagerInstalledModels
         {
@@ -953,7 +999,16 @@ namespace LacmusApp.Services
                     MetadataAllMetadata = "All metadata";
                     
                     //Model manager
-                    ModelManagerApiVersion = "API version: ";
+                    ModelManagerName = "Name: ";
+                    ModelManagerAuthor = "Author: ";
+                    ModelManagerCompany = "Company: ";
+                    ModelManagerDescription = "Description: ";
+                    ModelManagerTag = "Tag: ";
+                    ModelManagerVersion = "Version: ";
+                    ModelManagerInferenceType = "Type: ";
+                    ModelManagerSupportedOs = "Supported OS: ";
+                    ModelManagerUrl = "Url: ";
+                    
                     ModelManagerInstalledModels = "Installed ml models";
                     ModelManagerAvailableModels = "Available ml models";
                     ModelManagerRefreshButton = "Refresh";
@@ -1113,7 +1168,16 @@ namespace LacmusApp.Services
                     MetadataAllMetadata = "Все метаданные";
 
                     //Model manager
-                    ModelManagerApiVersion = "Версия API: ";
+                    ModelManagerName = "Имя: ";
+                    ModelManagerAuthor = "Автор: ";
+                    ModelManagerCompany = "Компания: ";
+                    ModelManagerDescription = "Описание: ";
+                    ModelManagerTag = "Тэг: ";
+                    ModelManagerVersion = "Версия: ";
+                    ModelManagerInferenceType = "Тип: ";
+                    ModelManagerSupportedOs = "Поддерживаемые ОС: ";
+                    ModelManagerUrl = "Ссылка: ";
+                    
                     ModelManagerInstalledModels = "Установленные ml модели";
                     ModelManagerAvailableModels = "Доступные для загрузки ml модели";
                     ModelManagerRefreshButton = "Обновить информацию";
