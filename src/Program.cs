@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using Avalonia;
-using Avalonia.Logging;
 using Avalonia.ReactiveUI;
 using Serilog;
 

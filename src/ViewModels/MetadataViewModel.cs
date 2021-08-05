@@ -17,7 +17,7 @@ using Serilog;
 
 namespace LacmusApp.ViewModels
 {
-    public class MetadataViewModel : ReactiveValidationObject<MetadataViewModel>
+    public class MetadataViewModel : ReactiveValidationObject
     {
         private SourceList<MetaData> _metaDataList { get; set; } = new SourceList<MetaData>();
         private ReadOnlyObservableCollection<MetaData> _metaDataCollection;

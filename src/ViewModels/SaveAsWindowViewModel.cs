@@ -21,7 +21,7 @@ using Attribute = LacmusApp.Models.Photo.Attribute;
 
 namespace LacmusApp.ViewModels
 {
-    public class SaveAsWindowViewModel : ReactiveValidationObject<SaveAsWindowViewModel>
+    public class SaveAsWindowViewModel : ReactiveValidationObject
     {
         private readonly SourceList<PhotoViewModel> _photos;
         private readonly ApplicationStatusManager _applicationStatusManager;

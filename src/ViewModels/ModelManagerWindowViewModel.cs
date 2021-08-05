@@ -27,7 +27,7 @@ using OperatingSystem = LacmusPlugin.OperatingSystem;
 
 namespace LacmusApp.ViewModels
 {
-    public class ModelManagerWindowViewModel : ReactiveValidationObject<ModelManagerWindowViewModel>
+    public class ModelManagerWindowViewModel : ReactiveValidationObject
     {
         private bool isModelChanged = false;
         private PluginManager _pluginManager;
