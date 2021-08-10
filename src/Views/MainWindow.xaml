@@ -203,27 +203,19 @@
           <ItemsControl 
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Items="{Binding PhotoViewModel.BoundBoxes}">
-            <ItemsControl.ItemsPanel>
-              <ItemsPanelTemplate>
-                <Canvas
-                  Name="ShowedImage"
-                  HorizontalAlignment="Stretch"
-                  VerticalAlignment="Stretch"
-                  Background="{Binding PhotoViewModel.Photo.ImageBrush}"
-                  Height="{Binding CanvasHeight, Mode=TwoWay}"
-                  Width="{Binding CanvasWidth, Mode=TwoWay}">
-                  <Canvas.ContextMenu>
-                    <ContextMenu>
-                      <MenuItem Header="{Binding LocalizationContext.ShowGeoPosition}" Command="{Binding ShowGeoDataCommand}"/>
-                      <!-- <MenuItem Header="Find nearest photo"/> -->
-                      <Separator/>
-                      <MenuItem Header="{Binding LocalizationContext.FavoritesStateString}" Command="{Binding AddToFavoritesCommand}"/>
-                    </ContextMenu>
-                  </Canvas.ContextMenu>
-                </Canvas>  
-              </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
+            Items="{Binding PhotoViewModel.BoundBoxes}"
+            Background="{Binding PhotoViewModel.Photo.ImageBrush}"
+            Height="{Binding CanvasHeight, Mode=TwoWay}"
+            Width="{Binding CanvasWidth, Mode=TwoWay}"
+            >
+            <ItemsControl.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="{Binding LocalizationContext.ShowGeoPosition}" Command="{Binding ShowGeoDataCommand}"/>
+                <!-- <MenuItem Header="Find nearest photo"/> -->
+                <Separator/>
+                <MenuItem Header="{Binding LocalizationContext.FavoritesStateString}" Command="{Binding AddToFavoritesCommand}"/>
+              </ContextMenu>
+            </ItemsControl.ContextMenu>
             <ItemsControl.ItemTemplate>
               <DataTemplate DataType="{x:Type models:BoundBox}">
                 <Polygon

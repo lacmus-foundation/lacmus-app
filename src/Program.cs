@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using Avalonia;
-using Avalonia.Logging;
 using Avalonia.ReactiveUI;
 using Serilog;
 
@@ -61,6 +60,7 @@ namespace LacmusApp
             return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .With(new Win32PlatformOptions {EnableMultitouch = true, AllowEglInitialization = true})
+                .With(new SkiaOptions{ MaxGpuResourceSizeBytes = 1024 * 1024 * 80})
                 .UseReactiveUI()
                 .LogToDebug();
         }
