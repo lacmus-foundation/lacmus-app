@@ -60,7 +60,7 @@ namespace LacmusApp
             return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
                 .With(new Win32PlatformOptions {EnableMultitouch = true, AllowEglInitialization = true})
-                .With(new SkiaOptions{ MaxGpuResourceSizeBytes = 1024 * 600 * 4 * 12 * 20})
+                .With(new SkiaOptions{ MaxGpuResourceSizeBytes = 1024 * 1024 * 80})
                 .UseReactiveUI()
                 .LogToDebug();
         }
