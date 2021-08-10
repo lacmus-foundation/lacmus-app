@@ -27,7 +27,7 @@ using OperatingSystem = LacmusPlugin.OperatingSystem;
 
 namespace LacmusApp.ViewModels
 {
-    public class ModelManagerWindowViewModel : ReactiveValidationObject<ModelManagerWindowViewModel>
+    public class ModelManagerWindowViewModel : ReactiveValidationObject
     {
         private bool isModelChanged = false;
         private PluginManager _pluginManager;
@@ -81,22 +81,24 @@ namespace LacmusApp.ViewModels
             {
                 _config = AppConfig.DeepCopy(_newConfig);
                 await _config.Save();
+                window.AppConfig = _config;
                 if (isModelChanged)
                 {
+                    var msg = "To use new configuration of the ML Model you need to restart application.";
+                    if (LocalizationContext.Language == Language.Russian)
+                        msg = "Чтобы изменить ML модель необходим перезапуск программы.";
                     var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
                     {
                         ButtonDefinitions = ButtonEnum.Ok,
                         ContentTitle = "Need to restart",
-                        ContentMessage = "To use new configuration of the ML Model you need to restart application.",
+                        ContentMessage = msg,
                         Icon = MessageBox.Avalonia.Enums.Icon.Info,
                         Style = Style.None,
                         ShowInCenter = true
                     });
                     var result = await msgbox.Show();
                 }
-                
-                window.AppConfig = _config;
-                window.Close(); 
+                window.Close();
             }, CanExecute());
             
             CancelCommand = ReactiveCommand.Create(window.Close, CanExecute());

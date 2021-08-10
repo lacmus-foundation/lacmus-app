@@ -11,7 +11,7 @@ using Serilog;
 
 namespace LacmusApp.ViewModels
 {
-    public class SecondWizardViewModel : ReactiveValidationObject<SecondWizardViewModel>, IRoutableViewModel
+    public class SecondWizardViewModel : ReactiveValidationObject, IRoutableViewModel
     {
         public IScreen HostScreen { get; }
         public string UrlPathSegment { get; } = Guid.NewGuid().ToString().Substring(0, 5);

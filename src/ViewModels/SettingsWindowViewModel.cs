@@ -10,6 +10,9 @@ using LacmusApp.Services.Plugin;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using LacmusApp.Views;
+using MessageBox.Avalonia;
+using MessageBox.Avalonia.DTO;
+using MessageBox.Avalonia.Enums;
 using Serilog;
 using OperatingSystem = LacmusPlugin.OperatingSystem;
 
@@ -18,23 +21,24 @@ namespace LacmusApp.ViewModels
     public class SettingsWindowViewModel : ReactiveObject
     {
         LocalizationContext LocalizationContext {get; set;}
-        private ThemeManager _settingsThemeManager, _mainThemeManager;
+        private ThemeManager _mainThemeManager;
         private readonly ApplicationStatusManager _applicationStatusManager;
         private AppConfig _config, _newConfig;
         private SettingsWindow _window;
+        private bool isThemeChanged = false;
+        private ThemeManager.Theme _currentTheme;
         
         public SettingsWindowViewModel(SettingsWindow window, LocalizationContext context,
                                         ref AppConfig config,
                                         ApplicationStatusManager manager,
-                                        ThemeManager mainThemeManager,
-                                        ThemeManager settingsThemeManager)
+                                        ThemeManager mainThemeManager)
         {
             _window = window;
             this.LocalizationContext = context;
-            _settingsThemeManager = settingsThemeManager;
             _mainThemeManager = mainThemeManager;
             _config = config;
             _newConfig = AppConfig.DeepCopy(_config);
+            _currentTheme = _config.Theme;
             _applicationStatusManager = manager;
             InitView();
 
@@ -90,7 +94,7 @@ namespace LacmusApp.ViewModels
                     break;
             }
 
-            switch (_settingsThemeManager.CurrentTheme)
+            switch (_currentTheme)
             {
                 case ThemeManager.Theme.Citrus:
                     ThemeIndex = 0;
@@ -125,16 +129,32 @@ namespace LacmusApp.ViewModels
                     default:
                         throw new Exception($"Invalid LanguageIndex: {LanguageIndex}");
                 }
-                _mainThemeManager.UseTheme(_settingsThemeManager.CurrentTheme);
                 
                 //save app settings
                 _newConfig.Language = LocalizationContext.Language;
-                _newConfig.Theme = _mainThemeManager.CurrentTheme;
+                _newConfig.Theme = _currentTheme;
                 _newConfig.BorderColor = HexColor;
                 
                 await _newConfig.Save();
                 _config = AppConfig.DeepCopy(_newConfig);
                 _window.AppConfig = _config;
+                if (isThemeChanged)
+                {
+                    //TODO: refactor it
+                    var msg = "To use new theme you need to restart application.";
+                    if (LocalizationContext.Language == Language.Russian)
+                        msg = "Чтобы изменить тему интерфейса необходим перезапуск программы.";
+                    var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
+                    {
+                        ButtonDefinitions = ButtonEnum.Ok,
+                        ContentTitle = "Need to restart",
+                        ContentMessage = msg,
+                        Icon = MessageBox.Avalonia.Enums.Icon.Info,
+                        Style = Style.None,
+                        ShowInCenter = true
+                    });
+                    var result = await msgbox.Show();
+                }
                 _window.Close();
             }
             catch (Exception e)
@@ -194,23 +214,24 @@ namespace LacmusApp.ViewModels
                 switch (ThemeIndex)
                 {
                     case 0:
-                        _settingsThemeManager.UseTheme(ThemeManager.Theme.Citrus);
+                        _currentTheme = ThemeManager.Theme.Citrus;
                         break;
                     case 1:
-                        _settingsThemeManager.UseTheme(ThemeManager.Theme.Rust);
+                        _currentTheme = ThemeManager.Theme.Rust;
                         break;
                     case 2:
-                        _settingsThemeManager.UseTheme(ThemeManager.Theme.Sea);
+                        _currentTheme = ThemeManager.Theme.Sea;
                         break;
                     case 3:
-                        _settingsThemeManager.UseTheme(ThemeManager.Theme.Candy);
+                        _currentTheme = ThemeManager.Theme.Candy;
                         break;
                     case 4:
-                        _settingsThemeManager.UseTheme(ThemeManager.Theme.Magma);
+                        _currentTheme = ThemeManager.Theme.Magma;
                         break;
                     default:
                         throw new Exception($"Invalid ThemeIndex: {LanguageIndex}");
                 }
+                isThemeChanged = true;
             }
             catch (Exception e)
             {

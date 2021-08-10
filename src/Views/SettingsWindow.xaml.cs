@@ -25,7 +25,7 @@ namespace LacmusApp.Views
             AvaloniaXamlLoader.Load(this);
             var settingsThemeManager = new ThemeManager(this);
             settingsThemeManager.UseTheme(themeManager.CurrentTheme);
-            this.DataContext = new SettingsWindowViewModel(this, context, ref appConfig, manager, themeManager, settingsThemeManager);
+            this.DataContext = new SettingsWindowViewModel(this, context, ref appConfig, manager, themeManager);
         }
 
         public SettingsWindow() { }
