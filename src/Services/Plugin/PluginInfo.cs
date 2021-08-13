@@ -31,6 +31,10 @@ namespace LacmusApp.Services.Plugin
         public string Author { get; set; }
         [JsonProperty("company")]
         public string Company { get; set; }
+
+        [JsonProperty("dependences")]
+        public IEnumerable<string> Dependences { get; set; }
+
         [JsonProperty("url")]
         public string Url { get; set; }
         [JsonProperty("version")]
