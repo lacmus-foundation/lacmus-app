@@ -1,0 +1,237 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:LacmusApp.Avalonia.ViewModels;assembly=LacmusApp.Avalonia"
+        xmlns:models="clr-namespace:LacmusApp.Avalonia.Models"
+        xmlns:models_photo="clr-namespace:LacmusApp.Avalonia.Models.Photo"
+        xmlns:paz="clr-namespace:Avalonia.Controls.PanAndZoom;assembly=Avalonia.Controls.PanAndZoom"
+        Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
+        x:Class="LacmusApp.Avalonia.Views.MainWindow"
+        UseLayoutRounding="True"
+        Title="LacmusApp.Avalonia"
+        Width="800"
+        Height="600">
+  <NativeMenu.Menu>
+    <NativeMenu>
+      <NativeMenuItem Header="About Lacmus" Command="{Binding AboutCommand}"/>
+    </NativeMenu>
+  </NativeMenu.Menu>
+  <Grid Name="Main">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="auto"></RowDefinition>
+      <RowDefinition/>
+      <RowDefinition Height="auto"></RowDefinition>
+    </Grid.RowDefinitions>
+
+    <!-- Grid 0 -->
+    <StackPanel Grid.Row="0">
+      <Menu>
+        <MenuItem Name="mFile" Header="{Binding LocalizationContext.File}">
+          <MenuItem Name="mFileOpen" Header="{Binding LocalizationContext.OpenDirectory}" Command="{Binding OpenFileCommand}"/>
+          <MenuItem Name="mFileImportAll" Header="{Binding LocalizationContext.ImportAllFromXml}" Command="{Binding ImportAllCommand}"/>
+          <MenuItem Name="mFileSave" Header="{Binding LocalizationContext.SaveAll}" Command="{Binding SaveAllCommand}"/>
+          <MenuItem Name="mFileSaveAs" Header="{Binding LocalizationContext.SaveAs}" Command="{Binding SaveAsCommand}"/>
+          <Separator></Separator>
+          <MenuItem Name="mWizard" Header="{Binding LocalizationContext.Wizard}" Command="{Binding OpenWizardCommand}"/>
+          <MenuItem Name="mSettings" Header="{Binding LocalizationContext.Settings}" Command="{Binding OpenSettingsWindowCommand}"/>
+          <MenuItem Name="mFileExit" Header="{Binding LocalizationContext.Exit}" Command="{Binding ExitCommand}"/>
+        </MenuItem>
+        <MenuItem Name="mModel" Header="{Binding LocalizationContext.Model}">
+          <MenuItem Name="mModelLoad" Header="{Binding LocalizationContext.LoadModel}" Command="{Binding LoadModelCommand}"/>
+          <MenuItem Name="mModelUpdate" Header="{Binding LocalizationContext.UpdateModel}" Command="{Binding UpdateModelCommand}"/>
+          <MenuItem Name="mModelManager" Header="{Binding LocalizationContext.ModelManager}" Command="{Binding OpenModelManagerCommand}"/>
+          <MenuItem Name="mBugReport" Header="{Binding LocalizationContext.BugReport}" Command="{Binding OpenBugReportCommand}"/>
+        </MenuItem>
+        <MenuItem Name="mImage" Header="{Binding LocalizationContext.Image}">
+          <MenuItem Name="mImagePredictAll" Header="{Binding LocalizationContext.PredictAll}" Command="{Binding PredictAllCommand}"/>
+          <Separator></Separator>
+          <MenuItem Name="mImageIncrease" Header="{Binding LocalizationContext.Increase}" Command="{Binding IncreaseCanvasCommand}"/>
+          <MenuItem Name="mImageShrink" Header="{Binding LocalizationContext.Shrink}" Command="{Binding ShrinkCanvasCommand}"/>
+          <MenuItem Name="mImageReset" Header="{Binding LocalizationContext.Reset}" Command="{Binding ResetCanvasCommand}"/>
+          <Separator></Separator>
+          <MenuItem Name="mImageNext" Header="{Binding LocalizationContext.Next}" Command="{Binding NextImageCommand}"/>
+          <MenuItem Name="mImagePrev" Header="{Binding LocalizationContext.Previous}" Command="{Binding PrevImageCommand}"/>
+        </MenuItem>
+        <MenuItem Name="mHelp" Header="{Binding LocalizationContext.Help}">
+          <MenuItem Name="mHelpOpen" Header="{Binding LocalizationContext.OpenUserGuide}" Command="{Binding HelpCommand}"/>
+          <Separator></Separator>
+          <MenuItem Name="mHelpAbout" Header="{Binding LocalizationContext.About}" Command="{Binding AboutCommand}"/>
+          <MenuItem Name="mHelpCheckUpdates" Header="{Binding LocalizationContext.CheckUpdate}" Command="{Binding CheckUpdateCommand}"/>
+        </MenuItem>
+      </Menu>
+      <ToolTip>
+        <StackPanel Orientation="Horizontal">
+          <StackPanel.Styles>
+            <Style Selector="Button">
+              <Setter Property="Padding" Value="8" />
+              <Setter Property="Margin" Value="1" />
+            </Style>
+          </StackPanel.Styles>
+          <!-- <Button Name="bSignIn" Command="{Binding SignInCommand}">Suin In</Button> -->
+          <Button Name="bOpen" Margin="1" Command="{Binding OpenFileCommand}" Content="{Binding LocalizationContext.OpenDirectory}"></Button>
+          <Button Name="bPredict" Margin="1" Command="{Binding PredictAllCommand}" Content="{Binding LocalizationContext.PredictAll}"></Button>
+          <Separator/>
+          <Button Name="bSave" Margin="1" Command="{Binding SaveAllCommand}" Content="{Binding LocalizationContext.SaveAll}"></Button>
+          <Separator/>
+          <Button Name="bImageIncrease" Margin="1" Command="{Binding IncreaseCanvasCommand}" Content="{Binding LocalizationContext.Increase}"></Button>
+          <Button Name="bImageShrink" Margin="1" Command="{Binding ShrinkCanvasCommand}" Content="{Binding LocalizationContext.Shrink}"></Button>
+          <Button Name="bImageReset" Margin="1" Command="{Binding ResetCanvasCommand}"  Content="{Binding LocalizationContext.Reset}"></Button>
+          <Separator/>
+          <Button Name="bImagePrev" Margin="1" Command="{Binding PrevImageCommand}" Content="{Binding LocalizationContext.Previous}"></Button>
+          <Button Name="bImageNext" Margin="1" Command="{Binding NextImageCommand}" Content="{Binding LocalizationContext.Next}"></Button>
+          <Button Name="bWizard" Command="{Binding OpenWizardCommand}" Content="{Binding LocalizationContext.Wizard}"></Button>
+          <ToggleButton Padding="8" Margin="1" Name="bShowBorder" IsChecked="True" Content="{Binding LocalizationContext.Border}" />
+        </StackPanel>
+      </ToolTip>
+    </StackPanel>
+    <!-- Grid 1 -->
+    <Grid Name="ViewPort" Grid.Row="1" Background="Gray">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="auto" MinWidth="100"/>
+        <ColumnDefinition/>
+      </Grid.ColumnDefinitions>
+
+      <Grid Name="ImageView" Grid.Column="0" Grid.Row="0" Background="{DynamicResource ThemeCardBrush}">
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ComboBox Grid.Column="0" Grid.Row="0" SelectedIndex="{Binding FilterIndex, Mode=TwoWay}">
+          <ComboBoxItem Content="{Binding LocalizationContext.AllPhotos}" />
+          <ComboBoxItem Content="{Binding LocalizationContext.PhotosWithObject}" />
+          <ComboBoxItem Content="{Binding LocalizationContext.FavoritePhotos}" />
+        </ComboBox>
+        <ListBox Grid.Column="0" Grid.Row="1"
+                 x:Name="ImageList" 
+                 Items="{Binding PhotoCollection}"
+                 SelectedIndex="{Binding SelectedIndex, Mode=TwoWay}">
+          <ListBox.DataTemplates>
+            <DataTemplate DataType="{x:Type vm:PhotoViewModel}">
+              <Grid ToolTip.Tip="{Binding Path}">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Canvas Grid.Row="0" ZIndex="0" Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding Photo.ImageBrush}"/>
+                <TextBlock Grid.Row="1" ZIndex="0" Margin="0,5" HorizontalAlignment="Center" Text="{Binding Caption}"></TextBlock>
+                <StackPanel Margin="0 2" ZIndex="1" Orientation="Vertical">
+                  <Grid>
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Image Grid.Column="0" IsVisible="{Binding IsHasObject}" Source="resm:LacmusApp.Avalonia.Assets.IsObject.png" Width="32" Height="32"/>
+                    <Image Grid.Column="2" IsVisible="{Binding IsFavorite}" Source="resm:LacmusApp.Avalonia.Assets.IsFavorite.png" Width="32" Height="32"/>
+                    <Image Grid.Column="4" IsVisible="{Binding IsWatched}" Source="resm:LacmusApp.Avalonia.Assets.IsWatched.png" Width="32" Height="32"/>
+                  </Grid>
+                </StackPanel>
+              </Grid>
+            </DataTemplate>
+          </ListBox.DataTemplates>
+        </ListBox>
+        <Grid Grid.Column="0" Grid.Row="2">
+          <Grid.Styles>
+            <Style Selector="Button">
+              <Setter Property="Padding" Value="8" />
+              <Setter Property="Margin" Value="1 2" />
+            </Style>
+          </Grid.Styles>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*" MaxWidth="25"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <Button Grid.Column="0" Command="{Binding FirstPageCommand}">
+            <Path
+              Fill="White"
+              Width="7"
+              Height="12"
+              Stretch="Uniform"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Data="F1 M 50,50 L 50,0 L40,0 L 40,100 L50,100 L50,50 L 100,0 L 100,100 L 50,50 Z" />
+          </Button>
+          <Button Grid.Column="1" Command="{Binding PreviousPageCommand}">
+            <Path
+              Fill="White"
+              Width="7"
+              Height="12"
+              Stretch="Uniform"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Data="F1 M 50,50  L 100,0 L 100,100 L 50,50 Z" />
+          </Button>
+          <TextBlock Grid.Column="2" Margin="1 10" Text="{Binding CurrentPage}"/>
+          <TextBlock Grid.Column="3" HorizontalAlignment="Center" Margin="1 10" Text="of"/>
+          <TextBlock Grid.Column="4" Margin="1 10" Text="{Binding TotalPages}"/>
+          <Button Grid.Column="5" Command="{Binding NextPageCommand}">
+            <Path
+              Fill="White"
+              Width="7"
+              Height="12"
+              Stretch="Uniform"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Data="F1 M 100,50  L 50,0 L 50,100 L 100,50 Z" />
+          </Button>
+          <Button Grid.Column="6" Command="{Binding LastPageCommand}">
+            <Path
+              Fill="White"
+              Width="7"
+              Height="12"
+              Stretch="Uniform"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Data="F1 M 100,50  L 50,0 L 50,100 L 100,50 L 100,0 L 110,0 L 110,100 L 100,100 L100,50 Z" />
+          </Button>
+        </Grid>
+      </Grid>
+      <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
+        <paz:ZoomBorder Name="zoomBorder" Stretch="None" ZoomSpeed="1.2" 
+                        ClipToBounds="False" Focusable="True"
+                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                        MinZoomX="0.05"
+                        MinZoomY="0.05"
+                        >
+          <ItemsControl 
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Items="{Binding PhotoViewModel.BoundBoxes}"
+            Background="{Binding PhotoViewModel.Photo.ImageBrush}"
+            Height="{Binding CanvasHeight, Mode=TwoWay}"
+            Width="{Binding CanvasWidth, Mode=TwoWay}"
+            >
+            <ItemsControl.ContextMenu>
+              <ContextMenu>
+                <MenuItem Header="{Binding LocalizationContext.ShowGeoPosition}" Command="{Binding ShowGeoDataCommand}"/>
+                <!-- <MenuItem Header="Find nearest photo"/> -->
+                <Separator/>
+                <MenuItem Header="{Binding LocalizationContext.FavoritesStateString}" Command="{Binding AddToFavoritesCommand}"/>
+              </ContextMenu>
+            </ItemsControl.ContextMenu>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate DataType="{x:Type models:BoundBox}">
+                <Polygon
+                  Points="{Binding Points}"
+                  Stroke="Red" 
+                  StrokeThickness="10"
+                  IsVisible="{Binding #bShowBorder.IsChecked, Mode=OneWay}"/>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </paz:ZoomBorder>
+      </ScrollViewer>
+    </Grid>
+    <!-- Grid 2 -->
+    <Grid Name="Footer" Grid.Row="2" Background="{Binding ApplicationStatusViewModel.StatusColor}">
+      <TextBlock Foreground="White" Name="tbStatusBar" Margin="5" Text="{Binding ApplicationStatusViewModel.StringStatus}"/>
+    </Grid>
+  </Grid>  
+</Window>

@@ -1,13 +1,13 @@
 #!/bin/bash
 rm -rf ./bin/app/ && rm -rf ./src/bin/Release/
 echo "restoring packeges"
-dotnet restore
+dotnet restore src/LacmusApp.sln
 echo -n "building for linux"
-dotnet publish --framework net5.0 --runtime="linux-x64" -c Release -o ./bin/app/linux
+dotnet publish --framework net5.0 --runtime="linux-x64" -c Release -o ./bin/app/linux src/LacmusApp.sln
 echo -n "building for win10"
-dotnet publish --framework net5.0 --runtime="win10-x64" -c Release -o ./bin/app/win10
+dotnet publish --framework net5.0 --runtime="win10-x64" -c Release -o ./bin/app/win10 src/LacmusApp.sln
 echo -n "building for osx"
-dotnet publish --framework net5.0 --runtime="osx-x64" -c Release -o ./bin/app/osx
+dotnet publish --framework net5.0 --runtime="osx-x64" -c Release -o ./bin/app/osx src/LacmusApp.sln
 cd ./bin/app/
 zip -r -9 ./linux.zip ./linux/
 zip -r -9 ./win10.zip ./win10/
