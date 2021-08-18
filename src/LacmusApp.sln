@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.489
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LacmusApp.Avalonia", "LacmusApp.Avalonia\LacmusApp.Avalonia.csproj", "{CD9FF946-1FB1-464B-B206-C25BE0584158}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LacmusApp", "LacmusApp\LacmusApp.csproj", "{4327182A-3E6B-4CB5-BD56-BDBCDF77B35A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{CD9FF946-1FB1-464B-B206-C25BE0584158}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CD9FF946-1FB1-464B-B206-C25BE0584158}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CD9FF946-1FB1-464B-B206-C25BE0584158}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4327182A-3E6B-4CB5-BD56-BDBCDF77B35A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4327182A-3E6B-4CB5-BD56-BDBCDF77B35A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4327182A-3E6B-4CB5-BD56-BDBCDF77B35A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4327182A-3E6B-4CB5-BD56-BDBCDF77B35A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
