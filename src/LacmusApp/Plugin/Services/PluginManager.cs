@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -11,7 +10,6 @@ using LacmusPlugin;
 
 namespace LacmusApp.Plugin.Services
 {
-    //TODO: Add logging
     public class PluginManager : IPluginManager
     {
         public string BaseDirectory { get; }
@@ -83,25 +81,54 @@ namespace LacmusApp.Plugin.Services
             GC.Collect();
         }
 
-        public Task UninstallPlugin(IObjectDetectionPlugin plugin)
+        public async Task UninstallPlugin(IObjectDetectionPlugin plugin)
         {
-            throw new System.NotImplementedException();
+            await Task.Run(() => Directory.Delete
+                (
+                    Path.Combine(BaseDirectory, plugin.Tag, plugin.Version.ToString()), true
+                ));
         }
 
-        public Task<IObjectDetectionPlugin> LoadPlugin(IObjectDetectionPlugin plugin)
+        public async Task<IObjectDetectionPlugin> LoadPlugin(IObjectDetectionPlugin plugin)
         {
-            throw new System.NotImplementedException();
+            var path = Path.Join(BaseDirectory, plugin.Tag, plugin.Version.ToString());
+            if (!Directory.Exists(path))
+                throw new InvalidOperationException($"no such plugin {plugin.Tag}-{plugin.Version.ToString()}");
+            
+            return await Task.Run(() =>
+            {
+                var pluginPaths = Directory.GetFiles(path, "*.dll", new EnumerationOptions() {RecurseSubdirectories = true});
+                var plugins = pluginPaths.SelectMany(pluginPath =>
+                {
+                    try
+                    {
+                        Assembly pluginAssembly = LoadAssembly(pluginPath);
+                        return CreatePluginsFromAssembly(pluginAssembly);
+                    }
+                    catch
+                    {
+                        return new List<IObjectDetectionPlugin>();
+                    }
+                }).ToList();
+                foreach (var p in plugins.Where(
+                    p => plugin.Tag == p.Tag && 
+                         plugin.Version.ToString() == p.Version.ToString()))
+                {
+                    return p;
+                }
+                throw new InvalidOperationException($"No such plugin {plugin.Tag}-{plugin.Version.ToString()}");
+            });
         }
 
-        private Assembly LoadAssembly(string path)
+        private static Assembly LoadAssembly(string path)
         {
-            PluginLoadContext loadContext = new PluginLoadContext(path);
+            var loadContext = new PluginLoadContext(path);
             return loadContext.LoadFromAssemblyName(new AssemblyName(Path.GetFileNameWithoutExtension(path)));
         }
         
         private static IEnumerable<IObjectDetectionPlugin> CreatePluginsFromAssembly(Assembly assembly)
         {
-            foreach (Type type in assembly.GetTypes())
+            foreach (var type in assembly.GetTypes())
             {
                 if (typeof(IObjectDetectionPlugin).IsAssignableFrom((Type?) (Type?) type))
                 {
