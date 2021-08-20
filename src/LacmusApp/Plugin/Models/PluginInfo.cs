@@ -26,7 +26,6 @@ namespace LacmusApp.Plugin.Models
         public string Url { get; set; }
         [JsonProperty("version")]
         public Version Version { get; set; }
-        public string StringVersion => Version.ToString();
         [JsonProperty("inferenceType")]
         public InferenceType InferenceType { get; set; }
         [JsonProperty("operatingSystems")]

@@ -1,0 +1,90 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:viewModels="clr-namespace:LacmusApp.Plugin.ViewModels;assembly=LacmusApp"
+        d:DataContext="{d:DesignInstance viewModels:PluginInfoViewModel, IsDesignTimeCreatable=False}"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Sandbox.Views.MainWindow"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Sandbox">
+    
+    <Border Classes="Card">
+        <StackPanel>
+            <TextBlock Classes="Heading" 
+                       Text="ML Model"
+            />
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Name"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding Name}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Version"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding Version}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Infer type"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding InferenceType}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Author"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding Author}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Company"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding Company}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Description"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding Description}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Url"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding Url}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Tag"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding Tag}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Supported OS"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding OperatingSystems}"/>
+            </StackPanel>
+            <Grid Margin="0 5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="2"
+                        Content="Refresh"
+                        Command="{Binding Refresh}" />
+            </Grid>
+            <TextBlock Margin="0 5"
+                       TextWrapping="Wrap" IsVisible="{Binding HasErrorMessage}"
+                       Text="{Binding ErrorMessage}"/>
+        </StackPanel>
+    </Border>
+
+    <!--
+    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    -->
+</Window>
