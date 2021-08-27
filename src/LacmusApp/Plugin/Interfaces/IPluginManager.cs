@@ -11,7 +11,7 @@ namespace LacmusApp.Plugin.Interfaces
         Task<IReadOnlyCollection<IObjectDetectionPlugin>> GetInstalledPlugins();
         Task InstallPlugin(IObjectDetectionPlugin plugin);
         Task UninstallPlugin(IObjectDetectionPlugin plugin);
-        Task<IObjectDetectionPlugin> LoadPlugin(IObjectDetectionPlugin plugin);
+        Task<IObjectDetectionPlugin> LoadPlugin(string tag, LacmusPlugin.Version version);
         String BaseDirectory { get; }
         String BaseApiUrl { get; }
     }

@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reactive;
 using LacmusPlugin;
 using ReactiveUI;
 
@@ -17,6 +17,7 @@ namespace LacmusApp.Plugin.Interfaces
         string Version { get; }
         string InferenceType { get; }
         string OperatingSystems { get; }
-        ReactiveCommand<Unit, IObjectDetectionPlugin> Refresh { get; }
+        IObjectDetectionPlugin Plugin { get; }
+        ReactiveCommand<IObjectDetectionPlugin, IObjectDetectionPlugin> Refresh { get; }
     }
 }

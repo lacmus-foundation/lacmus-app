@@ -76,7 +76,9 @@
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="2"
                         Content="Refresh"
-                        Command="{Binding Refresh}" />
+                        Command="{Binding Refresh}"
+                        CommandParameter="{Binding Plugin}">
+                </Button>
             </Grid>
             <TextBlock Margin="0 5"
                        TextWrapping="Wrap" IsVisible="{Binding HasErrorMessage}"

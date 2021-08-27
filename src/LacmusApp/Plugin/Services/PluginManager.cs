@@ -89,11 +89,11 @@ namespace LacmusApp.Plugin.Services
                 ));
         }
 
-        public async Task<IObjectDetectionPlugin> LoadPlugin(IObjectDetectionPlugin plugin)
+        public async Task<IObjectDetectionPlugin> LoadPlugin(string tag, LacmusPlugin.Version version)
         {
-            var path = Path.Join(BaseDirectory, plugin.Tag, plugin.Version.ToString());
+            var path = Path.Join(BaseDirectory, tag, version.ToString());
             if (!Directory.Exists(path))
-                throw new InvalidOperationException($"no such plugin {plugin.Tag}-{plugin.Version.ToString()}");
+                throw new InvalidOperationException($"no such plugin {tag}-{version.ToString()}");
             
             return await Task.Run(() =>
             {
@@ -111,12 +111,12 @@ namespace LacmusApp.Plugin.Services
                     }
                 }).ToList();
                 foreach (var p in plugins.Where(
-                    p => plugin.Tag == p.Tag && 
-                         plugin.Version.ToString() == p.Version.ToString()))
+                    p => tag == p.Tag && 
+                         version.ToString() == p.Version.ToString()))
                 {
                     return p;
                 }
-                throw new InvalidOperationException($"No such plugin {plugin.Tag}-{plugin.Version.ToString()}");
+                throw new InvalidOperationException($"No such plugin {tag}-{version.ToString()}");
             });
         }
 
