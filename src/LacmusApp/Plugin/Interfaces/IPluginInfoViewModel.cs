@@ -19,5 +19,7 @@ namespace LacmusApp.Plugin.Interfaces
         string OperatingSystems { get; }
         IObjectDetectionPlugin Plugin { get; }
         ReactiveCommand<IObjectDetectionPlugin, IObjectDetectionPlugin> Refresh { get; }
+        string ErrorMessage { get; }
+        bool HasErrorMessage { get; }
     }
 }

@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Reactive;
 using System.Reactive.Linq;
-using DynamicData.Binding;
 using LacmusApp.Plugin.Extensions;
 using LacmusApp.Plugin.Interfaces;
 using LacmusPlugin;
 using ReactiveUI;
-using Version = LacmusPlugin.Version;
 
 namespace LacmusApp.Plugin.ViewModels
 {
