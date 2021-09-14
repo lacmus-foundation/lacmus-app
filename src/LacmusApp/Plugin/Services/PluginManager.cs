@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using LacmusApp.Plugin.Interfaces;
 using LacmusPlugin;
+using Serilog;
 
 namespace LacmusApp.Plugin.Services
 {
@@ -56,12 +57,14 @@ namespace LacmusApp.Plugin.Services
 
         public async Task InstallPlugin(IObjectDetectionPlugin plugin)
         {
+            Log.Information($"Downloading plugin {plugin.Tag}-{plugin.Version.ToString()}...");
             using (var client = new WebClient(BaseApiUrl))
             {
                 using (var stream = await client.GetZipFile(
                     plugin.Tag, plugin.Version.Api, 
                     plugin.Version.Major, plugin.Version.Minor))
                 {
+                    Log.Information($"Installing plugin {plugin.Tag}-{plugin.Version.ToString()}...");
                     using (var archive = new ZipArchive(stream))
                     {
                         var baseDir = Path.Combine(BaseDirectory,
@@ -79,6 +82,7 @@ namespace LacmusApp.Plugin.Services
                 }
             }
             GC.Collect();
+            Log.Information($"The plugin {plugin.Tag}-{plugin.Version.ToString()} was installed.");
         }
 
         public async Task UninstallPlugin(IObjectDetectionPlugin plugin)

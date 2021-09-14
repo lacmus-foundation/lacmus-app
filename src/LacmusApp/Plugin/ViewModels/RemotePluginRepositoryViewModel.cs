@@ -1,30 +1,28 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
 using LacmusApp.Plugin.Interfaces;
-using LacmusPlugin;
 using ReactiveUI;
+using Serilog;
 
 namespace LacmusApp.Plugin.ViewModels
 {
     public class RemotePluginRepositoryViewModel : ReactiveObject, IRemotePluginRepositoryViewModel
     {
-        private readonly ObservableAsPropertyHelper<IReadOnlyCollection<IObjectDetectionPlugin>> _plugins;
+        private readonly ObservableAsPropertyHelper<IReadOnlyCollection<IPluginViewModel>> _plugins;
         private readonly ObservableAsPropertyHelper<string> _errorMessage;
         private readonly ObservableAsPropertyHelper<bool> _hasErrorMessage;
         
         public RemotePluginRepositoryViewModel(IPluginManager manager)
         {
             Refresh = ReactiveCommand
-                .CreateFromTask(async ()  => await manager.GetPluginsFromRepository());
-            
-            InstallPlugin = ReactiveCommand
-                .CreateFromTask<IObjectDetectionPlugin>(
-                    async p =>
-                    {
-                        await manager.InstallPlugin(p);
-                    });
+                .CreateFromTask<IReadOnlyCollection<IPluginViewModel>>(async ()  =>
+                { 
+                    var list = await manager.GetPluginsFromRepository();
+                    return list.Select(p => new PluginViewModel(p, manager)).ToList();
+                });
 
             _plugins = Refresh
                 .Select(p => p)
@@ -37,26 +35,17 @@ namespace LacmusApp.Plugin.ViewModels
 
             _errorMessage = Refresh
                 .ThrownExceptions
-                .Select(exception => $"can not get plugins: {exception.Message}")
+                .Select(exception =>
+                {
+                    Log.Error(exception.Message, exception);
+                    return $"can not get plugins: {exception.Message}";
+                })
                 .ToProperty(this, x => x.ErrorMessage);
             
-            _hasErrorMessage = InstallPlugin
-                .ThrownExceptions
-                .Select(exception => true)
-                .ToProperty(this, x => x.HasErrorMessage);
-
-            _errorMessage = InstallPlugin
-                .ThrownExceptions
-                .Select(exception => $"can not install plugin: {exception.Message}")
-                .ToProperty(this, x => x.ErrorMessage);
-
             Refresh.Execute().Subscribe();
         }
-
-        public ReactiveCommand<IObjectDetectionPlugin, Unit> InstallPlugin { get; }
-        public ReactiveCommand<Unit, IReadOnlyCollection<IObjectDetectionPlugin>> Refresh { get; }
-        public IReadOnlyCollection<IObjectDetectionPlugin> Plugins => _plugins.Value;
-        public IObjectDetectionPlugin SelectedPlugin { get; set; }
+        public ReactiveCommand<Unit, IReadOnlyCollection<IPluginViewModel>> Refresh { get; }
+        public IReadOnlyCollection<IPluginViewModel> Plugins => _plugins.Value;
         public string ErrorMessage => _errorMessage.Value;
         public bool HasErrorMessage => _hasErrorMessage.Value;
     }

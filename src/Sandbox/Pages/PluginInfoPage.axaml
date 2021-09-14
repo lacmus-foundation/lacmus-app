@@ -2,7 +2,85 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LacmusApp.Screens.ViewModels;assembly=LacmusApp"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             d:DataContext="{d:DesignInstance vm:SettingsViewModel, IsDesignTimeCreatable=False}"
+             x:DataType="vm:SettingsViewModel"
              x:Class="Sandbox.Pages.PluginInfoPage">
-    Welcome to Avalonia!
+    <Border Classes="Card">
+        <StackPanel>
+            <TextBlock Classes="Heading" 
+                       Text="ML Model"
+            />
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Name"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding PluginInfo.Name}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Version"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding PluginInfo.Version}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Infer type"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding PluginInfo.InferenceType}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Author"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding PluginInfo.Author}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Company"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding PluginInfo.Company}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Description"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding PluginInfo.Description}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Url"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding PluginInfo.Url}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Tag"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding PluginInfo.Tag}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5">
+                <TextBlock Classes="Caption"
+                           Text="Supported OS"/>
+                <TextBlock Classes="Caption"
+                           Text="{Binding PluginInfo.OperatingSystems}"/>
+            </StackPanel>
+            <Grid Margin="0 5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="2"
+                        Content="Refresh"
+                        Command="{Binding PluginInfo.Refresh}"
+                        CommandParameter="{Binding PluginInfo.Plugin}">
+                </Button>
+            </Grid>
+            <TextBlock Margin="0 5"
+                       TextWrapping="Wrap" IsVisible="{Binding HasErrorMessage}"
+                       Text="{Binding PluginInfo.ErrorMessage}"/>
+        </StackPanel>
+    </Border>
 </UserControl>

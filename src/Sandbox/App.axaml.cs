@@ -6,6 +6,7 @@ using LacmusApp.Plugin.Models;
 using LacmusApp.Plugin.Services;
 using Sandbox.Views;
 using LacmusApp.Plugin.ViewModels;
+using LacmusApp.Screens.ViewModels;
 using LacmusPlugin;
 using LacmusPlugin.Enums;
 
@@ -41,12 +42,19 @@ namespace Sandbox
                         OperatingSystem.OsxAmd64
                     }
                 };
+                var pluginInfoViewModel = new PluginInfoViewModel(
+                    pluginInfo,
+                    pluginManager);
+                var localPluginRepositoryViewModel = new LocalPluginRepositoryViewModel();
+                var remotePluginRepositoryViewModel = new RemotePluginRepositoryViewModel(
+                    pluginManager);
                 
                 desktop.MainWindow = new MainWindow
                 {
-                    DataContext = new PluginInfoViewModel(
-                        pluginInfo,
-                        pluginManager)
+                    DataContext = new SettingsViewModel(
+                        localPluginRepositoryViewModel,
+                        remotePluginRepositoryViewModel,
+                        pluginInfoViewModel)
                 };
             }
 

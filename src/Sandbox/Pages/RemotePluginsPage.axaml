@@ -2,7 +2,45 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LacmusApp.Screens.ViewModels;assembly=LacmusApp"
+             xmlns:e="clr-namespace:Sandbox.Elements;assembly=Sandbox"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             d:DataContext="{d:DesignInstance vm:SettingsViewModel, IsDesignTimeCreatable=False}"
+             x:DataType="vm:SettingsViewModel"
              x:Class="Sandbox.Pages.RemotePluginsPage">
-    Welcome to Avalonia!
+    <Border Classes="Card">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                           Classes="Heading" 
+                           Text="ML Models"
+                />
+                <Button Grid.Column="2"
+                        Padding="10"
+                        Content="Refresh"
+                        Command="{Binding RemotePluginRepository.Refresh}"
+                />
+            </Grid>
+            <ListBox Grid.Row="1"
+                     Name="RemotePluginsList"
+                     x:Name="RemotePluginsList"
+                     Items="{Binding RemotePluginRepository.Plugins}"
+                     SelectionMode="Single">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                       <e:ModelItem/> 
+                    </DataTemplate>
+                </ListBox.ItemTemplate>  
+            </ListBox>
+        </Grid>
+    </Border>
 </UserControl>
