@@ -1,21 +1,29 @@
 using System.Collections.Generic;
 using System.Reactive;
+using System.Reactive.Linq;
 using LacmusApp.Plugin.Interfaces;
 using LacmusPlugin;
 using LacmusPlugin.Enums;
 using ReactiveUI;
+using OperatingSystem = LacmusPlugin.OperatingSystem;
+using Version = LacmusPlugin.Version;
 
 namespace LacmusApp.Plugin.ViewModels
 {
     public class PluginViewModel : ReactiveObject, IPluginViewModel
     {
         private IObjectDetectionPlugin _plugin;
-
+        private readonly ObservableAsPropertyHelper<string> _errorMessage;
+        private readonly ObservableAsPropertyHelper<bool> _hasErrorMessage;
+        
         public PluginViewModel(IObjectDetectionPlugin plugin, IPluginManager manager)
         {
             _plugin = plugin;
             Install = ReactiveCommand.CreateFromTask(
-                async () => { await manager.InstallPlugin(plugin); }
+                async () =>
+                {
+                    await manager.InstallPlugin(plugin);
+                }
             );
             Remove = ReactiveCommand.CreateFromTask(
                 async () => { await manager.UninstallPlugin(plugin); }
@@ -23,6 +31,16 @@ namespace LacmusApp.Plugin.ViewModels
             Activate = ReactiveCommand.CreateFromTask(
                 async () => { _plugin = await manager.LoadPlugin(plugin.Tag, plugin.Version); }
             );
+            
+            _hasErrorMessage = Install
+                .ThrownExceptions
+                .Select(_ => true)
+                .ToProperty(this, x => x.HasErrorMessage);
+
+            _errorMessage = Install
+                .ThrownExceptions
+                .Select(_ => "Can not install plugin.")
+                .ToProperty(this, x => x.ErrorMessage);
         }
         
         public IObjectDetectionModel LoadModel(float threshold)
@@ -43,5 +61,7 @@ namespace LacmusApp.Plugin.ViewModels
         public ReactiveCommand<Unit, Unit> Install { get; }
         public ReactiveCommand<Unit, Unit> Activate { get; }
         public ReactiveCommand<Unit, Unit> Remove { get; }
+        public string ErrorMessage => _errorMessage.Value;
+        public bool HasErrorMessage => _hasErrorMessage.Value;
     }
 }

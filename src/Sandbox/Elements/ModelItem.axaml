@@ -59,6 +59,7 @@
                     </ItemsRepeater.ItemTemplate>
                 </ItemsRepeater>
             </StackPanel>
+            <TextBlock HorizontalAlignment="Left" MaxWidth="350" Foreground="Red" TextWrapping="WrapWithOverflow" Text="{Binding ErrorMessage}" IsVisible="{Binding HasErrorMessage}" />
         </StackPanel>
         <Button Grid.Column="1"
                 VerticalAlignment="Center"

@@ -24,80 +24,117 @@ namespace LacmusApp.Plugin.Services
         
         public async Task<IReadOnlyCollection<IObjectDetectionPlugin>> GetPluginsFromRepository()
         {
-            var resultList = new List<IObjectDetectionPlugin>();
-            using (var client = new WebClient(BaseApiUrl))
+            try
             {
-                var count = await client.GetMaxPage();
-                for (var i = 0; i < count; i++)
-                    resultList.AddRange(await client.GetPluginInfoFromPage(i));
+                var resultList = new List<IObjectDetectionPlugin>();
+                using (var client = new WebClient(BaseApiUrl))
+                {
+                    var count = await client.GetMaxPage();
+                    for (var i = 0; i < count; i++)
+                        resultList.AddRange(await client.GetPluginInfoFromPage(i));
+                }
+                return resultList;
             }
-            return resultList;
+            catch (Exception e)
+            {
+                Log.Error(e, $"Can not get plugins from remote repository {BaseApiUrl}");
+                throw new Exception("Can not get plugins from remote repository.");
+            }
         }
 
         public async Task<IReadOnlyCollection<IObjectDetectionPlugin>> GetInstalledPlugins()
         {
-            var pluginPaths = Directory.GetFiles(BaseDirectory, "*.dll", new EnumerationOptions() {RecurseSubdirectories = true});
-            return await Task.Run(() =>
+            try
             {
-                return pluginPaths.SelectMany(pluginPath =>
+                var pluginPaths = Directory.GetFiles(BaseDirectory, "*.dll", new EnumerationOptions() {RecurseSubdirectories = true});
+                return await Task.Run(() =>
                 {
-                    try
+                    return pluginPaths.SelectMany(pluginPath =>
                     {
-                        Assembly pluginAssembly = LoadAssembly(pluginPath);
-                        return CreatePluginsFromAssembly(pluginAssembly);
-                    }
-                    catch
-                    {
-                        Console.WriteLine("cannot load assembly from {0}", pluginPath);
-                        return new List<IObjectDetectionPlugin>();
-                    }
-                }).ToList();
-            });
+                        try
+                        {
+                            Assembly pluginAssembly = LoadAssembly(pluginPath);
+                            return CreatePluginsFromAssembly(pluginAssembly);
+                        }
+                        catch
+                        {
+                            Console.WriteLine("cannot load assembly from {0}", pluginPath);
+                            return new List<IObjectDetectionPlugin>();
+                        }
+                    }).ToList();
+                });
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, $"Can not get plugins from local repository {BaseDirectory}");
+                throw new Exception("Can not get plugins from local repository.");
+            }
         }
 
         public async Task InstallPlugin(IObjectDetectionPlugin plugin)
         {
-            Log.Information($"Downloading plugin {plugin.Tag}-{plugin.Version.ToString()}...");
-            using (var client = new WebClient(BaseApiUrl))
+            try
             {
-                using (var stream = await client.GetZipFile(
-                    plugin.Tag, plugin.Version.Api, 
-                    plugin.Version.Major, plugin.Version.Minor))
+                Log.Information($"Downloading plugin {plugin.Tag}-{plugin.Version.ToString()}...");
+                using (var client = new WebClient(BaseApiUrl))
                 {
-                    Log.Information($"Installing plugin {plugin.Tag}-{plugin.Version.ToString()}...");
-                    using (var archive = new ZipArchive(stream))
+                    using (var stream = await client.GetZipFile(
+                        plugin.Tag, plugin.Version.Api, 
+                        plugin.Version.Major, plugin.Version.Minor))
                     {
-                        var baseDir = Path.Combine(BaseDirectory,
-                            plugin.Tag, plugin.Version.ToString());
-                        Directory.CreateDirectory(baseDir);
-                        foreach (ZipArchiveEntry entry in archive.Entries)
+                        Log.Information($"Installing plugin {plugin.Tag}-{plugin.Version.ToString()}...");
+                        using (var archive = new ZipArchive(stream))
                         {
-                            var fullPath = Path.Combine(baseDir, entry.FullName);
-                            if (String.IsNullOrEmpty(entry.Name))
-                                Directory.CreateDirectory(fullPath);
-                            else
-                                entry.ExtractToFile(fullPath);
+                            var baseDir = Path.Combine(BaseDirectory,
+                                plugin.Tag, plugin.Version.ToString());
+                            Directory.CreateDirectory(baseDir);
+                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            {
+                                var fullPath = Path.Combine(baseDir, entry.FullName);
+                                if (String.IsNullOrEmpty(entry.Name))
+                                    Directory.CreateDirectory(fullPath);
+                                else
+                                    entry.ExtractToFile(fullPath);
+                            }
                         }
                     }
                 }
+                GC.Collect();
+                Log.Information($"The plugin {plugin.Tag}-{plugin.Version.ToString()} was installed.");
             }
-            GC.Collect();
-            Log.Information($"The plugin {plugin.Tag}-{plugin.Version.ToString()} was installed.");
+            catch (Exception e)
+            {
+                Log.Error(e, $"Can not install plugin {plugin.Tag}-{plugin.Version.ToString()}");
+                throw new Exception("Can not install plugin.");
+            }
         }
 
         public async Task UninstallPlugin(IObjectDetectionPlugin plugin)
         {
-            await Task.Run(() => Directory.Delete
+            try
+            {
+                Log.Information($"Uninstalling plugin {plugin.Tag}-{plugin.Version.ToString()}...");
+                await Task.Run(() => Directory.Delete
                 (
                     Path.Combine(BaseDirectory, plugin.Tag, plugin.Version.ToString()), true
                 ));
+                Log.Information($"The plugin {plugin.Tag}-{plugin.Version.ToString()} was removed.");
+            }
+            catch (Exception e)
+            {
+                Log.Error(e, $"Can not uninstall plugin {plugin.Tag}-{plugin.Version.ToString()}");
+                throw new Exception("Can not uninstall plugin.");
+            }
         }
 
         public async Task<IObjectDetectionPlugin> LoadPlugin(string tag, LacmusPlugin.Version version)
         {
             var path = Path.Join(BaseDirectory, tag, version.ToString());
             if (!Directory.Exists(path))
-                throw new InvalidOperationException($"no such plugin {tag}-{version.ToString()}");
+            {
+                Log.Error($"No such plugin {tag}-{version.ToString()}");
+                throw new InvalidOperationException($"No such plugin {tag}-{version.ToString()}");
+            }
             
             return await Task.Run(() =>
             {
@@ -120,7 +157,8 @@ namespace LacmusApp.Plugin.Services
                 {
                     return p;
                 }
-                throw new InvalidOperationException($"No such plugin {tag}-{version.ToString()}");
+                Log.Error($"Can not load plugin {tag}-{version.ToString()}");
+                throw new InvalidOperationException($"Can not load plugin {tag}-{version.ToString()}");
             });
         }
 

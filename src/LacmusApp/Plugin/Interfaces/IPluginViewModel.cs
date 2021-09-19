@@ -10,5 +10,7 @@ namespace LacmusApp.Plugin.Interfaces
         ReactiveCommand<Unit, Unit> Install { get; }
         ReactiveCommand<Unit, Unit> Activate { get; }
         ReactiveCommand<Unit, Unit> Remove { get; }
+        string ErrorMessage { get; }
+        bool HasErrorMessage { get; }
     }
 }
