@@ -73,40 +73,44 @@ namespace LacmusApp.Plugin.Services
 
         public async Task InstallPlugin(IObjectDetectionPlugin plugin)
         {
-            try
+            await Task.Run(async () =>
             {
-                Log.Information($"Downloading plugin {plugin.Tag}-{plugin.Version.ToString()}...");
-                using (var client = new WebClient(BaseApiUrl))
+                try
                 {
-                    using (var stream = await client.GetZipFile(
-                        plugin.Tag, plugin.Version.Api, 
-                        plugin.Version.Major, plugin.Version.Minor))
+                    Log.Information($"Downloading plugin {plugin.Tag}-{plugin.Version.ToString()}...");
+                    using (var client = new WebClient(BaseApiUrl))
                     {
-                        Log.Information($"Installing plugin {plugin.Tag}-{plugin.Version.ToString()}...");
-                        using (var archive = new ZipArchive(stream))
+                        using (var stream = await client.GetZipFile(
+                            plugin.Tag, plugin.Version.Api,
+                            plugin.Version.Major, plugin.Version.Minor))
                         {
-                            var baseDir = Path.Combine(BaseDirectory,
-                                plugin.Tag, plugin.Version.ToString());
-                            Directory.CreateDirectory(baseDir);
-                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            Log.Information($"Installing plugin {plugin.Tag}-{plugin.Version.ToString()}...");
+                            using (var archive = new ZipArchive(stream))
                             {
-                                var fullPath = Path.Combine(baseDir, entry.FullName);
-                                if (String.IsNullOrEmpty(entry.Name))
-                                    Directory.CreateDirectory(fullPath);
-                                else
-                                    entry.ExtractToFile(fullPath);
+                                var baseDir = Path.Combine(BaseDirectory,
+                                    plugin.Tag, plugin.Version.ToString());
+                                Directory.CreateDirectory(baseDir);
+                                foreach (ZipArchiveEntry entry in archive.Entries)
+                                {
+                                    var fullPath = Path.Combine(baseDir, entry.FullName);
+                                    if (String.IsNullOrEmpty(entry.Name))
+                                        Directory.CreateDirectory(fullPath);
+                                    else
+                                        entry.ExtractToFile(fullPath);
+                                }
                             }
                         }
                     }
+
+                    GC.Collect();
+                    Log.Information($"The plugin {plugin.Tag}-{plugin.Version.ToString()} was installed.");
                 }
-                GC.Collect();
-                Log.Information($"The plugin {plugin.Tag}-{plugin.Version.ToString()} was installed.");
-            }
-            catch (Exception e)
-            {
-                Log.Error(e, $"Can not install plugin {plugin.Tag}-{plugin.Version.ToString()}");
-                throw new Exception("Can not install plugin.");
-            }
+                catch (Exception e)
+                {
+                    Log.Error(e, $"Can not install plugin {plugin.Tag}-{plugin.Version.ToString()}");
+                    throw new Exception("Can not install plugin.");
+                }
+            });
         }
 
         public async Task UninstallPlugin(IObjectDetectionPlugin plugin)
