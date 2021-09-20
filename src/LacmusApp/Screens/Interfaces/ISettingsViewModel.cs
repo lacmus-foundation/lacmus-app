@@ -10,6 +10,6 @@ namespace LacmusApp.Screens.Interfaces
     {
         ILocalPluginRepositoryViewModel LocalPluginRepository { get; }
         IRemotePluginRepositoryViewModel RemotePluginRepository { get; }
-        IPluginInfoViewModel PluginInfo { get; }
+        IPluginViewModel Plugin { get; }
     }
 }

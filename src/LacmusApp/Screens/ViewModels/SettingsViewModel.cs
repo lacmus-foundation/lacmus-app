@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System;
 using LacmusApp.Plugin.Interfaces;
 using LacmusApp.Screens.Interfaces;
-using LacmusApp.Screens.Models;
 using ReactiveUI;
 
 namespace LacmusApp.Screens.ViewModels
@@ -12,14 +10,18 @@ namespace LacmusApp.Screens.ViewModels
         public SettingsViewModel(
             ILocalPluginRepositoryViewModel localPluginRepository,
             IRemotePluginRepositoryViewModel remotePluginRepository,
-            IPluginInfoViewModel pluginInfo)
+            IPluginViewModel plugin)
         {
             LocalPluginRepository = localPluginRepository;
             RemotePluginRepository = remotePluginRepository;
-            PluginInfo = pluginInfo;
+            Plugin = plugin;
+            
+            // initialize components
+            Plugin.Activate.Execute().Subscribe();
+            RemotePluginRepository.Refresh.Execute().Subscribe();
         }
         public ILocalPluginRepositoryViewModel LocalPluginRepository { get; }
         public IRemotePluginRepositoryViewModel RemotePluginRepository { get; }
-        public IPluginInfoViewModel PluginInfo { get; }
+        public IPluginViewModel Plugin { get; }
     }
 }

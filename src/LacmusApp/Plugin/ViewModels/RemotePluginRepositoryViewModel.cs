@@ -41,8 +41,6 @@ namespace LacmusApp.Plugin.ViewModels
                     return $"can not get plugins: {exception.Message}";
                 })
                 .ToProperty(this, x => x.ErrorMessage);
-            
-            Refresh.Execute().Subscribe();
         }
         public ReactiveCommand<Unit, IReadOnlyCollection<IPluginViewModel>> Refresh { get; }
         public IReadOnlyCollection<IPluginViewModel> Plugins => _plugins.Value;

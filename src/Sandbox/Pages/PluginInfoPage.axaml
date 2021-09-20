@@ -16,55 +16,55 @@
                 <TextBlock Classes="Caption"
                            Text="Name"/>
                 <TextBlock Classes="Caption"
-                           Text="{Binding PluginInfo.Name}"/>
+                           Text="{Binding Plugin.Name}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 5">
                 <TextBlock Classes="Caption"
                            Text="Version"/>
                 <TextBlock Classes="Caption"
-                           Text="{Binding PluginInfo.Version}"/>
+                           Text="{Binding Plugin.Version}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 5">
                 <TextBlock Classes="Caption"
                            Text="Infer type"/>
                 <TextBlock Classes="Caption"
-                           Text="{Binding PluginInfo.InferenceType}"/>
+                           Text="{Binding Plugin.InferenceType}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 5">
                 <TextBlock Classes="Caption"
                            Text="Author"/>
                 <TextBlock Classes="Caption"
-                           Text="{Binding PluginInfo.Author}"/>
+                           Text="{Binding Plugin.Author}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 5">
                 <TextBlock Classes="Caption"
                            Text="Company"/>
                 <TextBlock Classes="Caption"
-                           Text="{Binding PluginInfo.Company}"/>
+                           Text="{Binding Plugin.Company}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 5">
                 <TextBlock Classes="Caption"
                            Text="Description"/>
                 <TextBlock Classes="Caption"
-                           Text="{Binding PluginInfo.Description}"/>
+                           Text="{Binding Plugin.Description}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 5">
                 <TextBlock Classes="Caption"
                            Text="Url"/>
                 <TextBlock Classes="Caption"
-                           Text="{Binding PluginInfo.Url}"/>
+                           Text="{Binding Plugin.Url}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 5">
                 <TextBlock Classes="Caption"
                            Text="Tag"/>
                 <TextBlock Classes="Caption"
-                           Text="{Binding PluginInfo.Tag}"/>
+                           Text="{Binding Plugin.Tag}"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" Margin="0 5">
                 <TextBlock Classes="Caption"
                            Text="Supported OS"/>
                 <TextBlock Classes="Caption"
-                           Text="{Binding PluginInfo.OperatingSystems}"/>
+                           Text="{Binding Plugin.OperatingSystems}"/>
             </StackPanel>
             <Grid Margin="0 5">
                 <Grid.ColumnDefinitions>
@@ -74,13 +74,12 @@
                 </Grid.ColumnDefinitions>
                 <Button Grid.Column="2"
                         Content="Refresh"
-                        Command="{Binding PluginInfo.Refresh}"
-                        CommandParameter="{Binding PluginInfo.Plugin}">
+                        Command="{Binding Plugin.Activate}">
                 </Button>
             </Grid>
             <TextBlock Margin="0 5"
-                       TextWrapping="Wrap" IsVisible="{Binding HasErrorMessage}"
-                       Text="{Binding PluginInfo.ErrorMessage}"/>
+                       TextWrapping="Wrap" IsVisible="{Binding Plugin.HasErrorMessage}"
+                       Text="{Binding Plugin.ErrorMessage}"/>
         </StackPanel>
     </Border>
 </UserControl>

@@ -36,6 +36,38 @@ namespace LacmusApp.Plugin.ViewModels
             Activate
                 .Select(p => p.Tag)
                 .ToProperty(this, x => x.Tag);
+            
+            Activate
+                .Select(p => p.Name)
+                .ToProperty(this, x => x.Name);
+            
+            Activate
+                .Select(p => p.Author)
+                .ToProperty(this, x => x.Author);
+            
+            Activate
+                .Select(p => p.Company)
+                .ToProperty(this, x => x.Company);
+            
+            Activate
+                .Select(p => p.Dependences)
+                .ToProperty(this, x => x.Dependences);
+            
+            Activate
+                .Select(p => p.Url)
+                .ToProperty(this, x => x.Url);
+            
+            Activate
+                .Select(p => p.Version)
+                .ToProperty(this, x => x.Version);
+            
+            Activate
+                .Select(p => p.InferenceType)
+                .ToProperty(this, x => x.InferenceType);
+            
+            Activate
+                .Select(p => p.OperatingSystems)
+                .ToProperty(this, x => x.OperatingSystems);
 
             var hasErrorMessageInstall = Install
                 .ThrownExceptions
@@ -77,8 +109,8 @@ namespace LacmusApp.Plugin.ViewModels
         
         public string Tag => _plugin.Tag;
         public string Name => _plugin.Name;
-        public string Description => _plugin.Name;
-        public string Author => _plugin.Name;
+        public string Description => _plugin.Description;
+        public string Author => _plugin.Author;
         public string Company => _plugin.Company;
         public IEnumerable<string> Dependences => _plugin.Dependences;
         public string Url => _plugin.Url;

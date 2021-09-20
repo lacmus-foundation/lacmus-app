@@ -27,7 +27,7 @@ namespace Sandbox
                     "plugins", "http://api.lacmus.ml");
                 var pluginInfo = new PluginInfo()
                 {
-                    Author = "gosha20777",
+                    Author = "gosha207771",
                     Company = "Lacmus Foundation",
                     Description = "Resnet50+deepFPN neural network",
                     Name = "Lacmus Retinanet",
@@ -42,7 +42,7 @@ namespace Sandbox
                         OperatingSystem.OsxAmd64
                     }
                 };
-                var pluginInfoViewModel = new PluginInfoViewModel(
+                var pluginViewModel = new PluginViewModel(
                     pluginInfo,
                     pluginManager);
                 var localPluginRepositoryViewModel = new LocalPluginRepositoryViewModel();
@@ -54,7 +54,7 @@ namespace Sandbox
                     DataContext = new SettingsViewModel(
                         localPluginRepositoryViewModel,
                         remotePluginRepositoryViewModel,
-                        pluginInfoViewModel)
+                        pluginViewModel)
                 };
             }
 
