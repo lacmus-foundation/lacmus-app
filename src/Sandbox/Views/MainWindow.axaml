@@ -19,6 +19,7 @@
         </Grid.RowDefinitions>
         <TabControl Margin="0" Grid.Row="0" Background="Transparent">
             <TabItem Header="General">
+                <pages:GeneralSettingsPage/>
             </TabItem>
             <TabItem Header="ML Model">
                 <pages:PluginInfoPage/>

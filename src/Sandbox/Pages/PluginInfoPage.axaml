@@ -8,78 +8,128 @@
              x:DataType="vm:SettingsViewModel"
              x:Class="Sandbox.Pages.PluginInfoPage">
     <Border Classes="Card">
-        <StackPanel>
-            <TextBlock Classes="Heading" 
-                       Text="ML Model"
-            />
-            <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBlock Classes="Caption"
-                           Text="Name"/>
-                <TextBlock Classes="Caption"
-                           Text="{Binding Plugin.Name}"/>
+        <ScrollViewer>
+            <StackPanel>
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0"
+                               Classes="Heading" 
+                               Text="ML Model:"
+                    />
+                    <Button Grid.Column="2"
+                            Content="Refresh"
+                            Padding="10"
+                            Margin="5, 0"
+                            Command="{Binding Plugin.Activate}">
+                    </Button>
+                </Grid>
+                <TextBlock Margin="0 5"
+                           TextWrapping="Wrap" IsVisible="{Binding Plugin.HasErrorMessage}"
+                           Text="{Binding Plugin.ErrorMessage}"/>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               FontWeight="Bold"
+                               Text="Name: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Plugin.Name}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               FontWeight="Bold"
+                               Text="Version: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Plugin.Version}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               FontWeight="Bold"
+                               Text="Inference type: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Plugin.InferenceType}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               FontWeight="Bold"
+                               Text="Author: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Plugin.Author}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               FontWeight="Bold"
+                               Text="Company: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Plugin.Company}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               FontWeight="Bold"
+                               Text="Description: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Plugin.Description}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               FontWeight="Bold"
+                               Text="Url: "/>
+                    <TextBlock Classes="Caption"
+                               Foreground="Blue"
+                               Text="{Binding Plugin.Url}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               FontWeight="Bold"
+                               Text="Tag: "/>
+                    <TextBlock Classes="Caption"
+                               Text="{Binding Plugin.Tag}"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 5">
+                    <TextBlock Classes="Caption"
+                               FontWeight="Bold"
+                               Text="Supported OS: "/>
+                    <ItemsRepeater
+                        Margin="2 0 0 0"
+                        Items="{Binding Plugin.OperatingSystems}">
+                        <ItemsRepeater.Layout>
+                            <StackLayout Orientation="Horizontal"/>
+                        </ItemsRepeater.Layout>
+                        <ItemsRepeater.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Classes="Caption" Margin="2 0" Text="{Binding}"/>
+                            </DataTemplate>
+                        </ItemsRepeater.ItemTemplate>
+                    </ItemsRepeater>
+                </StackPanel>
+                <TextBlock Classes="Heading" 
+                           Text="Threshold:"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Slider Grid.Column="0" Name="ThresholdSlider"
+                            Maximum="0.9"
+                            Minimum="0.05"
+                            TickPlacement="BottomRight"
+                            TickFrequency="0.05"
+                            IsSnapToTickEnabled="True" />
+                    <TextBlock Grid.Column="2" Classes="Caption"
+                               Margin="0 0 5 0"
+                               MinWidth="40"
+                               TextAlignment="Right"
+                               Text="{Binding StringFormat={}{0:P1}, Path=#ThresholdSlider.Value}"/>
+                </Grid>
+                <TextBlock Classes="Heading" 
+                           Text="Repository URL:"
+                />
+                <TextBox Margin="5 0"
+                         Text="{Binding PluginsRepositoryUrl, Mode=TwoWay}"/>
             </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBlock Classes="Caption"
-                           Text="Version"/>
-                <TextBlock Classes="Caption"
-                           Text="{Binding Plugin.Version}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBlock Classes="Caption"
-                           Text="Infer type"/>
-                <TextBlock Classes="Caption"
-                           Text="{Binding Plugin.InferenceType}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBlock Classes="Caption"
-                           Text="Author"/>
-                <TextBlock Classes="Caption"
-                           Text="{Binding Plugin.Author}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBlock Classes="Caption"
-                           Text="Company"/>
-                <TextBlock Classes="Caption"
-                           Text="{Binding Plugin.Company}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBlock Classes="Caption"
-                           Text="Description"/>
-                <TextBlock Classes="Caption"
-                           Text="{Binding Plugin.Description}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBlock Classes="Caption"
-                           Text="Url"/>
-                <TextBlock Classes="Caption"
-                           Text="{Binding Plugin.Url}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBlock Classes="Caption"
-                           Text="Tag"/>
-                <TextBlock Classes="Caption"
-                           Text="{Binding Plugin.Tag}"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" Margin="0 5">
-                <TextBlock Classes="Caption"
-                           Text="Supported OS"/>
-                <TextBlock Classes="Caption"
-                           Text="{Binding Plugin.OperatingSystems}"/>
-            </StackPanel>
-            <Grid Margin="0 5">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="10" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="2"
-                        Content="Refresh"
-                        Command="{Binding Plugin.Activate}">
-                </Button>
-            </Grid>
-            <TextBlock Margin="0 5"
-                       TextWrapping="Wrap" IsVisible="{Binding Plugin.HasErrorMessage}"
-                       Text="{Binding Plugin.ErrorMessage}"/>
-        </StackPanel>
+        </ScrollViewer>
     </Border>
 </UserControl>
