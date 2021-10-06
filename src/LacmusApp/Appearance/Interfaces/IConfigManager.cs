@@ -1,10 +1,11 @@
 using System.Threading.Tasks;
+using LacmusApp.Appearance.Models;
 
 namespace LacmusApp.Appearance.Interfaces
 {
     public interface IConfigManager
     {
-        Task<IConfig> ReadConfig();
-        Task SaveConfig(IConfig config);
+        Task<Config> ReadConfig();
+        Task SaveConfig(Config config);
     }
 }

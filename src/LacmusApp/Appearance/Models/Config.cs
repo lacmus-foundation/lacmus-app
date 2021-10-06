@@ -9,35 +9,19 @@ using Newtonsoft.Json;
 namespace LacmusApp.Appearance.Models
 {
     [JsonObject]
-    public class Config : IConfig
+    public struct Config
     {
         [JsonProperty("repository")]
-        public string Repository { get; set; } = "http://api.lacmus.ml";
+        public string Repository { get; set; }
         [JsonProperty("language")]
-        public Language Language { get; set; } = Language.English;
+        public Language Language { get; set; }
         [JsonProperty("theme")]
-        public Theme Theme { get; set; } = Theme.Light;
+        public Theme Theme { get; set; }
         [JsonProperty("boundingBoxColour")]
-        public BoundingBoxColour BoundingBoxColour { get; set; } = BoundingBoxColour.Red;
+        public BoundingBoxColour BoundingBoxColour { get; set; }
         [JsonProperty("predictionThreshold")]
-        public float PredictionThreshold { get; set; } = 0.15f;
+        public float PredictionThreshold { get; set; }
         [JsonProperty("plugin")]
-        public PluginInfo Plugin { get; set; } = new()
-        {
-            Author = "gosha20777",
-            Company = "Lacmus Foundation",
-            Description = "Resnet50+deepFPN neural network",
-            Name = "Lacmus Retinanet",
-            Tag = "LacmusRetinanetPlugin.Cpu",
-            Url = "https://github.com/lacmus-foundation/lacmus",
-            Version = new Version(api: 2, major: 5, minor: 0),
-            InferenceType = InferenceType.Cpu,
-            OperatingSystems = new HashSet<OperatingSystem>()
-            {
-                OperatingSystem.LinuxAmd64,
-                OperatingSystem.WindowsAmd64,
-                OperatingSystem.OsxAmd64
-            }
-        };
+        public PluginInfo Plugin { get; set; }
     }
 }

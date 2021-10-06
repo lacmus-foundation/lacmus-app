@@ -1,12 +1,17 @@
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Reactive;
 using LacmusApp.Appearance.Enums;
+using LacmusApp.Appearance.Models;
 using LacmusApp.Plugin.Interfaces;
+using ReactiveUI;
 
 namespace LacmusApp.Screens.Interfaces
 {
     public interface ISettingsViewModel : INotifyPropertyChanged
     {
+        ReactiveCommand<Unit, Config> Apply { get; }
+        ReactiveCommand<Unit, Config> Cancel { get; }
         ILocalPluginRepositoryViewModel LocalPluginRepository { get; }
         IRemotePluginRepositoryViewModel RemotePluginRepository { get; }
         IPluginViewModel Plugin { get; }

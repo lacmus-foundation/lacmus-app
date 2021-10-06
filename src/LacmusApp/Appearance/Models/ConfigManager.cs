@@ -16,7 +16,7 @@ namespace LacmusApp.Appearance.Models
             _configPath = configPath;
         }
         
-        public async Task<IConfig> ReadConfig()
+        public async Task<Config> ReadConfig()
         {
             try
             {
@@ -32,16 +32,16 @@ namespace LacmusApp.Appearance.Models
             }
         }
 
-        public async Task SaveConfig(IConfig config)
+        public async Task SaveConfig(Config config)
         {
             try
             {
-                var configStr = JsonConvert.SerializeObject((Config)config);
+                var configStr = JsonConvert.SerializeObject(config);
                 await File.WriteAllTextAsync(_configPath, configStr);
             }
             catch (Exception e)
             {
-                Log.Error($"Can not save config to {_configPath}.");
+                Log.Error($"Can not save config to {_configPath}.", e);
                 throw new Exception($"Can not save config to {_configPath}.");
             }
         }
