@@ -8,9 +8,9 @@ namespace LacmusApp.Plugin.Interfaces
 {
     public interface ILocalPluginRepositoryViewModel : INotifyPropertyChanged
     {
-        IReadOnlyCollection<IObjectDetectionPlugin> Plugins { get; }
-        ReactiveCommand<IObjectDetectionPlugin, Unit> ActivatePlugin { get; }
-        ReactiveCommand<IObjectDetectionPlugin, Unit> RemovePlugin { get; }
+        IReadOnlyCollection<IPluginViewModel> Plugins { get; }
+        ReactiveCommand<Unit, IReadOnlyCollection<IPluginViewModel>> Refresh { get; }
+        ReactiveCommand<Unit, Unit> Import { get; }
         string ErrorMessage { get; }
         bool HasErrorMessage { get; }
     }

@@ -9,6 +9,7 @@ namespace LacmusApp.Plugin.Interfaces
     {
         Task<IReadOnlyCollection<IObjectDetectionPlugin>> GetPluginsFromRepository();
         Task<IReadOnlyCollection<IObjectDetectionPlugin>> GetInstalledPlugins();
+        Task ImportPlugin(string path);
         Task InstallPlugin(IObjectDetectionPlugin plugin);
         Task UninstallPlugin(IObjectDetectionPlugin plugin);
         Task<IObjectDetectionPlugin> LoadPlugin(string tag, LacmusPlugin.Version version);

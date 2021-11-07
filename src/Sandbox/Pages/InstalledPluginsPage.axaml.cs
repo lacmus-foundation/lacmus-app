@@ -2,11 +2,11 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace Sandbox.Elements
+namespace Sandbox.Pages
 {
-    public class ModelItem : UserControl
+    public class InstalledPluginsPage : UserControl
     {
-        public ModelItem()
+        public InstalledPluginsPage()
         {
             InitializeComponent();
         }

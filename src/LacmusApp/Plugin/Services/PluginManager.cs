@@ -71,6 +71,38 @@ namespace LacmusApp.Plugin.Services
             }
         }
 
+        public async Task ImportPlugin(string path)
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    using (var stream = File.OpenRead(path))
+                    {
+                        Log.Information($"Import plugin from {path}...");
+                        using (var archive = new ZipArchive(stream))
+                        {
+                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            {
+                                var fullPath = Path.Combine(BaseDirectory, entry.FullName);
+                                if (String.IsNullOrEmpty(entry.Name))
+                                    Directory.CreateDirectory(fullPath);
+                                else
+                                    entry.ExtractToFile(fullPath);
+                            }
+                        }
+                    }
+                    GC.Collect();
+                    Log.Information($"Plugin was imported.");
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e, $"Can not import plugin from {path}");
+                    throw new Exception("Can not import plugin.");
+                }
+            });
+        }
+
         public async Task InstallPlugin(IObjectDetectionPlugin plugin)
         {
             await Task.Run(async () =>

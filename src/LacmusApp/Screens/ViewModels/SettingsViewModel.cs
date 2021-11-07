@@ -4,6 +4,7 @@ using System.Reactive;
 using LacmusApp.Appearance.Enums;
 using LacmusApp.Appearance.Interfaces;
 using LacmusApp.Appearance.Models;
+using LacmusApp.IO.Interfaces;
 using LacmusApp.Plugin.Interfaces;
 using LacmusApp.Plugin.Models;
 using LacmusApp.Plugin.ViewModels;
@@ -18,9 +19,10 @@ namespace LacmusApp.Screens.ViewModels
         public SettingsViewModel(
             Config config,
             IConfigManager configManager,
-            IPluginManager pluginManager)
+            IPluginManager pluginManager,
+            IFileManager fileManager)
         {
-            LocalPluginRepository = new LocalPluginRepositoryViewModel();
+            LocalPluginRepository = new LocalPluginRepositoryViewModel(pluginManager, fileManager);
             RemotePluginRepository = new RemotePluginRepositoryViewModel(pluginManager);
             Plugin = new PluginViewModel(config.Plugin, pluginManager);
             PredictionThreshold = config.PredictionThreshold;
@@ -60,9 +62,18 @@ namespace LacmusApp.Screens.ViewModels
             Cancel = ReactiveCommand
                 .Create(  () => config);
 
+            // TODO: init when activate VM
             // initialize components
-            Plugin.Activate.Execute().Subscribe();
-            RemotePluginRepository.Refresh.Execute().Subscribe();
+            try
+            {
+                Plugin.Activate.Execute().Subscribe();
+                // not work witjout internwt
+                // RemotePluginRepository.Refresh.Execute().Subscribe();
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         public ReactiveCommand<Unit, Config> Apply { get; }

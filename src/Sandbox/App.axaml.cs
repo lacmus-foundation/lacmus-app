@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using LacmusApp.Appearance.Enums;
@@ -11,6 +12,7 @@ using LacmusApp.Plugin.ViewModels;
 using LacmusApp.Screens.ViewModels;
 using LacmusPlugin;
 using LacmusPlugin.Enums;
+using Sandbox.Services;
 
 namespace Sandbox
 {
@@ -28,6 +30,7 @@ namespace Sandbox
                 var pluginManager = new PluginManager(
                     "plugins", "http://api.lacmus.ml");
                 var configManager = new ConfigManager("config.json");
+                //TODO: load config
                 var config = new Config()
                 {
                     Language = Language.English,
@@ -54,12 +57,15 @@ namespace Sandbox
                     BoundingBoxColour = BoundingBoxColour.Blue
                 };
 
+                var fileManager = new AvaloniaPluginFileManager(new Window());
+
                 desktop.MainWindow = new MainWindow
                 {
                     DataContext = new SettingsViewModel(
                         config,
                         configManager,
-                        pluginManager)
+                        pluginManager,
+                        fileManager)
                 };
             }
 

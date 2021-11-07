@@ -25,7 +25,7 @@
                 <pages:PluginInfoPage/>
             </TabItem>
             <TabItem Header="Installed Models">
-                
+                <pages:InstalledPluginsPage/>
             </TabItem>
             <TabItem Header="Available Models">
                 <pages:RemotePluginsPage/>
