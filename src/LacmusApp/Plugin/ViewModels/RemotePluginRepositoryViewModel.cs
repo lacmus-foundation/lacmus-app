@@ -11,17 +11,17 @@ namespace LacmusApp.Plugin.ViewModels
 {
     public class RemotePluginRepositoryViewModel : ReactiveObject, IRemotePluginRepositoryViewModel
     {
-        private readonly ObservableAsPropertyHelper<IReadOnlyCollection<IPluginViewModel>> _plugins;
+        private readonly ObservableAsPropertyHelper<IReadOnlyCollection<IRemotePluginViewModel>> _plugins;
         private readonly ObservableAsPropertyHelper<string> _errorMessage;
         private readonly ObservableAsPropertyHelper<bool> _hasErrorMessage;
         
         public RemotePluginRepositoryViewModel(IPluginManager manager)
         {
             Refresh = ReactiveCommand
-                .CreateFromTask<IReadOnlyCollection<IPluginViewModel>>(async ()  =>
+                .CreateFromTask<IReadOnlyCollection<IRemotePluginViewModel>>(async ()  =>
                 { 
                     var list = await manager.GetPluginsFromRepository();
-                    return list.Select(p => new PluginViewModel(p, manager)).ToList();
+                    return list.Select(p => new RemotePluginViewModel(p, manager)).ToList();
                 });
 
             _plugins = Refresh
@@ -42,8 +42,8 @@ namespace LacmusApp.Plugin.ViewModels
                 })
                 .ToProperty(this, x => x.ErrorMessage);
         }
-        public ReactiveCommand<Unit, IReadOnlyCollection<IPluginViewModel>> Refresh { get; }
-        public IReadOnlyCollection<IPluginViewModel> Plugins => _plugins.Value;
+        public ReactiveCommand<Unit, IReadOnlyCollection<IRemotePluginViewModel>> Refresh { get; }
+        public IReadOnlyCollection<IRemotePluginViewModel> Plugins => _plugins.Value;
         public string ErrorMessage => _errorMessage.Value;
         public bool HasErrorMessage => _hasErrorMessage.Value;
     }

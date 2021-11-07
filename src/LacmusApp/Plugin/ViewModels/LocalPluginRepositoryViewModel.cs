@@ -5,6 +5,7 @@ using System.Reactive;
 using System.Reactive.Linq;
 using LacmusApp.IO.Interfaces;
 using LacmusApp.Plugin.Interfaces;
+using LacmusApp.Screens.Interfaces;
 using ReactiveUI;
 using Serilog;
 
@@ -12,17 +13,17 @@ namespace LacmusApp.Plugin.ViewModels
 {
     public class LocalPluginRepositoryViewModel : ReactiveObject, ILocalPluginRepositoryViewModel
     {
-        private readonly ObservableAsPropertyHelper<IReadOnlyCollection<IPluginViewModel>> _plugins;
+        private readonly ObservableAsPropertyHelper<IReadOnlyCollection<ILocalPluginViewModel>> _plugins;
         private readonly ObservableAsPropertyHelper<string> _errorMessage;
         private readonly ObservableAsPropertyHelper<bool> _hasErrorMessage;
 
-        public LocalPluginRepositoryViewModel(IPluginManager manager, IFileManager file)
+        public LocalPluginRepositoryViewModel(IPluginManager manager, IFileManager file, ISettingsViewModel settings)
         {
             Refresh = ReactiveCommand
-                .CreateFromTask<IReadOnlyCollection<IPluginViewModel>>(async ()  =>
+                .CreateFromTask<IReadOnlyCollection<ILocalPluginViewModel>>(async ()  =>
                 {
                     var list = await manager.GetInstalledPlugins();
-                    return list.Select(p => new PluginViewModel(p, manager)).ToList();
+                    return list.Select(p => new LocalPluginViewModel(p, manager, settings)).ToList();
                 });
             
             Import = ReactiveCommand
@@ -51,9 +52,9 @@ namespace LacmusApp.Plugin.ViewModels
                 .ToProperty(this, x => x.ErrorMessage);
         }
         
-        public ReactiveCommand<Unit, IReadOnlyCollection<IPluginViewModel>> Refresh { get; }
+        public ReactiveCommand<Unit, IReadOnlyCollection<ILocalPluginViewModel>> Refresh { get; }
         public ReactiveCommand<Unit, Unit> Import { get; }
-        public IReadOnlyCollection<IPluginViewModel> Plugins => _plugins.Value;
+        public IReadOnlyCollection<ILocalPluginViewModel> Plugins => _plugins.Value;
         public string ErrorMessage => _errorMessage.Value;
         public bool HasErrorMessage => _hasErrorMessage.Value;
     }

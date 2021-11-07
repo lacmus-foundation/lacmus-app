@@ -8,8 +8,8 @@ namespace LacmusApp.Plugin.Interfaces
 {
     public interface IRemotePluginRepositoryViewModel : INotifyPropertyChanged
     {
-        IReadOnlyCollection<IPluginViewModel> Plugins { get; }
-        ReactiveCommand<Unit, IReadOnlyCollection<IPluginViewModel>> Refresh { get; }
+        IReadOnlyCollection<IRemotePluginViewModel> Plugins { get; }
+        ReactiveCommand<Unit, IReadOnlyCollection<IRemotePluginViewModel>> Refresh { get; }
         string ErrorMessage { get; }
         bool HasErrorMessage { get; }
     }

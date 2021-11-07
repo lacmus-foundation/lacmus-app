@@ -10,6 +10,7 @@ using LacmusApp.Plugin.Models;
 using LacmusApp.Plugin.ViewModels;
 using LacmusApp.Screens.Interfaces;
 using ReactiveUI;
+using ReactiveUI.Fody.Helpers;
 
 namespace LacmusApp.Screens.ViewModels
 {
@@ -22,7 +23,7 @@ namespace LacmusApp.Screens.ViewModels
             IPluginManager pluginManager,
             IFileManager fileManager)
         {
-            LocalPluginRepository = new LocalPluginRepositoryViewModel(pluginManager, fileManager);
+            LocalPluginRepository = new LocalPluginRepositoryViewModel(pluginManager, fileManager, this);
             RemotePluginRepository = new RemotePluginRepositoryViewModel(pluginManager);
             Plugin = new PluginViewModel(config.Plugin, pluginManager);
             PredictionThreshold = config.PredictionThreshold;
@@ -80,7 +81,7 @@ namespace LacmusApp.Screens.ViewModels
         public ReactiveCommand<Unit, Config> Cancel { get; }
         public ILocalPluginRepositoryViewModel LocalPluginRepository { get; }
         public IRemotePluginRepositoryViewModel RemotePluginRepository { get; }
-        public IPluginViewModel Plugin { get; }
+        [Reactive] public IPluginViewModel Plugin { get; set; }
         public float PredictionThreshold { get; set; }
         public string PluginsRepositoryUrl { get; set; }
         public Language Language { get; set; }
@@ -101,5 +102,6 @@ namespace LacmusApp.Screens.ViewModels
             BoundingBoxColour.Yellow,
             BoundingBoxColour.Magenta
         };
+        public bool IsNeedRestart { get; set; } = false;
     }
 }

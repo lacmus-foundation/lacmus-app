@@ -14,7 +14,7 @@ namespace LacmusApp.Screens.Interfaces
         ReactiveCommand<Unit, Config> Cancel { get; }
         ILocalPluginRepositoryViewModel LocalPluginRepository { get; }
         IRemotePluginRepositoryViewModel RemotePluginRepository { get; }
-        IPluginViewModel Plugin { get; }
+        IPluginViewModel Plugin { get; set; }
         public float PredictionThreshold { get; set; }
         public string PluginsRepositoryUrl { get; set; }
         public Language Language { get; set; }
@@ -23,5 +23,6 @@ namespace LacmusApp.Screens.Interfaces
         public IEnumerable<Theme> SupportedThemes { get; }
         public BoundingBoxColour BoundingBoxColour { get; set; }
         public IEnumerable<BoundingBoxColour> SupportedBoundingBoxColours { get; }
+        public bool IsNeedRestart { get; set; }
     }
 }

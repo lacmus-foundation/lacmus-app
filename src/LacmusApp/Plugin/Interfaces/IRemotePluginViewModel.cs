@@ -5,9 +5,9 @@ using ReactiveUI;
 
 namespace LacmusApp.Plugin.Interfaces
 {
-    public interface IPluginViewModel : IObjectDetectionPlugin, INotifyPropertyChanged
+    public interface IRemotePluginViewModel : IObjectDetectionPlugin, INotifyPropertyChanged
     {
-        ReactiveCommand<Unit, IObjectDetectionPlugin> Activate { get; }
+        ReactiveCommand<Unit, Unit> Install { get; }
         string ErrorMessage { get; }
         bool HasErrorMessage { get; }
     }

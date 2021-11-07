@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using LacmusApp.Plugin.Interfaces;
+using LacmusApp.Screens.Interfaces;
 using LacmusPlugin;
 using LacmusPlugin.Enums;
 using ReactiveUI;
@@ -10,20 +11,25 @@ using Version = LacmusPlugin.Version;
 
 namespace LacmusApp.Plugin.ViewModels
 {
-    public class PluginViewModel : ReactiveObject, IPluginViewModel
+    public class LocalPluginViewModel : ReactiveObject, ILocalPluginViewModel
     {
         private IObjectDetectionPlugin _plugin;
         private readonly ObservableAsPropertyHelper<string> _errorMessage;
         private readonly ObservableAsPropertyHelper<bool> _hasErrorMessage;
         
-        public PluginViewModel(IObjectDetectionPlugin plugin, IPluginManager manager)
+        public LocalPluginViewModel(IObjectDetectionPlugin plugin, IPluginManager manager, ISettingsViewModel settings)
         {
             _plugin = plugin;
+            
+            Remove = ReactiveCommand.CreateFromTask(
+                async () => await manager.UninstallPlugin(plugin));
             
             Activate = ReactiveCommand.CreateFromTask(
                 async () =>
                 {
                     _plugin = await manager.LoadPlugin(plugin.Tag, plugin.Version);
+                    settings.Plugin = this;
+                    settings.IsNeedRestart = true;
                     return _plugin;
                 });
 
@@ -62,15 +68,29 @@ namespace LacmusApp.Plugin.ViewModels
             Activate
                 .Select(p => p.OperatingSystems)
                 .ToProperty(this, x => x.OperatingSystems);
-
-            _hasErrorMessage = Activate
+            
+            var hasErrorMessageRemove = Remove
                 .ThrownExceptions
-                .Select(_ => true)
+                .Select(_ => true);
+
+            var errorMessageRemove = Remove
+                .ThrownExceptions
+                .Select(_ => "Can not uninstall plugin.");
+
+            var hasErrorMessageActivate = Activate
+                .ThrownExceptions
+                .Select(_ => true);
+
+            var errorMessageActivate = Activate
+                .ThrownExceptions
+                .Select(_ => "Can not activate plugin.");
+
+            _hasErrorMessage = Observable
+                .Merge(hasErrorMessageRemove, hasErrorMessageActivate)
                 .ToProperty(this, x => x.HasErrorMessage);
-
-            _errorMessage = Activate
-                .ThrownExceptions
-                .Select(_ => "Can not activate plugin.")
+            
+            _errorMessage = Observable
+                .Merge(errorMessageRemove, errorMessageActivate)
                 .ToProperty(this, x => x.ErrorMessage);
         }
         
@@ -90,6 +110,7 @@ namespace LacmusApp.Plugin.ViewModels
         public InferenceType InferenceType => _plugin.InferenceType;
         public HashSet<OperatingSystem> OperatingSystems => _plugin.OperatingSystems;
         public ReactiveCommand<Unit, IObjectDetectionPlugin> Activate { get; }
+        public ReactiveCommand<Unit, Unit> Remove { get; }
         public string ErrorMessage => _errorMessage.Value;
         public bool HasErrorMessage => _hasErrorMessage.Value;
     }
