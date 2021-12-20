@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Reactive;
 using System.Reactive.Linq;
 using Avalonia.Threading;
+using LacmusApp.Appearance.Enums;
 using LacmusApp.Avalonia.Managers;
 using LacmusApp.Avalonia.Models;
 using LacmusApp.Avalonia.Services;
@@ -26,7 +27,7 @@ namespace LacmusApp.Avalonia.ViewModels
         private AppConfig _config, _newConfig;
         private SettingsWindow _window;
         private bool isThemeChanged = false;
-        private ThemeManager.Theme _currentTheme;
+        private Theme _currentTheme;
         
         public SettingsWindowViewModel(SettingsWindow window, LocalizationContext context,
                                         ref AppConfig config,
@@ -96,20 +97,11 @@ namespace LacmusApp.Avalonia.ViewModels
 
             switch (_currentTheme)
             {
-                case ThemeManager.Theme.Citrus:
+                case Theme.Light:
                     ThemeIndex = 0;
                     break;
-                case ThemeManager.Theme.Rust:
+                case Theme.Dark:
                     ThemeIndex = 1;
-                    break;
-                case ThemeManager.Theme.Sea:
-                    ThemeIndex = 2;
-                    break;
-                case ThemeManager.Theme.Candy:
-                    ThemeIndex = 3;
-                    break;
-                case ThemeManager.Theme.Magma:
-                    ThemeIndex = 4;
                     break;
             }
         }
@@ -214,19 +206,10 @@ namespace LacmusApp.Avalonia.ViewModels
                 switch (ThemeIndex)
                 {
                     case 0:
-                        _currentTheme = ThemeManager.Theme.Citrus;
+                        _currentTheme = Theme.Light;
                         break;
                     case 1:
-                        _currentTheme = ThemeManager.Theme.Rust;
-                        break;
-                    case 2:
-                        _currentTheme = ThemeManager.Theme.Sea;
-                        break;
-                    case 3:
-                        _currentTheme = ThemeManager.Theme.Candy;
-                        break;
-                    case 4:
-                        _currentTheme = ThemeManager.Theme.Magma;
+                        _currentTheme = Theme.Dark;
                         break;
                     default:
                         throw new Exception($"Invalid ThemeIndex: {LanguageIndex}");

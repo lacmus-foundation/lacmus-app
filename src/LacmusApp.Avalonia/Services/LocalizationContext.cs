@@ -1,6 +1,7 @@
 using System;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using LacmusApp.Appearance.Enums;
 
 namespace LacmusApp.Avalonia.Services
 {
@@ -1221,11 +1222,5 @@ namespace LacmusApp.Avalonia.Services
                 }
             }
         }
-    }
-
-    public enum Language
-    {
-        Russian,
-        English
     }
 }

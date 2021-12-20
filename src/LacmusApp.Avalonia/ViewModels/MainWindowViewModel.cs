@@ -28,11 +28,12 @@ using LacmusApp.Avalonia.Services.IO;
 using LacmusApp.Avalonia.Services.Plugin;
 using LacmusApp.Avalonia.Services.VM;
 using LacmusApp.Avalonia.Views;
+using LacmusApp.Screens.ViewModels;
 using Octokit;
 using Serilog;
 using Splat;
+using Language = LacmusApp.Appearance.Enums.Language;
 using Attribute = LacmusApp.Avalonia.Models.Photo.Attribute;
-using Language = LacmusApp.Avalonia.Services.Language;
 using Object = LacmusApp.Avalonia.Models.Object;
 
 namespace LacmusApp.Avalonia.ViewModels
@@ -41,22 +42,20 @@ namespace LacmusApp.Avalonia.ViewModels
     {
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly Window _window;
-        private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
-        private AppConfig _appConfig;
         private ThemeManager _themeManager;
-        private PluginManager _pluginManager;
+        private SettingsViewModel _settingsViewModel;
+        
         private int itemPerPage = 500;
         private int itemcount;
         private int _totalPages;
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
         private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
         
-        public MainWindowViewModel(Window window, AppConfig appConfig)
+        public MainWindowViewModel(Window window, SettingsViewModel settingsViewModel, ThemeManager themeManager)
         {
             _window = window;
-            _appConfig = appConfig;
-            _themeManager = new ThemeManager(window);
-            _pluginManager = new PluginManager(appConfig.PluginDir);
+            _themeManager = themeManager;
+            _settingsViewModel = settingsViewModel;
 
 
             var pageFilter = this
@@ -116,8 +115,7 @@ namespace LacmusApp.Avalonia.ViewModels
             LocalizationContext = new LocalizationContext();
             
             // load settings from config
-            LocalizationContext.Language = _appConfig.Language;
-            _themeManager.UseTheme(_appConfig.Theme);
+            LocalizationContext.Language = _settingsViewModel.Language;
 
             Task.Run(CheckUpdate);
 
@@ -276,9 +274,9 @@ namespace LacmusApp.Avalonia.ViewModels
         
         public async void OpenModelManager()
         {
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-            ModelManagerWindow window = new ModelManagerWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
-            _appConfig = await window.ShowResult();
+            //_applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
+            //ModelManagerWindow window = new ModelManagerWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
+            //_appConfig = await window.ShowResult();
         }
 
         public async void OpenBugReport()
@@ -294,7 +292,7 @@ namespace LacmusApp.Avalonia.ViewModels
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
             try
             {
-                var plugin = _pluginManager.GetPlugin(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);
+                var plugin = _settingsViewModel.Plugin;
                 using (var model = plugin.LoadModel(0.15f))
                 {
                     var count = 0;
@@ -466,10 +464,10 @@ namespace LacmusApp.Avalonia.ViewModels
             Locator.CurrentMutable.Register(() => new SecondWizardView(), typeof(IViewFor<SecondWizardViewModel>));
             Locator.CurrentMutable.Register(() => new ThirdWizardView(), typeof(IViewFor<ThirdWizardViewModel>));
             Locator.CurrentMutable.Register(() => new FourthWizardView(), typeof(IViewFor<FourthWizardViewModel>));
-            var window = new WizardWindow(_appConfig, LocalizationContext, _themeManager);
-            var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex);
-            window.DataContext = context;
-            _appConfig = await window.ShowResult();
+            //var window = new WizardWindow(_appConfig, LocalizationContext, _themeManager);
+            //var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex);
+            //window.DataContext = context;
+            //_appConfig = await window.ShowResult();
             Log.Debug("Open Wizard");
         }
 
@@ -591,8 +589,11 @@ namespace LacmusApp.Avalonia.ViewModels
 
         private async void OpenSettingsWindowAsync()
         {
-            SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
-            _appConfig = await settingsWindow.ShowResult();
+            Settings settingsWindow = new Settings();
+            settingsWindow.DataContext = _settingsViewModel;
+            settingsWindow.Show();
+            //SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
+            //_appConfig = await settingsWindow.ShowResult();
         }
 
         private async void CheckUpdate()

@@ -2,21 +2,13 @@ using System;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml.Styling;
+using LacmusApp.Appearance.Enums;
 using Serilog;
 
 namespace LacmusApp.Avalonia.Managers
 {
     public class ThemeManager
     {
-        public enum Theme
-        {
-            Citrus,
-            Sea,
-            Rust,
-            Candy,
-            Magma
-        }
-        
         private readonly StyleInclude _magmaStyle = CreateStyle("avares://Citrus.Avalonia/Magma.xaml");
         private readonly StyleInclude _candyStyle = CreateStyle("avares://Citrus.Avalonia/Candy.xaml");
         private readonly StyleInclude _citrusStyle = CreateStyle("avares://Citrus.Avalonia/Citrus.xaml");
@@ -33,7 +25,7 @@ namespace LacmusApp.Avalonia.Managers
             window.Styles.Add(_citrusStyle);
         }
 
-        public Theme CurrentTheme { get; private set; } = Theme.Citrus;
+        public Theme CurrentTheme { get; private set; } = Theme.Light;
         
         public void UseTheme(Theme theme)
         {
@@ -42,11 +34,8 @@ namespace LacmusApp.Avalonia.Managers
             // to invoke such methods from the UI thread.
             var style = theme switch
             {
-                Theme.Citrus => _citrusStyle,
-                Theme.Sea => _seaStyle,
-                Theme.Rust => _rustStyle,
-                Theme.Candy => _candyStyle,
-                Theme.Magma => _magmaStyle,
+                Theme.Light => _citrusStyle,
+                Theme.Dark => _rustStyle,
                 _ => throw new ArgumentOutOfRangeException(nameof(theme))
             };
             _window.Styles[0] = style;

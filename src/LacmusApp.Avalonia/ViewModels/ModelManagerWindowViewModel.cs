@@ -24,6 +24,7 @@ using ReactiveUI.Validation.Extensions;
 using ReactiveUI.Validation.Helpers;
 using Serilog;
 using OperatingSystem = LacmusPlugin.OperatingSystem;
+using Language = LacmusApp.Appearance.Enums.Language;
 
 namespace LacmusApp.Avalonia.ViewModels
 {

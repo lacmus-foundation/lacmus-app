@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using LacmusApp.Appearance.Enums;
 using LacmusApp.Avalonia.Managers;
 using LacmusApp.Avalonia.Models.Plugins;
 using LacmusApp.Avalonia.Services.Plugin;
@@ -9,7 +10,7 @@ using LacmusPlugin.Enums;
 using Newtonsoft.Json;
 using Octokit;
 using Serilog;
-using Language = LacmusApp.Avalonia.Services.Language;
+using Language = LacmusApp.Appearance.Enums.Language;
 using OperatingSystem = LacmusPlugin.OperatingSystem;
 using Version = LacmusPlugin.Version;
 
@@ -59,7 +60,7 @@ namespace LacmusApp.Avalonia.Models
                 _borderColor = value;
             }
         } 
-        public ThemeManager.Theme Theme { get; set; }
+        public Theme Theme { get; set; }
 
         public PluginRepository Repository
         {

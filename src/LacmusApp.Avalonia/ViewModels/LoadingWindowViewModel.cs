@@ -3,8 +3,13 @@ using System.IO;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using LacmusApp.Appearance.Models;
+using LacmusApp.Avalonia.Managers;
 using LacmusApp.Avalonia.Models;
+using LacmusApp.Avalonia.Services;
 using LacmusApp.Avalonia.Views;
+using LacmusApp.Plugin.Services;
+using LacmusApp.Screens.ViewModels;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using Serilog;
@@ -30,8 +35,28 @@ namespace LacmusApp.Avalonia.ViewModels
         {
             var window = new MainWindow();
             await Task.Delay(1000);
-            var config = await LoadConfig();
-            window.DataContext = new MainWindowViewModel(window, config);
+            var confDir = Path.Join(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), 
+                "lacmus");
+            var configPath = Path.Join(confDir, "appConfig-v3.json");
+            var configManager = new ConfigManager(configPath);
+            var config = await configManager.ReadConfig();
+            var fileManager = new AvaloniaPluginFileManager(window);
+            var pluginManager = new PluginManager(
+                Path.Join(confDir, "plugins"), "http://api.lacmus.ml");
+            var themeManager = new ThemeManager(window);
+            themeManager.UseTheme(config.Theme);
+            var settingsViewModel = new SettingsViewModel(
+                config,
+                configManager,
+                pluginManager,
+                fileManager);
+            
+            window.DataContext = new MainWindowViewModel(
+                window,
+                settingsViewModel,
+                themeManager);
+            
             window.Show();
             _window.Close();
         }
