@@ -7,7 +7,7 @@
         d:DataContext="{d:DesignInstance vm:SettingsViewModel, IsDesignTimeCreatable=False}"
         mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="400"
         x:Class="Sandbox.Views.MainWindow"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="resm:Sandbox.Assets.avalonia-logo.ico"
         CanResize="True"
         Width = "550"
         Height = "400"
