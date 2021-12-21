@@ -1,9 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using LacmusApp.Appearance.Enums;
 using LacmusApp.Appearance.Interfaces;
+using LacmusApp.Plugin.Models;
+using LacmusPlugin.Enums;
 using Newtonsoft.Json;
 using Serilog;
+using OperatingSystem = LacmusPlugin.OperatingSystem;
 
 namespace LacmusApp.Appearance.Models
 {
@@ -18,6 +23,7 @@ namespace LacmusApp.Appearance.Models
         
         public async Task<Config> ReadConfig()
         {
+            Log.Information($"Load config from {_configPath}");
             try
             {
                 var configStr = await File.ReadAllTextAsync(_configPath);
@@ -26,7 +32,31 @@ namespace LacmusApp.Appearance.Models
             catch (Exception e)
             {
                 Log.Warning($"Con not parse config from {_configPath}.", e);
-                var config = new Config();
+                var config = new Config()
+                {
+                    Language = Language.English,
+                    Plugin = new PluginInfo()
+                    {
+                        Author = "gosha207771",
+                        Company = "Lacmus Foundation",
+                        Description = "Resnet50+deepFPN neural network",
+                        Name = "Lacmus Retinanet",
+                        Tag = "LacmusRetinanetPlugin.Cpu",
+                        Url = "https://github.com/lacmus-foundation/lacmus",
+                        Version = new(api: 2, major: 5, minor: 0),
+                        InferenceType = InferenceType.Cpu,
+                        OperatingSystems = new HashSet<OperatingSystem>()
+                        {
+                            OperatingSystem.LinuxAmd64,
+                            OperatingSystem.WindowsAmd64,
+                            OperatingSystem.OsxAmd64
+                        }
+                    },
+                    Repository = "http://api.lacmus.ml",
+                    Theme = Theme.Light,
+                    PredictionThreshold = 0.80f,
+                    BoundingBoxColour = BoundingBoxColour.Blue
+                };
                 await SaveConfig(config);
                 return config;
             }
