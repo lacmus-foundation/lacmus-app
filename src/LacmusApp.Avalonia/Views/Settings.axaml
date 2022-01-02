@@ -31,20 +31,28 @@
             </TabItem>
         </TabControl>
         <Border Classes="Card" Grid.Row="1">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="10"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="0"
-                        Content="Cancel"
+            <StackPanel Orientation="Vertical">
+                <TextBlock Classes="Heading" 
+                           Text="Need restart."
+                           IsVisible="{Binding IsNeedRestart, Mode=TwoWay}"
                 />
-                <Button Grid.Column="2"
-                        Classes="Primary"
-                        Content="Apply"
-                />
-            </Grid>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Content="Cancel"
+                            Command="{Binding Cancel}"
+                    />
+                    <Button Grid.Column="2"
+                            Classes="Primary"
+                            Content="Apply"
+                            Command="{Binding Apply}"
+                    />
+                </Grid>
+            </StackPanel>
         </Border>
     </Grid>
 </Window>

@@ -591,9 +591,11 @@ namespace LacmusApp.Avalonia.ViewModels
         {
             Settings settingsWindow = new Settings();
             settingsWindow.DataContext = _settingsViewModel;
+            var themeManager = new ThemeManager(settingsWindow);
+            themeManager.UseTheme(_settingsViewModel.Theme);
+            _settingsViewModel.OnRequestClose += (s, e) => settingsWindow.Close();
+            _settingsViewModel.OnRequestRestart += (sender, args) => RestartApp();
             settingsWindow.Show();
-            //SettingsWindow settingsWindow = new SettingsWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
-            //_appConfig = await settingsWindow.ShowResult();
         }
 
         private async void CheckUpdate()
@@ -651,6 +653,24 @@ namespace LacmusApp.Avalonia.ViewModels
             {
                 Log.Error(e, "Can not check for updates");
             }
+        }
+
+        private async void RestartApp()
+        {
+            var msg = "To apply settings you need to restart application.";
+            if (LocalizationContext.Language == Language.Russian)
+                msg = "Чтобы применить настройки необходим перезапуск программы.";
+            var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
+            {
+                ButtonDefinitions = ButtonEnum.Ok,
+                ContentTitle = "Need to restart",
+                ContentMessage = msg,
+                Icon = MessageBox.Avalonia.Enums.Icon.Info,
+                Style = Style.None,
+                ShowInCenter = true
+            });
+            var result = await msgbox.Show();
+            Environment.Exit(0);
         }
     }
 }

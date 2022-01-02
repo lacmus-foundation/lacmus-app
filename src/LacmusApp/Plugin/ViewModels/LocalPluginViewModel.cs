@@ -29,7 +29,6 @@ namespace LacmusApp.Plugin.ViewModels
                 {
                     _plugin = await manager.LoadPlugin(plugin.Tag, plugin.Version);
                     settings.Plugin = this;
-                    settings.IsNeedRestart = true;
                     return _plugin;
                 });
 

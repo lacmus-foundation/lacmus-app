@@ -68,6 +68,7 @@ namespace LacmusApp.Appearance.Models
             {
                 var configStr = JsonConvert.SerializeObject(config);
                 await File.WriteAllTextAsync(_configPath, configStr);
+                Log.Information($"Save config to {_configPath}");
             }
             catch (Exception e)
             {

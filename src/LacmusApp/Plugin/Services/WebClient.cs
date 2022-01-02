@@ -8,6 +8,7 @@ using LacmusApp.Plugin.Interfaces;
 using LacmusApp.Plugin.Models;
 using LacmusPlugin;
 using Newtonsoft.Json;
+using Serilog;
 
 namespace LacmusApp.Plugin.Services
 {
@@ -43,6 +44,7 @@ namespace LacmusApp.Plugin.Services
             var url = Url.Combine(baseUrl, "/plugin-repository/api/v1/plugin?",
                 $"tag={tag}", $"api={api}", 
                 $"major={major}", $"minor={minor}");
+            Log.Debug($"Download file from {url}");
             return await httpClient.GetStreamAsync(url);
         }
 

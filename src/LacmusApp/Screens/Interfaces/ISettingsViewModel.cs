@@ -23,6 +23,6 @@ namespace LacmusApp.Screens.Interfaces
         public IEnumerable<Theme> SupportedThemes { get; }
         public BoundingBoxColour BoundingBoxColour { get; set; }
         public IEnumerable<BoundingBoxColour> SupportedBoundingBoxColours { get; }
-        public bool IsNeedRestart { get; set; }
+        public bool IsNeedRestart { get; }
     }
 }

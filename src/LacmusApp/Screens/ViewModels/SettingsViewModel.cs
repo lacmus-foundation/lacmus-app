@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reactive;
+using System.Reactive.Linq;
 using LacmusApp.Appearance.Enums;
 using LacmusApp.Appearance.Interfaces;
 using LacmusApp.Appearance.Models;
@@ -17,6 +18,7 @@ namespace LacmusApp.Screens.ViewModels
     //TODO: add error message
     public class SettingsViewModel : ReactiveObject, ISettingsViewModel
     {
+        private readonly ObservableAsPropertyHelper<bool> _isNeedRestart;
         public SettingsViewModel(
             Config config,
             IConfigManager configManager,
@@ -31,6 +33,28 @@ namespace LacmusApp.Screens.ViewModels
             Language = config.Language;
             Theme = config.Theme;
             BoundingBoxColour = config.BoundingBoxColour;
+            
+            var oldConfig = new Config()
+            {
+                Language = this.Language,
+                Plugin = new PluginInfo()
+                {
+                    Author = this.Plugin.Author,
+                    Company = this.Plugin.Company,
+                    Dependences = this.Plugin.Dependences,
+                    Description = this.Plugin.Description,
+                    Name = this.Plugin.Name,
+                    Tag = this.Plugin.Tag,
+                    Url = this.Plugin.Url,
+                    Version = this.Plugin.Version,
+                    InferenceType = this.Plugin.InferenceType,
+                    OperatingSystems = this.Plugin.OperatingSystems
+                },
+                Repository = this.PluginsRepositoryUrl,
+                Theme = this.Theme,
+                PredictionThreshold = this.PredictionThreshold,
+                BoundingBoxColour = this.BoundingBoxColour
+            };
 
             Apply = ReactiveCommand
                 .CreateFromTask(async () =>
@@ -57,11 +81,34 @@ namespace LacmusApp.Screens.ViewModels
                         BoundingBoxColour = this.BoundingBoxColour
                     };
                     await configManager.SaveConfig(newConfig);
+                    OnRequestClose?.Invoke(this, EventArgs.Empty);
+                    if (IsNeedRestart)
+                        OnRequestRestart?.Invoke(this, EventArgs.Empty);
                     return newConfig;
                 });
             
             Cancel = ReactiveCommand
-                .Create(  () => config);
+                .Create(() =>
+                {
+                    Plugin = new PluginViewModel(oldConfig.Plugin, pluginManager);
+                    PredictionThreshold = oldConfig.PredictionThreshold;
+                    PluginsRepositoryUrl = oldConfig.Repository;
+                    Language = oldConfig.Language;
+                    Theme = oldConfig.Theme;
+                    BoundingBoxColour = oldConfig.BoundingBoxColour;
+                    OnRequestClose?.Invoke(this, EventArgs.Empty);
+                    return oldConfig;
+                });
+
+            var isThemeChanged = this.WhenAnyValue(x => x.Theme)
+                .Select(x => x != oldConfig.Theme);
+            var isPluginChanged = this.WhenAnyValue(x => x.Plugin)
+                .Select(x => $"{x.Tag}-{x.Version.ToString()}" != $"{oldConfig.Plugin.Tag}-{oldConfig.Plugin.Version.ToString()}");
+            
+            _isNeedRestart = Observable
+                .Merge(isThemeChanged, isPluginChanged)
+                .ToProperty(this, x => x.IsNeedRestart);
+            
 
             // TODO: init when activate VM
             // initialize components
@@ -84,8 +131,8 @@ namespace LacmusApp.Screens.ViewModels
         [Reactive] public IPluginViewModel Plugin { get; set; }
         public float PredictionThreshold { get; set; }
         public string PluginsRepositoryUrl { get; set; }
-        public Language Language { get; set; }
-        public Theme Theme { get; set; }
+        [Reactive] public Language Language { get; set; }
+        [Reactive] public Theme Theme { get; set; }
         public BoundingBoxColour BoundingBoxColour { get; set; }
         public IEnumerable<Language> SupportedLanguages => new []
         {
@@ -102,6 +149,8 @@ namespace LacmusApp.Screens.ViewModels
             BoundingBoxColour.Yellow,
             BoundingBoxColour.Magenta
         };
-        public bool IsNeedRestart { get; set; } = false;
+        public bool IsNeedRestart => _isNeedRestart.Value;
+        public event EventHandler OnRequestClose;
+        public event EventHandler OnRequestRestart;
     }
 }

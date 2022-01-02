@@ -116,9 +116,9 @@ namespace LacmusApp.Plugin.Services
                             plugin.Tag, plugin.Version.Api,
                             plugin.Version.Major, plugin.Version.Minor))
                         {
-                            Log.Information($"Installing plugin {plugin.Tag}-{plugin.Version.ToString()}...");
                             using (var archive = new ZipArchive(stream))
                             {
+                                Log.Information($"Installing plugin {plugin.Tag}-{plugin.Version.ToString()}...");
                                 var baseDir = Path.Combine(BaseDirectory,
                                     plugin.Tag, plugin.Version.ToString());
                                 Directory.CreateDirectory(baseDir);
