@@ -7,6 +7,7 @@ using ReactiveUI.Fody.Helpers;
 using LacmusApp.Avalonia.Managers;
 using LacmusApp.Avalonia.Services;
 using LacmusApp.Avalonia.Views;
+using LacmusApp.Screens.ViewModels;
 using Serilog;
 
 namespace LacmusApp.Avalonia.ViewModels
@@ -38,6 +39,7 @@ namespace LacmusApp.Avalonia.ViewModels
         [Reactive] public LocalizationContext LocalizationContext { get; set; }
 
         public WizardWindowViewModel(WizardWindow window,
+            SettingsViewModel settingsViewModel,
             ApplicationStatusManager manager,
             SourceList<PhotoViewModel> photos,
             int selectedIndex)
@@ -47,9 +49,9 @@ namespace LacmusApp.Avalonia.ViewModels
             _router = new RoutingState();
             _firstWizardViewModel = new FirstWizardViewModel(this, LocalizationContext);
             _secondWizardViewModel = new SecondWizardViewModel(this, LocalizationContext);
-            _thirdWizardViewModel = new ThirdWizardViewModel(this, window, manager, LocalizationContext);
-            _fourthWizardViewModel = new FourthWizardViewModel(this, manager,
-                photos, selectedIndex, window.AppConfig, LocalizationContext);
+            _thirdWizardViewModel = new ThirdWizardViewModel(this, window, settingsViewModel, manager, LocalizationContext);
+            _fourthWizardViewModel = new FourthWizardViewModel(this, settingsViewModel, manager,
+                photos, selectedIndex, LocalizationContext);
 
             canGoNext = this
                 .WhenAnyValue(x => x.CanGoNext);

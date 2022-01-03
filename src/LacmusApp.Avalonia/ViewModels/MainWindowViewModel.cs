@@ -464,16 +464,27 @@ namespace LacmusApp.Avalonia.ViewModels
             Locator.CurrentMutable.Register(() => new SecondWizardView(), typeof(IViewFor<SecondWizardViewModel>));
             Locator.CurrentMutable.Register(() => new ThirdWizardView(), typeof(IViewFor<ThirdWizardViewModel>));
             Locator.CurrentMutable.Register(() => new FourthWizardView(), typeof(IViewFor<FourthWizardViewModel>));
-            //var window = new WizardWindow(_appConfig, LocalizationContext, _themeManager);
-            //var context = new WizardWindowViewModel(window, _applicationStatusManager, _photos, SelectedIndex);
-            //window.DataContext = context;
-            //_appConfig = await window.ShowResult();
+            var window = new WizardWindow(LocalizationContext, _themeManager);
+            var context = new WizardWindowViewModel(window, _settingsViewModel, _applicationStatusManager, _photos, SelectedIndex);
+            window.DataContext = context;
+            window.Show();
             Log.Debug("Open Wizard");
         }
 
         public void Help()
         {
-            OpenUrl("https://github.com/lacmus-foundation/lacmus/wiki");
+            switch (_settingsViewModel.Language)
+            {
+                case Language.English:
+                    OpenUrl("https://docs.lacmus.ml");
+                    break;
+                case Language.Russian:
+                    OpenUrl("https://docs.lacmus.ml/v/russian/");
+                    break;
+                default:
+                    OpenUrl("https://docs.lacmus.ml");
+                    break;
+            }
         }
 
         public void ShowGeoData()

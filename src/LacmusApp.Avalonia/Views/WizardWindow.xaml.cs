@@ -20,13 +20,11 @@ using LacmusApp.Avalonia.ViewModels;
 namespace LacmusApp.Avalonia.Views
 {
     public sealed class WizardWindow : ReactiveWindow<WizardWindowViewModel>
-    {
-        public AppConfig AppConfig { get; set; }
+    { 
         public LocalizationContext LocalizationContext { get; }
         public ThemeManager ThemeManager { get; }
-        public WizardWindow(AppConfig appConfig, LocalizationContext localizationContext, ThemeManager themeManager)
+        public WizardWindow(LocalizationContext localizationContext, ThemeManager themeManager)
         {
-            AppConfig = appConfig;
             LocalizationContext = localizationContext;
             ThemeManager = themeManager;
             var localThemeManager = new ThemeManager(this);
@@ -35,13 +33,5 @@ namespace LacmusApp.Avalonia.Views
             AvaloniaXamlLoader.Load(this);
         }
         public WizardWindow() { }
-        
-        public Task<AppConfig> ShowResult()
-        {
-            var tcs = new TaskCompletionSource<AppConfig>();
-            Closed += delegate { tcs.TrySetResult(AppConfig); };
-            Show();
-            return tcs.Task;
-        }
     }
 }

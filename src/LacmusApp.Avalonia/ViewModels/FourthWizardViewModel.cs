@@ -15,6 +15,7 @@ using LacmusApp.Avalonia.Models.Photo;
 using LacmusApp.Avalonia.Services;
 using LacmusApp.Avalonia.Services.IO;
 using LacmusApp.Avalonia.Services.Plugin;
+using LacmusApp.Screens.ViewModels;
 using Serilog;
 using Attribute = LacmusApp.Avalonia.Models.Photo.Attribute;
 using Object = LacmusApp.Avalonia.Models.Object;
@@ -23,10 +24,9 @@ namespace LacmusApp.Avalonia.ViewModels
 {
     public class FourthWizardViewModel : ReactiveObject, IRoutableViewModel
     {
-        private readonly string _mlConfigPath = Path.Join("conf", "mlConfig.json");
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly SourceList<PhotoViewModel> _photos;
-        private AppConfig _appConfig;
+        private SettingsViewModel _settingsViewModel;
         private int _selectedIndex;
         public IScreen HostScreen { get; }
         public string UrlPathSegment { get; } = Guid.NewGuid().ToString().Substring(0, 5);
@@ -41,15 +41,15 @@ namespace LacmusApp.Avalonia.ViewModels
         public ReactiveCommand<Unit, Unit> StopCommand { get; }
 
         public FourthWizardViewModel(IScreen screen, 
+            SettingsViewModel settingsViewModel,
             ApplicationStatusManager manager,
             SourceList<PhotoViewModel> photos,
-            int selectedIndex,
-            AppConfig config, LocalizationContext localizationContext)
+            int selectedIndex, LocalizationContext localizationContext)
         {
             _applicationStatusManager = manager;
             _photos = photos;
             _selectedIndex = selectedIndex;
-            _appConfig = config;
+            _settingsViewModel = settingsViewModel;
             LocalizationContext = localizationContext;
             StopCommand = ReactiveCommand.Create(Stop);
             HostScreen = screen;
@@ -124,9 +124,11 @@ namespace LacmusApp.Avalonia.ViewModels
                 //load config
                 var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
                 var configPath = Path.Join(confDir,"appConfig-v2.json");
-                _appConfig = await AppConfig.Create(configPath);
-                var pluginManager = new PluginManager(_appConfig.PluginDir);
-                var plugin = pluginManager.GetPlugin(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);
+                
+                var plugin = _settingsViewModel.Plugin;
+                if (string.IsNullOrEmpty(plugin.Tag))
+                    throw new Exception("No such plugin");
+                
                 using (var model = plugin.LoadModel(0.15f))
                 {
                     var count = 0;

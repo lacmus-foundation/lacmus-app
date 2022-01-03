@@ -10,6 +10,7 @@ using LacmusApp.Avalonia.Models;
 using LacmusApp.Avalonia.Services;
 using LacmusApp.Avalonia.Services.Plugin;
 using LacmusApp.Avalonia.Views;
+using LacmusApp.Screens.ViewModels;
 using Serilog;
 using OperatingSystem = LacmusPlugin.OperatingSystem;
 
@@ -19,7 +20,7 @@ namespace LacmusApp.Avalonia.ViewModels
     {
         private readonly ApplicationStatusManager _applicationStatusManager;
         private WizardWindow _window;
-        private AppConfig _appConfig;
+        private SettingsViewModel _settingsViewModel;
         public IScreen HostScreen { get; }
         public string UrlPathSegment { get; } = Guid.NewGuid().ToString().Substring(0, 5);
         [Reactive] public string Name { get; set; } = "None";
@@ -40,13 +41,13 @@ namespace LacmusApp.Avalonia.ViewModels
         public ReactiveCommand<Unit, Unit> LoadModelCommand { get; }
         public ReactiveCommand<Unit, Unit> UpdateModelStatusCommand { get; }
 
-        public ThirdWizardViewModel(IScreen screen, WizardWindow window, ApplicationStatusManager manager, LocalizationContext localizationContext)
+        public ThirdWizardViewModel(IScreen screen, WizardWindow window, SettingsViewModel settingsViewModel, ApplicationStatusManager manager, LocalizationContext localizationContext)
         {
             _applicationStatusManager = manager;
             _window = window;
             LocalizationContext = localizationContext;
             HostScreen = screen;
-            _appConfig = window.AppConfig;
+            _settingsViewModel = settingsViewModel;
             LoadModelCommand = ReactiveCommand.Create(LoadModel);
             UpdateModelStatusCommand = ReactiveCommand.Create(UpdateModelStatus);
         }
@@ -59,11 +60,10 @@ namespace LacmusApp.Avalonia.ViewModels
             {
                 Log.Information("Loading ml model.");
                 Status = "Loading ml model...";
-                var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
-                var configPath = Path.Join(confDir, "appConfig-v2.json");
-                _appConfig = await AppConfig.Create(configPath);
-                var pluginManager = new PluginManager(_appConfig.PluginDir);
-                var plugin = await pluginManager.GetPluginsAsync(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);
+
+                var plugin = _settingsViewModel.Plugin;
+                if (string.IsNullOrEmpty(plugin.Tag))
+                    throw new Exception("No such plugin");
                 
                 Dispatcher.UIThread.Post(() =>
                 {
@@ -99,11 +99,10 @@ namespace LacmusApp.Avalonia.ViewModels
             try
             {
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                ModelManagerWindow window = new ModelManagerWindow(_window.LocalizationContext, ref _appConfig, _applicationStatusManager, _window.ThemeManager);
-                _appConfig = await window.ShowResult();
-                
-                var pluginManager = new PluginManager(_appConfig.PluginDir);
-                var plugin = await pluginManager.GetPluginsAsync(_appConfig.PluginInfo.Tag, _appConfig.PluginInfo.Version);
+
+                var plugin = _settingsViewModel.Plugin;
+                if (string.IsNullOrEmpty(plugin.Tag))
+                    throw new Exception("No such plugin");
                 
                 Dispatcher.UIThread.Post(() =>
                 {
@@ -121,7 +120,6 @@ namespace LacmusApp.Avalonia.ViewModels
                 
                 Status = $"Ready";
                 IsError = false;
-                _window.AppConfig = _appConfig;
             }
             catch (Exception e)
             {

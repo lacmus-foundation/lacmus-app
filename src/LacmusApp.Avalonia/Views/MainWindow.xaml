@@ -36,9 +36,6 @@
           <MenuItem Name="mFileExit" Header="{Binding LocalizationContext.Exit}" Command="{Binding ExitCommand}"/>
         </MenuItem>
         <MenuItem Name="mModel" Header="{Binding LocalizationContext.Model}">
-          <MenuItem Name="mModelLoad" Header="{Binding LocalizationContext.LoadModel}" Command="{Binding LoadModelCommand}"/>
-          <MenuItem Name="mModelUpdate" Header="{Binding LocalizationContext.UpdateModel}" Command="{Binding UpdateModelCommand}"/>
-          <MenuItem Name="mModelManager" Header="{Binding LocalizationContext.ModelManager}" Command="{Binding OpenModelManagerCommand}"/>
           <MenuItem Name="mBugReport" Header="{Binding LocalizationContext.BugReport}" Command="{Binding OpenBugReportCommand}"/>
         </MenuItem>
         <MenuItem Name="mImage" Header="{Binding LocalizationContext.Image}">
