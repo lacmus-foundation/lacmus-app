@@ -102,11 +102,13 @@ namespace LacmusApp.Screens.ViewModels
 
             var isThemeChanged = this.WhenAnyValue(x => x.Theme)
                 .Select(x => x != oldConfig.Theme);
+            var isLanguageChanged = this.WhenAnyValue(x => x.Language)
+                .Select(x => x != oldConfig.Language);
             var isPluginChanged = this.WhenAnyValue(x => x.Plugin)
                 .Select(x => $"{x.Tag}-{x.Version.ToString()}" != $"{oldConfig.Plugin.Tag}-{oldConfig.Plugin.Version.ToString()}");
             
             _isNeedRestart = Observable
-                .Merge(isThemeChanged, isPluginChanged)
+                .Merge(isThemeChanged, isLanguageChanged, isPluginChanged)
                 .ToProperty(this, x => x.IsNeedRestart);
             
 

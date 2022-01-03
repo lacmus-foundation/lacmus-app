@@ -1,8 +1,10 @@
 using System;
+using System.Globalization;
 using System.IO;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using LacmusApp.Appearance.Enums;
 using LacmusApp.Appearance.Models;
 using LacmusApp.Avalonia.Managers;
 using LacmusApp.Avalonia.Models;
@@ -33,14 +35,28 @@ namespace LacmusApp.Avalonia.ViewModels
 
         private async void Init()
         {
-            var window = new MainWindow();
-            await Task.Delay(1000);
             var confDir = Path.Join(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), 
                 "lacmus");
             var configPath = Path.Join(confDir, "appConfig-v3.json");
             var configManager = new ConfigManager(configPath);
             var config = await configManager.ReadConfig();
+
+            switch (config.Language)
+            {
+                case Language.English:
+                    Properties.Settings.Culture = new CultureInfo("default");
+                    break;
+                case Language.Russian:
+                    Properties.Settings.Culture = new CultureInfo("ru");
+                    break;
+                default:
+                    Properties.Settings.Culture = new CultureInfo("default");
+                    break;
+            }
+            
+            var window = new MainWindow();
+            await Task.Delay(1000);
             var fileManager = new AvaloniaPluginFileManager(window);
             var pluginManager = new PluginManager(
                 Path.Join(confDir, "plugins"), "http://api.lacmus.ml");

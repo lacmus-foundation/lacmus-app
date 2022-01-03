@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:l="clr-namespace:LacmusApp.Avalonia.Properties"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:LacmusApp.Screens.ViewModels;assembly=LacmusApp"
              xmlns:e="clr-namespace:LacmusApp.Avalonia.Elements;assembly=LacmusApp.Avalonia"
@@ -22,18 +23,18 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0"
                            Classes="Heading" 
-                           Text="ML Models"
+                           Text="{x:Static l:Settings.MlModelsHadding}"
                 />
                 <StackPanel Grid.Column="2"
                             Orientation="Horizontal">
                     <Button Padding="10"
                             Margin="2 0"
-                            Content="Import"
+                            Content="{x:Static l:Settings.Import}"
                             Command="{Binding LocalPluginRepository.Import}"
                     />
                     <Button Padding="10"
                             Margin="2 0"
-                            Content="Refresh"
+                            Content="{x:Static l:Settings.Refresh}"
                             Command="{Binding LocalPluginRepository.Refresh}"
                     />
                 </StackPanel>

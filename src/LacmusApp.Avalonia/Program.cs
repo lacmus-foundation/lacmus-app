@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using Avalonia;
 using Avalonia.ReactiveUI;
@@ -17,6 +18,8 @@ namespace LacmusApp.Avalonia
             Console.WriteLine("This program comes with ABSOLUTELY NO WARRANTY;");
             Console.WriteLine("This is free software, and you are welcome to redistribute it under GNU GPL license;\nClick `help` -> `about' for details.");
             Console.WriteLine("------------------------------------");
+            //Resources.Console.Culture = new CultureInfo("ru");
+            //Console.WriteLine(Resources.Console.Greeting);
             
             var logPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus", "log.log");
             Log.Logger = new LoggerConfiguration()
