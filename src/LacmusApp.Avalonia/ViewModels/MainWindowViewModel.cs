@@ -590,7 +590,7 @@ namespace LacmusApp.Avalonia.ViewModels
 
                 FavoritesStateString = PhotoCollection[SelectedIndex].Photo.Attribute == Attribute.Favorite ? "Remove from favorites" : "Add to favorites";
                     
-                Log.Debug($"Ui updated to index {SelectedIndex}");
+                Log.Debug($"Ui updated to index {SelectedIndex}, contains {PhotoViewModel.BoundBoxes.Count()} objects");
             }
             catch (Exception ex)
             {
