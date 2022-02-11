@@ -197,18 +197,29 @@
                         MinZoomX="0.05"
                         MinZoomY="0.05"
                         >
-          <ItemsControl 
+          <ItemsControl
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
             Items="{Binding PhotoViewModel.BoundBoxes}"
-            Background="{Binding PhotoViewModel.Photo.ImageBrush}"
-            Height="{Binding CanvasHeight, Mode=TwoWay}"
-            Width="{Binding CanvasWidth, Mode=TwoWay}"
+            Width="{Binding CanvasWidth}"
+            Height="{Binding CanvasHeight}"
             >
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <Canvas
+                  Background="{Binding PhotoViewModel.Photo.ImageBrush}"
+                  />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.Styles>
+              <Style Selector="ContentPresenter">
+                <Setter Property="Canvas.Left" Value="0"/>
+                <Setter Property="Canvas.Top" Value="0"/>
+              </Style>
+            </ItemsControl.Styles>
             <ItemsControl.ContextMenu>
               <ContextMenu>
                 <MenuItem Header="{Binding LocalizationContext.ShowGeoPosition}" Command="{Binding ShowGeoDataCommand}"/>
-                <!-- <MenuItem Header="Find nearest photo"/> -->
                 <Separator/>
                 <MenuItem Header="{Binding LocalizationContext.FavoritesStateString}" Command="{Binding AddToFavoritesCommand}"/>
               </ContextMenu>
