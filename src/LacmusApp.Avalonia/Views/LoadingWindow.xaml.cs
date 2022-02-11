@@ -1,3 +1,6 @@
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using LacmusApp.Avalonia.ViewModels;
@@ -9,7 +12,14 @@ namespace LacmusApp.Avalonia.Views
     {
         public LoadingWindow()
         {
-            this.WhenActivated(disposables => { });
+            this.WhenActivated(disposables =>
+            {
+                this.WhenAnyValue(x => x.ViewModel)
+                    .Where(context => context != null)
+                    .Select(_ => Unit.Default)
+                    .InvokeCommand(this, x => x.ViewModel.InitCommand)
+                    .DisposeWith(disposables);
+            });
             AvaloniaXamlLoader.Load(this);
         }
     }

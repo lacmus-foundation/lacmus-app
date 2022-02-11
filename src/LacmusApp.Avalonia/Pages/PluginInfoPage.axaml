@@ -118,7 +118,8 @@
                             Minimum="0.05"
                             TickPlacement="BottomRight"
                             TickFrequency="0.05"
-                            IsSnapToTickEnabled="True" />
+                            IsSnapToTickEnabled="True" 
+                            Value="{Binding PredictionThreshold, Mode=TwoWay}"/>
                     <TextBlock Grid.Column="2" Classes="Caption"
                                Margin="0 0 5 0"
                                MinWidth="40"

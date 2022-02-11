@@ -26,8 +26,6 @@ namespace LacmusApp.Avalonia.ViewModels
         {
             _window = window;
             InitCommand = ReactiveCommand.Create(Init);
-            
-            InitCommand.Execute().Subscribe();
         }
         
         [Reactive] public string TextVersion { get; set; } = GetVersion() + ".";

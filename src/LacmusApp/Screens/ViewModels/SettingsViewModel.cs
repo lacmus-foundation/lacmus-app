@@ -12,6 +12,7 @@ using LacmusApp.Plugin.ViewModels;
 using LacmusApp.Screens.Interfaces;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using Serilog;
 
 namespace LacmusApp.Screens.ViewModels
 {
@@ -111,19 +112,7 @@ namespace LacmusApp.Screens.ViewModels
                 .Merge(isThemeChanged, isLanguageChanged, isPluginChanged)
                 .ToProperty(this, x => x.IsNeedRestart);
             
-
-            // TODO: init when activate VM
-            // initialize components
-            try
-            {
-                Plugin.Activate.Execute().Subscribe();
-                // not work witjout internwt
-                // RemotePluginRepository.Refresh.Execute().Subscribe();
-            }
-            catch
-            {
-                // ignored
-            }
+            Log.Debug($"{PredictionThreshold}");
         }
 
         public ReactiveCommand<Unit, Config> Apply { get; }
