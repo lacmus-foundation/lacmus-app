@@ -7,7 +7,7 @@
         Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
         x:Class="LacmusApp.Avalonia.Views.MainWindow"
         UseLayoutRounding="True"
-        Title="LacmusApp.Avalonia"
+        Title="Lacmus"
         Width="800"
         Height="600">
   <NativeMenu.Menu>
