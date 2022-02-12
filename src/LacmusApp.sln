@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LacmusApp", "LacmusApp\Lacm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LacmusApp.Avalonia", "LacmusApp.Avalonia\LacmusApp.Avalonia.csproj", "{CE9AEE7D-D447-4728-86DE-44E636B84EEC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandbox", "Sandbox\Sandbox.csproj", "{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,17 +44,5 @@ Global
 		{CE9AEE7D-D447-4728-86DE-44E636B84EEC}.Release|x64.Build.0 = Release|Any CPU
 		{CE9AEE7D-D447-4728-86DE-44E636B84EEC}.Release|x86.ActiveCfg = Release|Any CPU
 		{CE9AEE7D-D447-4728-86DE-44E636B84EEC}.Release|x86.Build.0 = Release|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Debug|x64.Build.0 = Debug|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Debug|x86.Build.0 = Debug|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Release|x64.ActiveCfg = Release|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Release|x64.Build.0 = Release|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Release|x86.ActiveCfg = Release|Any CPU
-		{2668D1A9-8469-49CF-90F5-FA2B7B6F4D80}.Release|x86.Build.0 = Release|Any CPU
-	EndGlobalSection
+		EndGlobalSection
 EndGlobal
