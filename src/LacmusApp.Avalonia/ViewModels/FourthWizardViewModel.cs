@@ -129,7 +129,7 @@ namespace LacmusApp.Avalonia.ViewModels
                 if (string.IsNullOrEmpty(plugin.Tag))
                     throw new Exception("No such plugin");
                 
-                using (var model = plugin.LoadModel(0.15f))
+                using (var model = plugin.LoadModel(_settingsViewModel.PredictionThreshold))
                 {
                     var count = 0;
                     var objectCount = 0;

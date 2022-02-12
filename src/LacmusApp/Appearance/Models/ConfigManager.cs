@@ -37,13 +37,13 @@ namespace LacmusApp.Appearance.Models
                     Language = Language.English,
                     Plugin = new PluginInfo()
                     {
-                        Author = "gosha207771",
+                        Author = "Ivan",
                         Company = "Lacmus Foundation",
-                        Description = "Resnet50+deepFPN neural network",
-                        Name = "Lacmus Retinanet",
-                        Tag = "LacmusRetinanetPlugin.Cpu",
-                        Url = "https://github.com/lacmus-foundation/lacmus",
-                        Version = new(api: 2, major: 5, minor: 0),
+                        Description = "YOLO v5 neural network",
+                        Name = "Lacmus YOLO v5",
+                        Tag = "LacmusYolo5Plugin.Cpu",
+                        Url = "https://github.com/lacmus-foundation/lacmus-research",
+                        Version = new(api: 2, major: 1, minor: 1),
                         InferenceType = InferenceType.Cpu,
                         OperatingSystems = new HashSet<OperatingSystem>()
                         {
@@ -54,8 +54,8 @@ namespace LacmusApp.Appearance.Models
                     },
                     Repository = "http://api.lacmus.ml",
                     Theme = Theme.Light,
-                    PredictionThreshold = 0.80f,
-                    BoundingBoxColour = BoundingBoxColour.Blue
+                    PredictionThreshold = 0.15f,
+                    BoundingBoxColour = BoundingBoxColour.Red
                 };
                 await SaveConfig(config);
                 return config;

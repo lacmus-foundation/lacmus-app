@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reactive;
 using Avalonia.Threading;
+using LacmusApp.Appearance.Enums;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using LacmusApp.Avalonia.Managers;
@@ -11,6 +12,9 @@ using LacmusApp.Avalonia.Services;
 using LacmusApp.Avalonia.Services.Plugin;
 using LacmusApp.Avalonia.Views;
 using LacmusApp.Screens.ViewModels;
+using MessageBox.Avalonia;
+using MessageBox.Avalonia.DTO;
+using MessageBox.Avalonia.Enums;
 using Serilog;
 using OperatingSystem = LacmusPlugin.OperatingSystem;
 
@@ -62,7 +66,7 @@ namespace LacmusApp.Avalonia.ViewModels
                 Status = "Loading ml model...";
 
                 var plugin = _settingsViewModel.Plugin;
-                if (string.IsNullOrEmpty(plugin.Tag))
+                if (plugin.HasErrorMessage)
                     throw new Exception("No such plugin");
                 
                 Dispatcher.UIThread.Post(() =>
@@ -94,41 +98,13 @@ namespace LacmusApp.Avalonia.ViewModels
 
         private async void LoadModel()
         {
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "Working | loading model...");
-            //get the last version of ml model with specific config
-            try
-            {
-                _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-
-                var plugin = _settingsViewModel.Plugin;
-                if (string.IsNullOrEmpty(plugin.Tag))
-                    throw new Exception("No such plugin");
-                
-                Dispatcher.UIThread.Post(() =>
-                {
-                    Name = plugin.Name;
-                    Author = plugin.Author;
-                    Company = plugin.Company;
-                    Description = plugin.Description;
-                    Tag = plugin.Tag;
-                    InferenceType = plugin.InferenceType.ToString();
-                    Version = plugin.Version.ToString();
-                    Url = plugin.Url;
-                    OperatingSystems = ConvertOperatingSystemsToString(plugin.OperatingSystems);
-                    Status = $"Ready";
-                });
-                
-                Status = $"Ready";
-                IsError = false;
-            }
-            catch (Exception e)
-            {
-                Status = $"Not ready.";
-                IsError = true;
-                Error = $"Error: {e.Message}";
-                Log.Error(e, "Unable to load model.");
-            }
-            _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
+            Settings settingsWindow = new Settings();
+            settingsWindow.DataContext = _settingsViewModel;
+            var themeManager = new ThemeManager(settingsWindow);
+            themeManager.UseTheme(_settingsViewModel.Theme);
+            _settingsViewModel.OnRequestClose += (s, e) => settingsWindow.Close();
+            _settingsViewModel.OnRequestRestart += (sender, args) => RestartApp();
+            settingsWindow.Show();
         }
         private string ConvertOperatingSystemsToString(IEnumerable<OperatingSystem> operatingSystems)
         {
@@ -169,6 +145,24 @@ namespace LacmusApp.Avalonia.ViewModels
             }
 
             return result;
+        }
+        
+        private async void RestartApp()
+        {
+            var msg = "To apply settings you need to restart application.";
+            if (LocalizationContext.Language == Language.Russian)
+                msg = "Чтобы применить настройки необходим перезапуск программы.";
+            var msgbox = MessageBoxManager.GetMessageBoxStandardWindow(new MessageBoxStandardParams
+            {
+                ButtonDefinitions = ButtonEnum.Ok,
+                ContentTitle = "Need to restart",
+                ContentMessage = msg,
+                Icon = MessageBox.Avalonia.Enums.Icon.Info,
+                Style = Style.None,
+                ShowInCenter = true
+            });
+            var result = await msgbox.Show();
+            Environment.Exit(0);
         }
     }
 }

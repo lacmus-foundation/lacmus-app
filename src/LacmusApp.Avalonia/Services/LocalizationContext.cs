@@ -979,7 +979,7 @@ namespace LacmusApp.Avalonia.Services
                     WizardThirdModelType = "Ml model type: ";
                     WizardThirdModelVersion = "Ml model version: ";
                     WizardThirdModelStatus = "Ml model status: ";
-                    WizardThirdModelManagerButton = "Model manager";
+                    WizardThirdModelManagerButton = "Settings";
                     WizardThirdModelStatusUpdateButton = "Refresh";
                     //Page 4
                     WizardFourthHeader = "Processing photos";
@@ -1148,7 +1148,7 @@ namespace LacmusApp.Avalonia.Services
                     WizardThirdModelType = "Тип ml модели: ";
                     WizardThirdModelVersion= "Версия ml модели: ";
                     WizardThirdModelStatus = "Готовность ml модели: ";
-                    WizardThirdModelManagerButton = "Менеджер ml моделей";
+                    WizardThirdModelManagerButton = "Настройки";
                     WizardThirdModelStatusUpdateButton = "Обновить информацию";
                     //Page 4
                     WizardFourthHeader = "Обработка фотографий";

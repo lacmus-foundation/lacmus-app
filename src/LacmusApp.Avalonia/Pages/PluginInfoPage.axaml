@@ -29,6 +29,7 @@
                     </Button>
                 </Grid>
                 <TextBlock Margin="0 5"
+                           Foreground="Red"
                            TextWrapping="Wrap" IsVisible="{Binding Plugin.HasErrorMessage}"
                            Text="{Binding Plugin.ErrorMessage}"/>
                 <StackPanel Orientation="Horizontal" Margin="0 5">

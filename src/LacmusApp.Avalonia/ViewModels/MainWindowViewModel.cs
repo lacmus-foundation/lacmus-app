@@ -131,7 +131,6 @@ namespace LacmusApp.Avalonia.ViewModels
             PredictAllCommand = ReactiveCommand.Create(PredictAll, canExecute);
             OpenFileCommand = ReactiveCommand.Create(OpenFile, canExecute);
             SaveAllCommand = ReactiveCommand.Create(SaveAll, canExecute);
-            OpenModelManagerCommand = ReactiveCommand.Create(OpenModelManager, canExecute);
             OpenBugReportCommand = ReactiveCommand.Create(OpenBugReport, canExecute);
             
             NextPageCommand = ReactiveCommand.Create(ShowNextPage);
@@ -184,7 +183,6 @@ namespace LacmusApp.Avalonia.ViewModels
         public ReactiveCommand<Unit, Unit> OpenFileCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> OpenModelManagerCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenBugReportCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAsCommand { get; set; }
         public ReactiveCommand<Unit, Unit> FirstPageCommand { get; set; }
@@ -274,13 +272,6 @@ namespace LacmusApp.Avalonia.ViewModels
                 TotalPages = (itemcount / itemPerPage);
             }
         }
-        
-        public async void OpenModelManager()
-        {
-            //_applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-            //ModelManagerWindow window = new ModelManagerWindow(LocalizationContext, ref _appConfig, _applicationStatusManager, _themeManager);
-            //_appConfig = await window.ShowResult();
-        }
 
         public async void OpenBugReport()
         {
@@ -296,7 +287,7 @@ namespace LacmusApp.Avalonia.ViewModels
             try
             {
                 var plugin = _settingsViewModel.Plugin;
-                using (var model = plugin.LoadModel(0.15f))
+                using (var model = plugin.LoadModel(_settingsViewModel.PredictionThreshold))
                 {
                     var count = 0;
                     var objectCount = 0;
