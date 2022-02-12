@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
-using MetadataExtractor;
 using LacmusApp.Avalonia.Extensions;
 using LacmusApp.Avalonia.Models;
 using LacmusApp.Avalonia.Models.Photo;
@@ -13,7 +12,6 @@ using LacmusApp.Avalonia.Services.IO;
 using LacmusApp.Avalonia.ViewModels;
 using Serilog;
 using Attribute = LacmusApp.Avalonia.Models.Photo.Attribute;
-using ProgressBar = Avalonia.Controls.ProgressBar;
 
 namespace LacmusApp.Avalonia.Services.VM
 {
@@ -63,7 +61,8 @@ namespace LacmusApp.Avalonia.Services.VM
             try
             {
                 var annotation = annotationLoader.Load(path, stream);
-                var photoPath = Path.Combine(annotation.Folder, annotation.Filename);
+                var folder = Path.GetDirectoryName(path) ?? "";
+                var photoPath = Path.Combine(folder, annotation.Filename);
                 var photo = await photoLoader.Load(photoPath, loadType);
                 return new PhotoViewModel(id, photo, annotation);
             }
@@ -151,9 +150,10 @@ namespace LacmusApp.Avalonia.Services.VM
                             count++;
                             continue;
                         }
-                        
+
+                        var folder = Path.GetDirectoryName(path) ?? "";
                         var annotation = annotationLoader.Load(path, stream);
-                        var photoPath = Path.Combine(annotation.Folder, annotation.Filename);
+                        var photoPath = Path.Combine(folder, annotation.Filename);
                         var photo = await photoLoader.Load(photoPath, loadType);
                         var photoViewModel = new PhotoViewModel(id, photo, annotation);
                         photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
