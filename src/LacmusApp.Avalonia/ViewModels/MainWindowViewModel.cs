@@ -28,6 +28,7 @@ using LacmusApp.Avalonia.Services.IO;
 using LacmusApp.Avalonia.Services.Plugin;
 using LacmusApp.Avalonia.Services.VM;
 using LacmusApp.Avalonia.Views;
+using LacmusApp.Screens.Interfaces;
 using LacmusApp.Screens.ViewModels;
 using Octokit;
 using Serilog;
@@ -198,6 +199,8 @@ namespace LacmusApp.Avalonia.ViewModels
         public ReactiveCommand<Unit, Unit> ExitCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenWizardCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand{get; set;}
+
+        public ISettingsViewModel SettingsViewModel => _settingsViewModel;
 
         #endregion
 
