@@ -111,8 +111,6 @@ namespace LacmusApp.Screens.ViewModels
             _isNeedRestart = Observable
                 .Merge(isThemeChanged, isLanguageChanged, isPluginChanged)
                 .ToProperty(this, x => x.IsNeedRestart);
-            
-            Log.Debug($"{PredictionThreshold}");
         }
 
         public ReactiveCommand<Unit, Config> Apply { get; }
