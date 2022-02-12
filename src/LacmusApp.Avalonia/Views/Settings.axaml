@@ -1,0 +1,59 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:l="clr-namespace:LacmusApp.Avalonia.Properties"
+        xmlns:vm="clr-namespace:LacmusApp.Screens.ViewModels;assembly=LacmusApp"
+        xmlns:pages="clr-namespace:LacmusApp.Avalonia.Pages;assembly=LacmusApp.Avalonia"
+        d:DataContext="{d:DesignInstance vm:SettingsViewModel, IsDesignTimeCreatable=False}"
+        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="400"
+        x:Class="LacmusApp.Avalonia.Views.Settings"
+        CanResize="True"
+        Width = "550"
+        Height = "400"
+        Title="Settings">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="auto"/>
+        </Grid.RowDefinitions>
+        <TabControl Margin="0" Grid.Row="0" Background="Transparent">
+            <TabItem Header="{x:Static l:Settings.General}">
+                <pages:GeneralSettingsPage/>
+            </TabItem>
+            <TabItem Header="{x:Static l:Settings.MlModel}">
+                <pages:PluginInfoPage/>
+            </TabItem>
+            <TabItem Header="{x:Static l:Settings.InstalledModels}">
+                <pages:InstalledPluginsPage/>
+            </TabItem>
+            <TabItem Header="{x:Static l:Settings.AvailableModels}">
+                <pages:RemotePluginsPage/>
+            </TabItem>
+        </TabControl>
+        <Border Classes="Card" Grid.Row="1">
+            <StackPanel Orientation="Vertical">
+                <TextBlock Classes="Heading" 
+                           Text="{x:Static l:Settings.NeedRestart}"
+                           IsVisible="{Binding IsNeedRestart, Mode=TwoWay}"
+                />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0"
+                            Content="{x:Static l:Settings.Cancel}"
+                            Command="{Binding Cancel}"
+                    />
+                    <Button Grid.Column="2"
+                            Classes="Primary"
+                            Content="{x:Static l:Settings.Apply}"
+                            Command="{Binding Apply}"
+                    />
+                </Grid>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

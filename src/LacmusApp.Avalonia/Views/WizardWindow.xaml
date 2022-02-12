@@ -1,0 +1,66 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:LacmusApp.Avalonia.ViewModels;assembly=LacmusApp.Avalonia"
+        xmlns:models="clr-namespace:LacmusApp.Avalonia.Models"
+        xmlns:reactiveUi="http://reactiveui.net"
+        Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
+        x:Class="LacmusApp.Avalonia.Views.WizardWindow"
+        UseLayoutRounding="True"
+        Title="Wizard"
+        Width="600"
+        Height="600">
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="0"
+                      HorizontalScrollBarVisibility="Disabled"
+                      VerticalScrollBarVisibility="Hidden">
+            <reactiveUi:RoutedViewHost Router="{Binding Router}">
+            <reactiveUi:RoutedViewHost.DefaultContent>
+                <Border Classes="Card">
+                    <StackPanel>
+                        <TextBlock Classes="Heading" Text="{Binding LocalizationContext.WizardHeader}" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding LocalizationContext.WizardDescription1}" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding LocalizationContext.WizardDescription2}" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding LocalizationContext.WizardDescription3}" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding LocalizationContext.WizardDescription4}" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding LocalizationContext.WizardDescription5}" />
+                        <TextBlock Margin="0 5"
+                                   TextWrapping="Wrap"
+                                   Text="{Binding LocalizationContext.WizardDescription6}" />
+                    </StackPanel>
+                </Border>
+            </reactiveUi:RoutedViewHost.DefaultContent>
+            </reactiveUi:RoutedViewHost>
+        </ScrollViewer>
+        <Border Classes="Card" Grid.Row="1">
+            <Grid Margin="0 5">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="10" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0"
+                        Content="{Binding BackButtonText}"
+                        Command="{Binding GoBack}" />
+                <Button Grid.Column="2"
+                        Classes="Primary"
+                        Content="{Binding NextButtonText}"
+                        Command="{Binding GoNext}" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>
