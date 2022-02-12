@@ -35,9 +35,6 @@
           <MenuItem Name="mSettings" Header="{Binding LocalizationContext.Settings}" Command="{Binding OpenSettingsWindowCommand}"/>
           <MenuItem Name="mFileExit" Header="{Binding LocalizationContext.Exit}" Command="{Binding ExitCommand}"/>
         </MenuItem>
-        <MenuItem Name="mModel" Header="{Binding LocalizationContext.Model}">
-          <MenuItem Name="mBugReport" Header="{Binding LocalizationContext.BugReport}" Command="{Binding OpenBugReportCommand}"/>
-        </MenuItem>
         <MenuItem Name="mImage" Header="{Binding LocalizationContext.Image}">
           <MenuItem Name="mImagePredictAll" Header="{Binding LocalizationContext.PredictAll}" Command="{Binding PredictAllCommand}"/>
           <Separator></Separator>
@@ -47,6 +44,8 @@
           <Separator></Separator>
           <MenuItem Name="mImageNext" Header="{Binding LocalizationContext.Next}" Command="{Binding NextImageCommand}"/>
           <MenuItem Name="mImagePrev" Header="{Binding LocalizationContext.Previous}" Command="{Binding PrevImageCommand}"/>
+          <Separator></Separator>
+          <MenuItem Name="mBugReport" Header="{Binding LocalizationContext.BugReport}" Command="{Binding OpenBugReportCommand}"/>
         </MenuItem>
         <MenuItem Name="mHelp" Header="{Binding LocalizationContext.Help}">
           <MenuItem Name="mHelpOpen" Header="{Binding LocalizationContext.OpenUserGuide}" Command="{Binding HelpCommand}"/>
