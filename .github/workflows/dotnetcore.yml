@@ -18,4 +18,4 @@ jobs:
       with:
         node-version: ${{ matrix.dotnet_version}}
     - name: Build with dotnet
-      run: dotnet build --configuration Release
+      run: cd src && dotnet build --configuration Release

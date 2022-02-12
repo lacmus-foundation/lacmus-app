@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:l="clr-namespace:LacmusApp.Avalonia.Properties"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:LacmusApp.Screens.ViewModels;assembly=LacmusApp"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             d:DataContext="{d:DesignInstance vm:SettingsViewModel, IsDesignTimeCreatable=False}"
+             x:DataType="vm:SettingsViewModel"
+             x:Class="LacmusApp.Avalonia.Pages.GeneralSettingsPage">
+    <Border Classes="Card">
+        <ScrollViewer>
+            <StackPanel>
+                <TextBlock Classes="Heading" 
+                           Text="{x:Static l:Settings.Language}"
+                />
+                <ComboBox Items="{Binding SupportedLanguages, Mode=OneWay}"
+                          SelectedItem="{Binding Language, Mode=TwoWay}" 
+                          Margin="5 0"/>
+                <TextBlock Classes="Heading" 
+                           Text="{x:Static l:Settings.Theme}"
+                />
+                <ComboBox Items="{Binding SupportedThemes, Mode=OneWay}"
+                          SelectedItem="{Binding Theme, Mode=TwoWay}" 
+                          Margin="5 0"/>
+                <TextBlock Classes="Heading" 
+                           Text="{x:Static l:Settings.BoundingBoxColour}"
+                />
+                <ComboBox Items="{Binding SupportedBoundingBoxColours, Mode=OneWay}"
+                          SelectedItem="{Binding BoundingBoxColour, Mode=TwoWay}"
+                          Margin="5 0"/>
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>
