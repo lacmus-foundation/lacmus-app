@@ -43,13 +43,13 @@ namespace LacmusApp.Avalonia.ViewModels
             switch (config.Language)
             {
                 case Language.English:
-                    Properties.Settings.Culture = new CultureInfo("default");
+                    Properties.Settings.Culture = new CultureInfo("en");
                     break;
                 case Language.Russian:
                     Properties.Settings.Culture = new CultureInfo("ru");
                     break;
                 default:
-                    Properties.Settings.Culture = new CultureInfo("default");
+                    Properties.Settings.Culture = new CultureInfo("en");
                     break;
             }
             
