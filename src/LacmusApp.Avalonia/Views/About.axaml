@@ -1,12 +1,17 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:l="clr-namespace:LacmusApp.Avalonia.Properties"
+        xmlns:vm="clr-namespace:LacmusApp.Screens.ViewModels;assembly=LacmusApp"
+        d:DataContext="{d:DesignInstance vm:AboutViewModel, IsDesignTimeCreatable=False}"
+        mc:Ignorable="d" d:DesignWidth="550" d:DesignHeight="400"
+        x:Class="LacmusApp.Avalonia.Views.About"
         Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
-        x:Class="LacmusApp.Avalonia.Views.AboutWindow"
         CanResize="False"
-        Title="About"
-        Width="700"
-        Height="450">
-    
+        Width = "700"
+        Height = "450"
+        Title="About">
     <Grid>
         <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                       VerticalScrollBarVisibility="Hidden">
@@ -19,21 +24,21 @@
                     <Image Grid.Column="0" Source="resm:LacmusApp.Avalonia.Assets.lacmus_logo.png"/>
                     <StackPanel Grid.Column="1" Margin="35">
                         <Image Source="resm:LacmusApp.Avalonia.Assets.lacmus_text.png"/>
-                        <TextBlock TextWrapping="Wrap" Classes="Heading" Text="{Binding LocalizationContext.AboutAppName}" />
+                        <TextBlock TextWrapping="Wrap" Classes="Heading" Text="{x:Static l:About.LacmusAppHeader}" />
                         <TextBlock TextWrapping="Wrap" Classes="Caption" Text="Copyright (c) 2020 Lacmus Foundation." />
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.AboutVersion}" />
-                            <TextBlock Text="{Binding TextVersion}" />
+                            <TextBlock FontWeight="Heavy" Text="{x:Static l:About.Version}" />
+                            <TextBlock Text="{Binding VersionViewModel.Version}" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.AboutGintubPage}" />
+                            <TextBlock FontWeight="Heavy" Text="{x:Static l:About.GitHub}" />
                             <TextBlock Foreground="Blue" Text="https://github.com/lacmus-foundation." />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.AboutPoweredBy}" />
+                            <TextBlock FontWeight="Heavy" Text="{x:Static l:About.PoweredBy}" />
                             <TextBlock Text="Immers Cloud and ODS." />
                         </StackPanel>
-                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{Binding LocalizationContext.AboutLicense}" />
+                        <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{x:Static l:About.LisenseText}" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
@@ -43,14 +48,14 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
                             <Button Grid.Column="0"
-                                    Content="{Binding LocalizationContext.AboutLicenseButton}"
+                                    Content="{x:Static l:About.LisenseButton}"
                                     Command="{Binding OpenLicenseCommand}"/>
                             <Button Grid.Column="2"
-                                    Content="{Binding LocalizationContext.AboutGinhubButton}" 
+                                    Content="{x:Static l:About.GitHubButton}" 
                                     Command="{Binding OpenGithubCommand}"/>
                             <Button Grid.Column="4"
                                     Classes="Primary"
-                                    Content="{Binding LocalizationContext.AboutVisitWebSiteButton}" 
+                                    Content="{x:Static l:About.SiteButton}" 
                                     Command="{Binding OpenSiteCommand}"/>
                         </Grid>
                     </StackPanel>
