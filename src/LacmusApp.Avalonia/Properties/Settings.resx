@@ -134,4 +134,13 @@
     <data name="Refresh" xml:space="preserve">
         <value>Refresh</value>
     </data>
+    <data name="InstallButton" xml:space="preserve">
+        <value>Install</value>
+    </data>
+    <data name="RemoveButton" xml:space="preserve">
+        <value>Remove</value>
+    </data>
+    <data name="ActivateButton" xml:space="preserve">
+        <value>Activate</value>
+    </data>
 </root>

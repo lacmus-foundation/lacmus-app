@@ -194,5 +194,23 @@ namespace LacmusApp.Avalonia.Properties {
                 return ResourceManager.GetString("Refresh", resourceCulture);
             }
         }
+        
+        public static string InstallButton {
+            get {
+                return ResourceManager.GetString("InstallButton", resourceCulture);
+            }
+        }
+        
+        public static string RemoveButton {
+            get {
+                return ResourceManager.GetString("RemoveButton", resourceCulture);
+            }
+        }
+        
+        public static string ActivateButton {
+            get {
+                return ResourceManager.GetString("ActivateButton", resourceCulture);
+            }
+        }
     }
 }

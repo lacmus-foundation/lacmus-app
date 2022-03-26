@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:LacmusApp.Plugin.Interfaces;assembly=LacmusApp"
+             xmlns:l="clr-namespace:LacmusApp.Avalonia.Properties"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              d:DataContext="{d:DesignInstance vm:IPluginViewModel, IsDesignTimeCreatable=False}"
              x:DataType="vm:IPluginViewModel"
@@ -63,7 +64,7 @@
         <Button Grid.Column="1"
                 VerticalAlignment="Center"
                 Classes="Primary"
-                Content="Install"
+                Content="{x:Static l:Settings.InstallButton}"
                 Command="{Binding Install}"
         />
     </Grid>
