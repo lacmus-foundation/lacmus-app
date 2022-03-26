@@ -14,6 +14,7 @@ using Avalonia.Controls;
 using Avalonia.Threading;
 using DynamicData;
 using DynamicData.Binding;
+using LacmusApp.Avalonia.Appearence.ViewModels;
 using MessageBox.Avalonia;
 using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
@@ -511,8 +512,8 @@ namespace LacmusApp.Avalonia.ViewModels
 
         public void About()
         {
-            var window = new AboutWindow(_themeManager);
-            var context = new AboutViewModel(window, LocalizationContext);
+            var window = new About();
+            var context = new AboutViewModel(new VersionViewModel());
             window.DataContext = context;
             window.Show();
         }
