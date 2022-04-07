@@ -55,7 +55,7 @@ namespace LacmusApp.Avalonia.ViewModels
             
             var window = new MainWindow();
             await Task.Delay(1000);
-            var fileManager = new AvaloniaPluginFileManager(window);
+            var dialog = new AvaloniaPluginDialog(window);
             var pluginManager = new PluginManager(
                 Path.Join(confDir, "plugins"), "http://api.lacmus.ml");
             var themeManager = new ThemeManager(window);
@@ -64,7 +64,7 @@ namespace LacmusApp.Avalonia.ViewModels
                 config,
                 configManager,
                 pluginManager,
-                fileManager);
+                dialog);
             
             window.DataContext = new MainWindowViewModel(
                 window,

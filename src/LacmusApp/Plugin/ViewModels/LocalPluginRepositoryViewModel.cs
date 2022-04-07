@@ -17,7 +17,7 @@ namespace LacmusApp.Plugin.ViewModels
         private readonly ObservableAsPropertyHelper<string> _errorMessage;
         private readonly ObservableAsPropertyHelper<bool> _hasErrorMessage;
 
-        public LocalPluginRepositoryViewModel(IPluginManager manager, IFileManager file, ISettingsViewModel settings)
+        public LocalPluginRepositoryViewModel(IPluginManager manager, IDialog dig, ISettingsViewModel settings)
         {
             Refresh = ReactiveCommand
                 .CreateFromTask<IReadOnlyCollection<ILocalPluginViewModel>>(async ()  =>
@@ -29,7 +29,7 @@ namespace LacmusApp.Plugin.ViewModels
             Import = ReactiveCommand
                 .CreateFromTask(async ()  =>
                 {
-                    var path = await file.SelectFileToRead();
+                    var path = await dig.SelectToRead();
                     await manager.ImportPlugin(path);
                 });
 
