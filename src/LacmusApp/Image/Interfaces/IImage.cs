@@ -11,7 +11,6 @@ namespace LacmusApp.Image.Interfaces
         public int Width { get; }
         public float Latitude { get; }
         public float Longitude { get; }
-        public int Altitude { get; }
         public IEnumerable<ExifData> ExifDataCollection { get; }
         public TBrush Brush { get; }
         public string Path { get; }

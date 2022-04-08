@@ -8,14 +8,13 @@ namespace LacmusApp.Image.Models
 {
     public class Image<TBrush> : ReactiveObject, IImage<TBrush>
     {
-        public int Height { get; }
-        public int Width { get; }
-        public float Latitude { get; }
-        public float Longitude { get; }
-        public int Altitude { get; }
-        public IEnumerable<ExifData> ExifDataCollection { get; }
-        public TBrush Brush { get; }
-        public string Path { get; }
+        public int Height { get; init; }
+        public int Width { get; init; }
+        public float Latitude { get; init; }
+        public float Longitude { get; init; }
+        public IEnumerable<ExifData> ExifDataCollection { get; init; }
+        public TBrush Brush { get; init; }
+        public string Path { get; init; }
         [Reactive] public IEnumerable<IObject> Detections { get; set; }
         [Reactive] public bool IsHasObjects { get; set; }
         [Reactive] public bool IsFavorite { get; set; }
