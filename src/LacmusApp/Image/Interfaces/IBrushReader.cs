@@ -1,9 +1,10 @@
 using System.IO;
+using System.Threading.Tasks;
 
 namespace LacmusApp.Image.Interfaces
 {
     public interface IBrushReader<TBrush>
     {
-        public (TBrush, int, int) Read(Stream stream);
+        public Task<(TBrush, int, int)> Read(Stream stream);
     }
 }
