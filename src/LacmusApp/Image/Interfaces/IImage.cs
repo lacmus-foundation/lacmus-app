@@ -14,8 +14,9 @@ namespace LacmusApp.Image.Interfaces
         public IEnumerable<ExifData> ExifDataCollection { get; }
         public TBrush Brush { get; }
         public string Path { get; }
+        public string Name { get; }
         public IEnumerable<IObject> Detections { get; set; }
-        public bool IsHasObjects { get; set; }
+        public bool IsHasObjects { get; }
         public bool IsFavorite { get; set; }
         public bool IsWatched { get; set; }
     }
