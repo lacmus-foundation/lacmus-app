@@ -243,7 +243,7 @@ namespace LacmusApp.Avalonia.ViewModels
         private Func<PhotoViewModel, bool> PageFilter(int currentPage)
         {
            return x =>
-                x.Id >= itemPerPage * currentPage && x.Id < itemPerPage * (currentPage + 1);
+                x.Index >= itemPerPage * currentPage && x.Index < itemPerPage * (currentPage + 1);
         }
         private Func<PhotoViewModel, bool> TypeFilter(int fitlerType)
         {

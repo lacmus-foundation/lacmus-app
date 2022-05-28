@@ -40,7 +40,6 @@ namespace LacmusApp.Image.Services
                     Height = height,
                     Width = width,
                     IsFavorite = false,
-                    IsHasObjects = false,
                     IsWatched = false,
                     Latitude = latitude,
                     Longitude = longitude,
