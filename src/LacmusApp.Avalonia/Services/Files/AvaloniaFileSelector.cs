@@ -15,8 +15,7 @@ namespace LacmusApp.Avalonia.Services.Files
 
         public async Task<string> SelectFile(OpenFileDialog fileDialog = null)
         {
-            if (fileDialog == null)
-                fileDialog = new OpenFileDialog();
+            fileDialog ??= new OpenFileDialog();
             fileDialog.AllowMultiple = false;
             var files = await fileDialog.ShowAsync(_window);
             var path = files.First();
@@ -24,6 +23,17 @@ namespace LacmusApp.Avalonia.Services.Files
             var attributes = File.GetAttributes(path);
             var isFolder = attributes.HasFlag(FileAttributes.Directory);
             if (isFolder) throw new Exception("Folders are not supported.");
+            return path;
+        }
+
+        public async Task<string> SelectDir(OpenFolderDialog folderDialog)
+        {
+            folderDialog ??= new OpenFolderDialog();
+            var path = await folderDialog.ShowAsync(_window);
+
+            var attributes = File.GetAttributes(path);
+            var isFolder = attributes.HasFlag(FileAttributes.Directory);
+            if (!isFolder) throw new Exception("Files are not supported.");
             return path;
         }
 

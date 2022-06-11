@@ -7,14 +7,7 @@
             Ready = 1,
             Working,
             Success,
-            Unauthenticated,
             Error
-        }
-        
-        public enum ImageLoadMode
-        {
-            Miniature,
-            Full
         }
     }
 }
