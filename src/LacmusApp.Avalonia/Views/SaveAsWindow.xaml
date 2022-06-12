@@ -1,7 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:vm="clr-namespace:LacmusApp.Avalonia.ViewModels"
+        d:DataContext="{d:DesignInstance vm:SaveAsWindowViewModel, IsDesignTimeCreatable=False}"
         x:Class="LacmusApp.Avalonia.Views.SaveAsWindow"
+        Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
         CanResize="False"
         Title="Save as"
         Width="500"
@@ -16,14 +19,16 @@
                     <ComboBoxItem Content="{Binding LocalizationContext.PhotosWithObject}" />
                     <ComboBoxItem Content="{Binding LocalizationContext.FavoritePhotos}" />
                 </ComboBox>
-                <CheckBox Margin="0 2" IsChecked="{Binding IsSource, Mode=TwoWay}"
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSaveImage, Mode=TwoWay}"
                           Content="{Binding LocalizationContext.SaveAsSourcePhotos}" />
-                <CheckBox Margin="0 2" IsChecked="{Binding IsXml, Mode=TwoWay}"
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSaveXml, Mode=TwoWay}"
                           Content="{Binding LocalizationContext.SaveAsXmlAnnotations}" />
-                <CheckBox Margin="0 2" IsChecked="{Binding IsDraw, Mode=TwoWay}"
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSaveDrawImage, Mode=TwoWay}"
                           Content="{Binding LocalizationContext.SaveAsDrawBbox}" />
-                <CheckBox Margin="0 2" IsChecked="{Binding IsCrop, Mode=TwoWay}"
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSaveCrop, Mode=TwoWay}"
                           Content="{Binding LocalizationContext.SaveAsCrops}" />
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSaveGeoPosition, Mode=TwoWay}"
+                          Content="{Binding LocalizationContext.SaveAsPosition}" />
                 <TextBox Margin="0 5" UseFloatingWatermark="True"
                          Watermark="{Binding LocalizationContext.WizardSecondOutputWatermark}"
                          Text="{Binding OutputPath, Mode=TwoWay}" />

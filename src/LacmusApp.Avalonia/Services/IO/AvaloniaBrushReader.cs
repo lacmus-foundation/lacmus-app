@@ -20,7 +20,7 @@ namespace LacmusApp.Avalonia.Services.IO
         {
             switch (_loadType)
             {
-                case LoadType.Full:
+                case LoadType.Miniature:
                     using (var src = SKBitmap.Decode(stream))
                     {
                         var width = src.Width;
@@ -41,7 +41,7 @@ namespace LacmusApp.Avalonia.Services.IO
                         var imageBrush = await Dispatcher.UIThread.InvokeAsync(() => new ImageBrush(bitmap));
                         return (imageBrush, height, width);
                     }
-                case LoadType.Miniature:
+                case LoadType.Full:
                     var brush = await Dispatcher.UIThread.InvokeAsync(() => new ImageBrush(new Bitmap(stream)));
                     return (brush, brush.Source.PixelSize.Height, brush.Source.PixelSize.Width);
                 default:

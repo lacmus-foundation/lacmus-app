@@ -1,14 +1,14 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Reactive;
 using System.Runtime.InteropServices;
 using Avalonia.Controls;
 using DynamicData;
 using LacmusApp.Avalonia.Models;
 using LacmusApp.Avalonia.Services;
-using MetadataExtractor;
+using LacmusApp.Image.Models;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
@@ -19,29 +19,19 @@ namespace LacmusApp.Avalonia.ViewModels
 {
     public class MetadataViewModel : ReactiveValidationObject
     {
-        private SourceList<MetaData> _metaDataList { get; set; } = new SourceList<MetaData>();
-        private ReadOnlyObservableCollection<MetaData> _metaDataCollection;
-        public ReadOnlyObservableCollection<MetaData> MetaDataCollection => _metaDataCollection;
+        private SourceList<ExifData> _metaDataList { get; set; } = new SourceList<ExifData>();
+        private ReadOnlyObservableCollection<ExifData> _metaDataCollection;
+        public ReadOnlyObservableCollection<ExifData> MetaDataCollection => _metaDataCollection;
         [Reactive] public string Latitude { get; set; } = "N/A";
         [Reactive] public string Longitude { get; set; } = "N/A";
         [Reactive] public string Altitude { get; set; } = "N/A";
         [Reactive] public LocalizationContext LocalizationContext { get; set; }
-        public MetadataViewModel(Window window, IReadOnlyList<Directory> metadata, LocalizationContext localizationContext)
+        public MetadataViewModel(Window window, PhotoViewModel photoViewModel, LocalizationContext localizationContext)
         {
-            foreach (var directory in metadata)
-            {
-                foreach (var tag in directory.Tags)
-                {
-                    if (tag.Name.ToLower() == "gps latitude")
-                        Latitude = TranslateGeoTag(tag.Description);
-                    if (tag.Name.ToLower() == "gps longitude")
-                        Longitude = TranslateGeoTag(tag.Description);
-                    if (tag.Name.ToLower() == "gps altitude")
-                        Altitude = TranslateGeoTag(tag.Description);
-                    
-                    _metaDataList.Add(new MetaData(directory.Name, tag.Name, tag.Description));
-                }
-            }
+            Latitude = $"{photoViewModel.Latitude}";
+            Longitude = $"{photoViewModel.Longitude}";
+            Altitude = "N/A";
+            _metaDataList.AddRange(photoViewModel.ExifDataCollection);
 
             LocalizationContext = localizationContext;
             

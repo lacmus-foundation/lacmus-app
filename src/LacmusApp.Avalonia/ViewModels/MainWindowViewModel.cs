@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Linq;
@@ -20,23 +18,18 @@ using MessageBox.Avalonia.DTO;
 using MessageBox.Avalonia.Enums;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using LacmusApp.Avalonia.Extensions;
 using LacmusApp.Avalonia.Managers;
 using LacmusApp.Avalonia.Models;
-using LacmusApp.Avalonia.Models.Photo;
 using LacmusApp.Avalonia.Services;
-using LacmusApp.Avalonia.Services.IO;
-using LacmusApp.Avalonia.Services.Plugin;
-using LacmusApp.Avalonia.Services.VM;
 using LacmusApp.Avalonia.Views;
+using LacmusApp.Image.Enums;
 using LacmusApp.Screens.Interfaces;
 using LacmusApp.Screens.ViewModels;
+using LacmusPlugin;
 using Octokit;
 using Serilog;
 using Splat;
 using Language = LacmusApp.Appearance.Enums.Language;
-using Attribute = LacmusApp.Avalonia.Models.Photo.Attribute;
-using Object = LacmusApp.Avalonia.Models.Object;
 
 namespace LacmusApp.Avalonia.ViewModels
 {
@@ -99,8 +92,8 @@ namespace LacmusApp.Avalonia.ViewModels
                 canGoBack);
             
             var canSwitchBoundBox = this
-                .WhenAnyValue(x => x.PhotoViewModel.Photo)
-                .Select(count => PhotoViewModel.Photo?.Attribute == Attribute.WithObject);
+                .WhenAnyValue(x => x.PhotoViewModel)
+                .Select(_ => PhotoViewModel.IsHasObjects);
             
             // Update UI when the index changes
             // TODO: Make photo update without index
@@ -154,7 +147,7 @@ namespace LacmusApp.Avalonia.ViewModels
         private IObservable<bool> CanSetup()
         {
             return _applicationStatusManager.AppStatusInfoObservable
-                .Select(status => status.Status != Enums.Status.Working && status.Status != Enums.Status.Unauthenticated);
+                .Select(status => status.Status != Enums.Status.Working);
         }
 
         #region Public API
@@ -253,9 +246,9 @@ namespace LacmusApp.Avalonia.ViewModels
                 case 0:
                     return x => true;
                 case 1:
-                    return x => x.Photo.Attribute == Attribute.WithObject;
+                    return x => x.IsHasObjects;
                 case 2:
-                    return x => x.Photo.Attribute == Attribute.Favorite;
+                    return x => x.IsFavorite;
                 default:
                     return x => true;
             }
@@ -296,33 +289,14 @@ namespace LacmusApp.Avalonia.ViewModels
                     {
                         try
                         {
-                            photoViewModel.Annotation.Objects = new List<Object>();
+                            photoViewModel.Detections = new List<IObject>();
                             var detections = await Dispatcher.UIThread.InvokeAsync( () =>
                                 Task.Run(() =>  model.Infer(photoViewModel.Path,
-                                    photoViewModel.Photo.Width,
-                                    photoViewModel.Photo.Height)));
-                            foreach (var det in detections)
-                            {
-                                photoViewModel.Annotation.Objects.Add(new Object()
-                                {
-                                    Box = new Box()
-                                    {
-                                        Xmax = det.XMax,
-                                        Xmin = det.XMin,
-                                        Ymax = det.YMax,
-                                        Ymin = det.YMin
-                                    },
-                                    Difficult = 0,
-                                    Name = det.Label
-                                });
-                            }
-                            photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
-                            if (photoViewModel.BoundBoxes.Any())
-                            {
-                                photoViewModel.Photo.Attribute = Attribute.WithObject;
-                                photoViewModel.IsHasObject = true;
-                            }
-                            objectCount += photoViewModel.BoundBoxes.Count();
+                                    photoViewModel.Width,
+                                    photoViewModel.Height)));
+                            var enumerable = detections as IObject[] ?? detections.ToArray();
+                            photoViewModel.Detections = enumerable;
+                            objectCount += photoViewModel.Detections.Count();
                             count++;
                             Console.WriteLine($"\tProgress: {(double) count / _photos.Items.Count() * 100} %");
                             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / _photos.Items.Count() * 100)} %, [{count} of {_photos.Items.Count()}]");
@@ -364,12 +338,12 @@ namespace LacmusApp.Avalonia.ViewModels
             try
             {
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                var reader = new PhotoVMReader(_window);
-                reader.Notify += (status, statusString) =>
+                var photoLoader = new PhotoLoader(_window);
+                photoLoader.Notify += (status, statusString) =>
                 {
                     _applicationStatusManager.ChangeCurrentAppStatus(status, statusString);
                 };
-                var photos = await reader.ReadAllFromDirByPhoto();
+                var photos = await photoLoader.ReadAllFromDirByPhoto();
                 if(!photos.Any())
                 {
                     Log.Warning("There are no photos to load.");
@@ -396,12 +370,12 @@ namespace LacmusApp.Avalonia.ViewModels
             try
             {
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                var reader = new PhotoVMReader(_window);
-                reader.Notify += (status, statusString) =>
+                var photoLoader = new PhotoLoader(_window);
+                photoLoader.Notify += (status, statusString) =>
                 {
                     _applicationStatusManager.ChangeCurrentAppStatus(status, statusString);
                 };
-                var photos = await reader.ReadAllFromDirByAnnotation();
+                var photos = await photoLoader.ReadAllFromDirByAnnotation();
                 if(!photos.Any())
                 {
                     Log.Warning("There are no photos to load.");
@@ -433,8 +407,8 @@ namespace LacmusApp.Avalonia.ViewModels
                     return;
                 }
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
-                var writer = new PhotoVMWriter(_window);
-                await writer.WriteMany(_photos.Items);
+                var photoSaver = new PhotoSaver(_window);
+                await photoSaver.Save(_photos.Items);
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "Success | saved");
                 Log.Information($"Saved {_photos.Items.Count()} photos.");
             }
@@ -485,26 +459,19 @@ namespace LacmusApp.Avalonia.ViewModels
         public void ShowGeoData()
         {
             var window = new MetadataWindow(_themeManager);
-            var context = new MetadataViewModel(window, PhotoViewModel.Photo.MetaDataDirectories, LocalizationContext);
+            var context = new MetadataViewModel(window, PhotoViewModel, LocalizationContext);
             window.DataContext = context;
             window.Show();
         }
 
         public async void AddToFavorites()
         {
-            if (_photoCollection[SelectedIndex].Photo.Attribute != Attribute.Favorite)
+            if (!_photoCollection[SelectedIndex].IsFavorite)
             {
-                _photoCollection[SelectedIndex].Photo.Attribute = Attribute.Favorite;
                 _photoCollection[SelectedIndex].IsFavorite = true;
             }
             else
             {
-                if(_photoCollection[SelectedIndex].BoundBoxes.Any())
-                    _photoCollection[SelectedIndex].Photo.Attribute = Attribute.WithObject;
-                else
-                {
-                    _photoCollection[SelectedIndex].Photo.Attribute = Attribute.Empty;
-                }
                 _photoCollection[SelectedIndex].IsFavorite = false;
             }
             await UpdateUi();
@@ -569,21 +536,22 @@ namespace LacmusApp.Avalonia.ViewModels
                 PhotoCollection[SelectedIndex].IsWatched = true;
                 PhotoViewModel = null;
                 var currentMiniaturePhotoViewModel = PhotoCollection[SelectedIndex];
-                var photoLoader = new PhotoLoader();
-                var fullPhoto = await photoLoader.Load(currentMiniaturePhotoViewModel.Path, PhotoLoadType.Full);
-                var annotation = currentMiniaturePhotoViewModel.Annotation;
-                var id = currentMiniaturePhotoViewModel.Id;
-                PhotoViewModel = new PhotoViewModel(id, fullPhoto, annotation);
-                PhotoViewModel.BoundBoxes = PhotoCollection[SelectedIndex].BoundBoxes;
+                var photoLoader = new PhotoLoader(_window);
+                var fullPhoto = await photoLoader.LoadFromFile(
+                    currentMiniaturePhotoViewModel.Path,
+                    currentMiniaturePhotoViewModel.Index,
+                    currentMiniaturePhotoViewModel.Detections,
+                    LoadType.Full);
+                PhotoViewModel = fullPhoto;
                 
-                CanvasHeight = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Height;
-                CanvasWidth = PhotoViewModel.Photo.ImageBrush.Source.PixelSize.Width;
+                CanvasHeight = PhotoViewModel.Height;
+                CanvasWidth = PhotoViewModel.Width;
                 
                 if (_applicationStatusManager.AppStatusInfo.Status == Enums.Status.Ready)
                     _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready,
                         $"{Enums.Status.Ready.ToString()} | {PhotoViewModel.Path}");
 
-                FavoritesStateString = PhotoCollection[SelectedIndex].Photo.Attribute == Attribute.Favorite ? "Remove from favorites" : "Add to favorites";
+                FavoritesStateString = PhotoCollection[SelectedIndex].IsFavorite ? "Remove from favorites" : "Add to favorites";
                     
                 Log.Debug($"Ui updated to index {SelectedIndex}, contains {PhotoViewModel.BoundBoxes.Count()} objects");
             }

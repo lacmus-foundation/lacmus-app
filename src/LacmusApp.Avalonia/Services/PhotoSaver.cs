@@ -30,14 +30,17 @@ public class PhotoSaver
         await SaveAs(new SaveAsParams() {SaveImage = true, SaveXml = true}, photos);
     }
 
-    public async Task SaveAs(SaveAsParams saveParams, IEnumerable<PhotoViewModel> photos)
+    public async Task SaveAs(SaveAsParams saveParams, IEnumerable<PhotoViewModel> photos, string dir = null)
     {
-        var dig = new OpenFolderDialog()
+        if (dir == null)
         {
-            //TODO: Multi language support
-            Title = "Chose directory to save files"
-        };
-        var dir = await _writer.SelectDir(dig);
+            var dig = new OpenFolderDialog()
+            {
+                //TODO: Multi language support
+                Title = "Chose directory to save files"
+            };
+            dir = await _writer.SelectDir(dig);
+        }
         var count = 0;
         
         using (var pb = new ProgressBar())
@@ -73,7 +76,7 @@ public class PhotoSaver
             }
         }
     }
-    
+
     private async Task SaveGeoPosition(PhotoViewModel photoViewModel, string saveDir)
     {
         await Task.Run(async () =>

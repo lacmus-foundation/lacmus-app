@@ -52,7 +52,7 @@ namespace LacmusApp.Avalonia.Services
                         {
                             var (brush, height, width) = await reader.Read(stream);
                             var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
-                                ImageMetadataReader.ReadMetadata(stream));
+                                ImageMetadataReader.ReadMetadata(path));
                             var photoViewModel = new PhotoViewModel(index)
                             {
                                 Brush = brush,
@@ -109,7 +109,7 @@ namespace LacmusApp.Avalonia.Services
                             {
                                 var (brush, height, width) = await reader.Read(photoStream);
                                 var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
-                                    ImageMetadataReader.ReadMetadata(stream));
+                                    ImageMetadataReader.ReadMetadata(photoPath));
                                 var photoViewModel = new PhotoViewModel(index)
                                 {
                                     Brush = brush,
@@ -135,6 +135,31 @@ namespace LacmusApp.Avalonia.Services
                 }
             }
             return photoList.ToArray();
+        }
+
+        public async Task<PhotoViewModel> LoadFromFile(string path, int index, IEnumerable<IObject> detections, LoadType loadType = LoadType.Miniature)
+        {
+            var reader = new AvaloniaBrushReader(loadType);
+            using (var stream = File.OpenRead(path))
+            {
+                using (var photoStream = File.OpenRead(path))
+                {
+                    var (brush, height, width) = await reader.Read(photoStream);
+                    var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
+                        ImageMetadataReader.ReadMetadata(path));
+                    return new PhotoViewModel(index)
+                    {
+                        Brush = brush,
+                        Detections = detections,
+                        Height = height,
+                        Width = width,
+                        Path = path,
+                        Latitude = latitude,
+                        Longitude = longitude,
+                        ExifDataCollection = metadata
+                    };
+                }
+            }
         }
     }
 }

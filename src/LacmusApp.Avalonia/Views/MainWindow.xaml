@@ -1,8 +1,9 @@
 ﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:LacmusApp.Avalonia.ViewModels;assembly=LacmusApp.Avalonia"
         xmlns:models="clr-namespace:LacmusApp.Avalonia.Models"
-        xmlns:models_photo="clr-namespace:LacmusApp.Avalonia.Models.Photo"
+        d:DataContext="{d:DesignInstance vm:MainWindowViewModel, IsDesignTimeCreatable=False}"
         xmlns:paz="clr-namespace:Avalonia.Controls.PanAndZoom;assembly=Avalonia.Controls.PanAndZoom"
         Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
         x:Class="LacmusApp.Avalonia.Views.MainWindow"
@@ -108,9 +109,9 @@
                   <RowDefinition Height="Auto"/>
                   <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Canvas Grid.Row="0" ZIndex="0" Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding Photo.ImageBrush}"/>
-                <TextBlock Grid.Row="1" ZIndex="0" Margin="0,5" HorizontalAlignment="Center" Text="{Binding Caption}"></TextBlock>
-                <StackPanel Margin="0 2" ZIndex="1" Orientation="Vertical">
+                <Canvas Grid.Row="0" ZIndex="0" Width="100" Height="150" HorizontalAlignment="Stretch" Background="{Binding Brush}"/>
+                <TextBlock Grid.Row="1" ZIndex="0" Margin="0,5" HorizontalAlignment="Center" Text="{Binding Name}"></TextBlock>
+                <StackPanel Grid.Row="0" Margin="0 2" ZIndex="1" Orientation="Vertical">
                   <Grid>
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="Auto"/>
@@ -119,7 +120,7 @@
                       <ColumnDefinition Width="*"/>
                       <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Image Grid.Column="0" IsVisible="{Binding IsHasObject}" Source="resm:LacmusApp.Avalonia.Assets.IsObject.png" Width="32" Height="32"/>
+                    <Image Grid.Column="0" IsVisible="{Binding IsHasObjects}" Source="resm:LacmusApp.Avalonia.Assets.IsObject.png" Width="32" Height="32"/>
                     <Image Grid.Column="2" IsVisible="{Binding IsFavorite}" Source="resm:LacmusApp.Avalonia.Assets.IsFavorite.png" Width="32" Height="32"/>
                     <Image Grid.Column="4" IsVisible="{Binding IsWatched}" Source="resm:LacmusApp.Avalonia.Assets.IsWatched.png" Width="32" Height="32"/>
                   </Grid>
@@ -206,7 +207,7 @@
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
                 <Canvas
-                  Background="{Binding PhotoViewModel.Photo.ImageBrush}"
+                  Background="{Binding PhotoViewModel.Brush}"
                   />
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>

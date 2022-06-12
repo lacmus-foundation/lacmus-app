@@ -16,10 +16,11 @@ namespace LacmusApp.Image.Models
 
         public Image()
         {
+            Detections = new List<IObject>();
             _isHasObjects = this.WhenAnyValue(x => x.Detections)
                 .Select(x => x.Any())
                 .ToProperty(this, x => x.IsHasObjects);
-
+            
             _name = this.WhenAnyValue(x => x.Path)
                 .Select(x =>
                 {
@@ -27,30 +28,33 @@ namespace LacmusApp.Image.Models
                     if (name is {Length: <= 15})
                         return name;
 
-                    var digitName = Regex.Replace(name, @"[^\d]", "");
-                    if (!string.IsNullOrWhiteSpace(digitName))
-                        name = digitName;
+                    if (name != null)
+                    {
+                        var digitName = Regex.Replace(name, @"[^\d]", "");
+                        if (!string.IsNullOrWhiteSpace(digitName))
+                            name = digitName;
+                    }
 
-                    if (name.Length > 15)
+                    if (name is { Length: > 15 })
                     {
                         name = name.Substring(0, 3) + "{~}" + name.Substring(name.Length - 10);
                     }
-
+            
                     return name;
                 })
                 .ToProperty(this, x => x.Name);
         }
 
-        public int Height { get; init; }
-        public int Width { get; init; }
-        public float Latitude { get; init; }
-        public float Longitude { get; init; }
-        public IEnumerable<ExifData> ExifDataCollection { get; init; }
-        public TBrush Brush { get; init; }
-        public string Path { get; init; }
+        public int Height { get; set; }
+        public int Width { get; set; }
+        public float Latitude { get; set; }
+        public float Longitude { get; set; }
+        public IEnumerable<ExifData> ExifDataCollection { get; set; }
+        public TBrush Brush { get; set; }
+        public string Path { get; set; } = "";
         public string Name => _name.Value;
         [Reactive] public IEnumerable<IObject> Detections { get; set; }
-        [Reactive] public bool IsHasObjects => _isHasObjects.Value;
+        public bool IsHasObjects => _isHasObjects.Value;
         [Reactive] public bool IsFavorite { get; set; }
         [Reactive] public bool IsWatched { get; set; }
     }

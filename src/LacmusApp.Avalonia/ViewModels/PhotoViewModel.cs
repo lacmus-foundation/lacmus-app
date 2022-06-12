@@ -16,7 +16,7 @@ namespace LacmusApp.Avalonia.ViewModels
         public PhotoViewModel(int index)
         {
             Index = index;
-
+            
             _boundBoxes = this.WhenAnyValue(x => x.Detections)
                 .Select(x =>
                     x.Select(
@@ -24,7 +24,7 @@ namespace LacmusApp.Avalonia.ViewModels
                         .ToList())
                 .ToProperty(this, x => x.BoundBoxes);
         }
-        [Reactive] public int Index { get; }
-        [Reactive] public IEnumerable<BoundBox> BoundBoxes => _boundBoxes.Value;
+        public int Index { get; }
+        public IEnumerable<BoundBox> BoundBoxes => _boundBoxes.Value;
     }
 }
