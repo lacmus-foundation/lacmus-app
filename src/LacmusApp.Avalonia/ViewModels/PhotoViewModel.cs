@@ -1,46 +1,30 @@
 using System.Collections.Generic;
-using ReactiveUI;
-using ReactiveUI.Fody.Helpers;
-using LacmusApp.Avalonia.Extensions;
+using System.Linq;
+using System.Reactive.Linq;
+using Avalonia.Media;
 using LacmusApp.Avalonia.Models;
-using LacmusApp.Avalonia.Models.Photo;
+using ReactiveUI;
+using LacmusApp.Image.Models;
+using ReactiveUI.Fody.Helpers;
 
 namespace LacmusApp.Avalonia.ViewModels
 {
-    //TODO: add PhotoViewModelManager or something else like this
-    public class PhotoViewModel : ReactiveObject
+    public class PhotoViewModel : Image<ImageBrush>
     {
-        private Annotation _annotation;
-        public PhotoViewModel(int id, Photo photo, Annotation annotation)
+        private readonly ObservableAsPropertyHelper<IEnumerable<BoundBox>> _boundBoxes;
+        
+        public PhotoViewModel(int index)
         {
-            Id = id;
-            Photo = photo;
-            _annotation = annotation;
-            UpdatePhotoInfo(Annotation);
+            Index = index;
+            
+            _boundBoxes = this.WhenAnyValue(x => x.Detections)
+                .Select(x =>
+                    x.Select(
+                        obj => new BoundBox(obj.XMin, obj.YMin, obj.Height, obj.Width))
+                        .ToList())
+                .ToProperty(this, x => x.BoundBoxes);
         }
-        [Reactive] public Photo Photo { get; set; }
-
-        [Reactive] public Annotation Annotation
-        {
-            get => _annotation;
-            set
-            {
-                _annotation = value;
-                UpdatePhotoInfo(_annotation);
-            }
-        }
-        [Reactive] public string Caption { get; private set; }
-        [Reactive] public string Path { get; private set; }
-        [Reactive] public bool IsHasObject { get; set; } = false;
-        [Reactive] public bool IsFavorite { get; set; } = false;
-        [Reactive] public bool IsWatched { get; set; } = false;
-        [Reactive] public IEnumerable<BoundBox> BoundBoxes { get; set; } = new List<BoundBox>();
-        public int Id { get; set; }
-
-        private void UpdatePhotoInfo(Annotation annotation)
-        {
-            Caption = annotation.GetCaption();
-            Path = annotation.GetPhotoPath();
-        }
+        public int Index { get; }
+        public IEnumerable<BoundBox> BoundBoxes => _boundBoxes.Value;
     }
 }

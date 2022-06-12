@@ -55,7 +55,7 @@ namespace LacmusApp.Avalonia.ViewModels
             
             var window = new MainWindow();
             await Task.Delay(1000);
-            var fileManager = new AvaloniaPluginFileManager(window);
+            var dialog = new AvaloniaPluginDialog(window);
             var pluginManager = new PluginManager(
                 Path.Join(confDir, "plugins"), "http://api.lacmus.ml");
             var themeManager = new ThemeManager(window);
@@ -64,7 +64,7 @@ namespace LacmusApp.Avalonia.ViewModels
                 config,
                 configManager,
                 pluginManager,
-                fileManager);
+                dialog);
             
             window.DataContext = new MainWindowViewModel(
                 window,
@@ -75,35 +75,6 @@ namespace LacmusApp.Avalonia.ViewModels
             _window.Close();
         }
         
-        private async Task<AppConfig> LoadConfig()
-        {
-            var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
-            var configPath = Path.Join(confDir,"appConfig-v2.json");
-            if (File.Exists(configPath))
-                try
-                {
-                    return await AppConfig.Create(configPath);
-                }
-                catch (Exception e)
-                {
-                    Log.Error($"Unable to parse config from {configPath}.", e);
-
-                    var config = new AppConfig();
-                    await config.Save(configPath);
-                    Log.Information("Create default config.");
-                    return config;
-                }
-            else
-            {
-                if (!Directory.Exists(confDir))
-                    Directory.CreateDirectory(confDir);
-                
-                var config = new AppConfig();
-                await config.Save(configPath);
-                Log.Information("Create default config.");
-                return config;
-            }
-        }
         private static string GetVersion()
         {
             var revision = "";

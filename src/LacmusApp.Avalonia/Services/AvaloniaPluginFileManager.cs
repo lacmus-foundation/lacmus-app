@@ -8,16 +8,16 @@ using LacmusApp.IO.Interfaces;
 
 namespace LacmusApp.Avalonia.Services
 {
-    public class AvaloniaPluginFileManager : IFileManager
+    public class AvaloniaPluginDialog : IDialog
     {
         private Window _window;
         
-        public AvaloniaPluginFileManager(Window window)
+        public AvaloniaPluginDialog(Window window)
         {
             _window = window;
         }
         
-        public async Task<string> SelectFileToWrite()
+        public async Task<string> SelectToWrite()
         {
             var dig = new SaveFileDialog()
             {
@@ -38,7 +38,7 @@ namespace LacmusApp.Avalonia.Services
             return file;
         }
 
-        public async Task<string> SelectFileToRead()
+        public async Task<string> SelectToRead()
         {
             var dig = new OpenFileDialog()
             {

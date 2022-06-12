@@ -3,6 +3,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:LacmusApp.Plugin.Interfaces;assembly=LacmusApp"
+             xmlns:l="clr-namespace:LacmusApp.Avalonia.Properties"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              d:DataContext="{d:DesignInstance vm:IPluginViewModel, IsDesignTimeCreatable=False}"
              x:DataType="vm:IPluginViewModel"
@@ -64,12 +65,12 @@
                     VerticalAlignment="Center"
                     Orientation="Horizontal">
             <Button Classes="Primary"
-                    Content="Remove"
+                    Content="{x:Static l:Settings.RemoveButton}"
                     Margin="2 0"
                     Command="{Binding Remove}"
             />
             <Button Classes="Primary"
-                    Content="Activate"
+                    Content="{x:Static l:Settings.ActivateButton}"
                     Margin="2 0"
                     Command="{Binding Activate}"
             />

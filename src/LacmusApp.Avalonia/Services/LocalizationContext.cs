@@ -784,6 +784,13 @@ namespace LacmusApp.Avalonia.Services
             set { this.RaiseAndSetIfChanged(ref _saveAsCrops, value); }
         }
         
+        private string _saveAsPosition;
+        [Reactive] public string SaveAsPosition
+        {
+            get { return _saveAsCrops; }
+            set { this.RaiseAndSetIfChanged(ref _saveAsCrops, value); }
+        }
+        
         private string _saveAsSelectPath;
         [Reactive] public string SaveAsSelectPath
         {
@@ -1032,6 +1039,7 @@ namespace LacmusApp.Avalonia.Services
                     SaveAsXmlAnnotations = "Save XML annotations.";
                     SaveAsDrawBbox = "Save photo with drawn bounded boxes.";
                     SaveAsCrops = "Save bbox crops.";
+                    SaveAsPosition = "Save geo position.";
                     SaveAsSelectPath = "Browse...";
                     //WizardSecondOutputWatermark = "Enter output path here.";
                     //WizardSecondSavePhotosButton = "Save photos";
@@ -1198,6 +1206,7 @@ namespace LacmusApp.Avalonia.Services
                     SaveAsXmlAnnotations = "Сохранить XML аннотации.";
                     SaveAsDrawBbox = "Сохранить фотографии с нарисованными рамками объектов.";
                     SaveAsCrops = "Сохранить вырезанные объекты.";
+                    SaveAsPosition = "Сохранить геопозицию.";
                     SaveAsSelectPath = "Выбрать папку";
 
                     //Settings

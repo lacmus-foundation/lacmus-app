@@ -4,21 +4,25 @@ using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
+using System.Xml.Serialization;
 using Avalonia.Threading;
 using DynamicData;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
-using LacmusApp.Avalonia.Extensions;
 using LacmusApp.Avalonia.Managers;
 using LacmusApp.Avalonia.Models;
-using LacmusApp.Avalonia.Models.Photo;
 using LacmusApp.Avalonia.Services;
 using LacmusApp.Avalonia.Services.IO;
-using LacmusApp.Avalonia.Services.Plugin;
+using LacmusApp.Image.Enums;
+using LacmusApp.Image.Models;
+using LacmusApp.Image.Services;
 using LacmusApp.Screens.ViewModels;
+using LacmusPlugin;
+using MetadataExtractor;
 using Serilog;
-using Attribute = LacmusApp.Avalonia.Models.Photo.Attribute;
-using Object = LacmusApp.Avalonia.Models.Object;
+using Directory = System.IO.Directory;
+using Object = LacmusApp.Image.Models.Object;
+
 
 namespace LacmusApp.Avalonia.ViewModels
 {
@@ -65,8 +69,12 @@ namespace LacmusApp.Avalonia.ViewModels
                 {
                     var count = 0;
                     var id = 0;
-                    var photoLoader = new PhotoLoader();
                     var files = GetFilesFromDir(inputPath, false);
+                    files = files.Where(s =>
+                        s.ToLower().EndsWith(".png") ||
+                        s.ToLower().EndsWith(".jpg") ||
+                        s.ToLower().EndsWith(".jpeg"));
+                    var reader = new AvaloniaBrushReader(LoadType.Miniature);
                     var enumerable = files as string[] ?? files.ToArray();
                     _photos.Clear();
                     foreach (var path in enumerable)
@@ -75,20 +83,22 @@ namespace LacmusApp.Avalonia.ViewModels
                         {
                             await using (var stream = File.OpenRead(path))
                             {
-                                if (Path.GetExtension(path).ToLower() != ".jpg" &&
-                                        Path.GetExtension(path).ToLower() != ".jpeg" &&
-                                        Path.GetExtension(path).ToLower() != ".png")
+                                var (brush, height, width) = await reader.Read(stream);
+                                var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
+                                    ImageMetadataReader.ReadMetadata(stream));
+                                var photoViewModel = new PhotoViewModel(id)
                                 {
-                                    count++;
-                                    continue;
-                                }
-                                var annotation = new Annotation
-                                {
-                                    Filename = Path.GetFileName(path),
-                                    Folder = Path.GetDirectoryName(path)
+                                    Brush = brush,
+                                    Detections = new List<IObject>(),
+                                    Height = height,
+                                    Width = width,
+                                    Path = path,
+                                    Latitude = latitude,
+                                    Longitude = longitude,
+                                    ExifDataCollection = metadata
                                 };
-                                var photo = await photoLoader.Load(path, stream, PhotoLoadType.Miniature);
-                                _photos.Add(new PhotoViewModel(id, photo, annotation));
+                                
+                                _photos.Add(photoViewModel);
                                 id++;
                                 count++;
                                 InputProgress = (double)count / enumerable.Count() * 100;
@@ -138,32 +148,12 @@ namespace LacmusApp.Avalonia.ViewModels
                     {
                         try
                         {
-                            photoViewModel.Annotation.Objects = new List<Object>();
                             var detections = await Dispatcher.UIThread.InvokeAsync( () =>
                                 Task.Run(() =>  model.Infer(photoViewModel.Path,
-                                    photoViewModel.Photo.Width,
-                                    photoViewModel.Photo.Height)));
-                            foreach (var det in detections)
-                            {
-                                photoViewModel.Annotation.Objects.Add(new Object()
-                                {
-                                    Box = new Box()
-                                    {
-                                        Xmax = det.XMax,
-                                        Xmin = det.XMin,
-                                        Ymax = det.YMax,
-                                        Ymin = det.YMin
-                                    },
-                                    Difficult = 0,
-                                    Name = det.Label
-                                });
-                            }
-                            photoViewModel.BoundBoxes = photoViewModel.GetBoundingBoxes();
-                            if (photoViewModel.BoundBoxes.Any())
-                            {
-                                photoViewModel.Photo.Attribute = Attribute.WithObject;
-                                photoViewModel.IsHasObject = true;
-                            }
+                                    photoViewModel.Width,
+                                    photoViewModel.Height)));
+                            var enumerable = detections as IObject[] ?? detections.ToArray();
+                            photoViewModel.Detections = enumerable;
                             objectCount += photoViewModel.BoundBoxes.Count();
                             count++;
                             PredictProgress = (double) count / _photos.Items.Count() * 100;
@@ -207,25 +197,10 @@ namespace LacmusApp.Avalonia.ViewModels
                     using (var pb = new ProgressBar())
                     {
                         foreach (var photoViewModel in viewModels)
-                            await Task.Run(() =>
+                            await Task.Run(async () =>
                             {
-                                var srcPhotoPath = photoViewModel.Path;
-                                var dstPhotoPath = Path.Combine(outputPath, photoViewModel.Annotation.Filename);
-                                var annotationPath = Path.Combine(outputPath, $"{photoViewModel.Annotation.Filename}.xml");
-                                var annotation = photoViewModel.Annotation;
-                                annotation.Folder = outputPath;
-                                var saver = new AnnotationSaver();
-                                saver.Save(annotation, annotationPath);
-                                if (srcPhotoPath == dstPhotoPath)
-                                {
-                                    Log.Warning($"Photo {srcPhotoPath} skipped. File exists.");
-                                    count++;
-                                    OutputProgress = (double) count / viewModels.Count() * 100;
-                                    OutputTextProgress = $"{Convert.ToInt32(OutputProgress)} %";
-                                    pb.Report((double)count / viewModels.Count(), $"Saving files {count} of {viewModels.Length}");
-                                    return;
-                                }
-                                File.Copy(srcPhotoPath, dstPhotoPath, true);
+                                await SaveImage(photoViewModel, outputPath);
+                                await SaveXml(photoViewModel, outputPath);
                                 count++;
                                 OutputProgress = (double) count / viewModels.Count() * 100;
                                 OutputTextProgress = $"{Convert.ToInt32(OutputProgress)} %";
@@ -257,6 +232,59 @@ namespace LacmusApp.Avalonia.ViewModels
         {
             return Directory.GetFiles(dirPath, "*.*",
                 isRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+        }
+        
+    
+        private async Task SaveImage(PhotoViewModel photoViewModel, string saveDir)
+        {
+            await Task.Run(() =>
+            {
+                if (!File.Exists(photoViewModel.Path))
+                    throw new Exception("Source file is not exists.");
+                var path = Path.Combine(saveDir, Path.GetFileName(photoViewModel.Path));
+                File.Copy(photoViewModel.Path, path, true);
+            });
+        }
+    
+        private async Task SaveXml(PhotoViewModel photoViewModel, string saveDir)
+        {
+            await Task.Run(() =>
+            {
+                var annotation = new Annotation()
+                {
+                    Filename = Path.GetFileName(photoViewModel.Path),
+                    Folder = Path.GetDirectoryName(saveDir),
+                    Size = new Size()
+                    {
+                        Depth = 3,
+                        Height = photoViewModel.Height,
+                        Width = photoViewModel.Width
+                    },
+                    Segmented = 0,
+                    Source = new Source(),
+                    Objects = photoViewModel.Detections.Select(
+                        x => new Object()
+                        {
+                            Difficult = 0,
+                            Name = "Pedestrian",
+                            Truncated = 0,
+                            Box = new Box()
+                            {
+                                Xmax = x.XMax,
+                                Xmin = x.XMin,
+                                Ymax = x.YMax,
+                                Ymin = x.YMin
+                            }
+                        }).ToList()
+                };
+        
+                var formatter = new XmlSerializer(type:typeof(Annotation));
+                var fileName = Path.Combine(saveDir, annotation.Filename + ".xml");
+                using (var stream = File.Create(fileName))
+                {
+                    formatter.Serialize(stream, annotation);
+                }
+            });
         }
     }
 }

@@ -1,33 +1,24 @@
+using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
-using LacmusApp.Avalonia.Models;
+using System.Linq;
+using LacmusApp.Image.Models;
+using LacmusPlugin;
 
 namespace LacmusApp.Avalonia.Extensions
 {
     public static class AnnotationExtension
     {
-        public static string GetCaption(this Annotation annotation)
+        public static IEnumerable<IObject> GetDetections(this Annotation annotation)
         {
-            var name = Path.GetFileNameWithoutExtension(annotation.Filename);
-            if (name.Length <= 15)
-                return name;
-            
-            var digitName = Regex.Replace(name, @"[^\d]", "");
-            if (!string.IsNullOrWhiteSpace(digitName))
-                name = digitName;
-                
-            if (name.Length > 15)
+            return annotation.Objects.Select(x => new Detection
             {
-                name = name.Substring(0, 3) + "{~}" + name.Substring(name.Length - 10);
-            }
-            return name;
+                Label = x.Name,
+                Score = 1.0f,
+                XMax = x.Box.Xmax,
+                XMin = x.Box.Xmin,
+                YMax = x.Box.Ymax,
+                YMin = x.Box.Ymin
+            });
         }
-        
-        public static string GetPhotoPath(this Annotation annotation)
-        {
-            return Path.Combine(annotation.Folder, annotation.Filename);
-        }
-        
-        //TODO: GetRectangle(...)
     }
 }

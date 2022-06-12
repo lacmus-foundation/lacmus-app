@@ -132,4 +132,13 @@
     <data name="Version" xml:space="preserve">
         <value>Версия: </value>
     </data>
+    <data name="InstallButton" xml:space="preserve">
+        <value>Установить</value>
+    </data>
+    <data name="RemoveButton" xml:space="preserve">
+        <value>Удалить</value>
+    </data>
+    <data name="ActivateButton" xml:space="preserve">
+        <value>Активировать</value>
+    </data>
 </root>

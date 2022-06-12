@@ -24,9 +24,9 @@ namespace LacmusApp.Screens.ViewModels
             Config config,
             IConfigManager configManager,
             IPluginManager pluginManager,
-            IFileManager fileManager)
+            IDialog dig)
         {
-            LocalPluginRepository = new LocalPluginRepositoryViewModel(pluginManager, fileManager, this);
+            LocalPluginRepository = new LocalPluginRepositoryViewModel(pluginManager, dig, this);
             RemotePluginRepository = new RemotePluginRepositoryViewModel(pluginManager);
             Plugin = new PluginViewModel(config.Plugin, pluginManager);
             PredictionThreshold = config.PredictionThreshold;
