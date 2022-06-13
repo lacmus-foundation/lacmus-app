@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Avalonia.Controls;
 using Avalonia.Threading;
 using DynamicData;
 using ReactiveUI;
@@ -200,6 +201,7 @@ namespace LacmusApp.Avalonia.ViewModels
                         SaveXml = true
                     };
                     await saver.SaveAs(saveParams, viewModels, outputPath);
+                    OutputProgress = 100.0;
                 }
                 catch (Exception e)
                 {
