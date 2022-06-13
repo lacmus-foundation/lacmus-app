@@ -1,6 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:m="clr-namespace:LacmusApp.Avalonia.Models;assembly=LacmusApp.Avalonia"
+        xmlns:vm="clr-namespace:LacmusApp.Avalonia.ViewModels;assembly=LacmusApp.Avalonia"
+        d:DataContext="{d:DesignInstance vm:MetadataViewModel, IsDesignTimeCreatable=False}"
         Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
         x:Class="LacmusApp.Avalonia.Views.MetadataWindow"
         CanResize="False"
@@ -25,28 +27,36 @@
                       VerticalScrollBarVisibility="Auto">
             <Border Classes="Card">
                 <StackPanel>
-                    <TextBlock Grid.Row="0" TextWrapping="Wrap" Classes="Heading" 
-                               Text="{Binding LocalizationContext.MetadataHeader}" />
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="224" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock TextWrapping="Wrap" Classes="Heading" 
+                                       Text="{Binding LocalizationContext.MetadataHeader}" />
                         
-                    <StackPanel Grid.Row="1" Orientation="Horizontal">
-                        <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataLatitude}" />
-                        <TextBlock Text="{Binding Latitude}" />
-                    </StackPanel>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataLatitude}" />
+                                <TextBlock Text="{Binding Latitude}" />
+                            </StackPanel>
                         
-                    <StackPanel Grid.Row="2" Orientation="Horizontal">
-                        <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataLongitude}" />
-                        <TextBlock Text="{Binding Longitude}" />
-                    </StackPanel>
-                        
-                    <StackPanel Grid.Row="3" Orientation="Horizontal">
-                        <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataAltitude}" />
-                        <TextBlock Text="{Binding Altitude}" />
-                    </StackPanel>
-                        
-                    <TextBlock Grid.Row="4" TextWrapping="Wrap" Classes="Heading" 
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataLongitude}" />
+                                <TextBlock Text="{Binding Longitude}" />
+                            </StackPanel>
+                        </StackPanel>
+                        <Canvas Grid.Column="1" 
+                            Width="128" 
+                            Height="128" 
+                            HorizontalAlignment="Stretch" 
+                            Background="{Binding QrImage}"/>
+                    </Grid>
+                    
+                    <TextBlock TextWrapping="Wrap" Classes="Heading" 
                                Text="{Binding LocalizationContext.MetadataOpenWith}" />
                         
-                    <Grid Grid.Row="5">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="10" />
@@ -68,8 +78,8 @@
                         <DataGrid Items="{Binding MetaDataCollection}">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Group" Binding="{Binding Group}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="Nag Name" Binding="{Binding TagName}"></DataGridTextColumn>
-                                <DataGridTextColumn Header="Description" Binding="{Binding Description}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Nag Name" Binding="{Binding Key}"></DataGridTextColumn>
+                                <DataGridTextColumn Header="Description" Binding="{Binding Value}"></DataGridTextColumn>
                             </DataGrid.Columns>
                         </DataGrid>
                     </Expander>
