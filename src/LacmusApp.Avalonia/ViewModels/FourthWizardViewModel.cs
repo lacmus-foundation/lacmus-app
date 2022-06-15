@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using Avalonia.Controls;
 using Avalonia.Threading;
 using DynamicData;
 using ReactiveUI;
@@ -192,21 +193,15 @@ namespace LacmusApp.Avalonia.ViewModels
                 Status = "saving results...";
                 try
                 {
-                    var count = 0;
                     var viewModels = _photos.Items as PhotoViewModel[] ?? _photos.Items.ToArray();
-                    using (var pb = new ProgressBar())
+                    var saver = new PhotoSaver(new Window());
+                    var saveParams = new SaveAsParams()
                     {
-                        foreach (var photoViewModel in viewModels)
-                            await Task.Run(async () =>
-                            {
-                                await SaveImage(photoViewModel, outputPath);
-                                await SaveXml(photoViewModel, outputPath);
-                                count++;
-                                OutputProgress = (double) count / viewModels.Count() * 100;
-                                OutputTextProgress = $"{Convert.ToInt32(OutputProgress)} %";
-                                pb.Report((double)count / viewModels.Count(), $"Saving files {count} of {viewModels.Length}");
-                            });
-                    }
+                        SaveImage = true,
+                        SaveXml = true
+                    };
+                    await saver.SaveAs(saveParams, viewModels, outputPath);
+                    OutputProgress = 100.0;
                 }
                 catch (Exception e)
                 {
@@ -232,59 +227,6 @@ namespace LacmusApp.Avalonia.ViewModels
         {
             return Directory.GetFiles(dirPath, "*.*",
                 isRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
-        }
-        
-    
-        private async Task SaveImage(PhotoViewModel photoViewModel, string saveDir)
-        {
-            await Task.Run(() =>
-            {
-                if (!File.Exists(photoViewModel.Path))
-                    throw new Exception("Source file is not exists.");
-                var path = Path.Combine(saveDir, Path.GetFileName(photoViewModel.Path));
-                File.Copy(photoViewModel.Path, path, true);
-            });
-        }
-    
-        private async Task SaveXml(PhotoViewModel photoViewModel, string saveDir)
-        {
-            await Task.Run(() =>
-            {
-                var annotation = new Annotation()
-                {
-                    Filename = Path.GetFileName(photoViewModel.Path),
-                    Folder = Path.GetDirectoryName(saveDir),
-                    Size = new Size()
-                    {
-                        Depth = 3,
-                        Height = photoViewModel.Height,
-                        Width = photoViewModel.Width
-                    },
-                    Segmented = 0,
-                    Source = new Source(),
-                    Objects = photoViewModel.Detections.Select(
-                        x => new Object()
-                        {
-                            Difficult = 0,
-                            Name = "Pedestrian",
-                            Truncated = 0,
-                            Box = new Box()
-                            {
-                                Xmax = x.XMax,
-                                Xmin = x.XMin,
-                                Ymax = x.YMax,
-                                Ymin = x.YMin
-                            }
-                        }).ToList()
-                };
-        
-                var formatter = new XmlSerializer(type:typeof(Annotation));
-                var fileName = Path.Combine(saveDir, annotation.Filename + ".xml");
-                using (var stream = File.Create(fileName))
-                {
-                    formatter.Serialize(stream, annotation);
-                }
-            });
         }
     }
 }

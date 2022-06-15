@@ -1,10 +1,15 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reactive;
 using System.Runtime.InteropServices;
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Avalonia.Skia;
 using DynamicData;
 using LacmusApp.Avalonia.Models;
 using LacmusApp.Avalonia.Services;
@@ -14,6 +19,9 @@ using ReactiveUI.Fody.Helpers;
 using ReactiveUI.Validation.Extensions;
 using ReactiveUI.Validation.Helpers;
 using Serilog;
+using SkiaSharp;
+using SkiaSharp.QrCode;
+using SkiaSharp.QrCode.Image;
 
 namespace LacmusApp.Avalonia.ViewModels
 {
@@ -24,13 +32,13 @@ namespace LacmusApp.Avalonia.ViewModels
         public ReadOnlyObservableCollection<ExifData> MetaDataCollection => _metaDataCollection;
         [Reactive] public string Latitude { get; set; } = "N/A";
         [Reactive] public string Longitude { get; set; } = "N/A";
-        [Reactive] public string Altitude { get; set; } = "N/A";
+        [Reactive] public ImageBrush QrImage { get; set; }
         [Reactive] public LocalizationContext LocalizationContext { get; set; }
         public MetadataViewModel(Window window, PhotoViewModel photoViewModel, LocalizationContext localizationContext)
         {
             Latitude = $"{photoViewModel.Latitude}";
             Longitude = $"{photoViewModel.Longitude}";
-            Altitude = "N/A";
+            
             _metaDataList.AddRange(photoViewModel.ExifDataCollection);
 
             LocalizationContext = localizationContext;
@@ -52,6 +60,8 @@ namespace LacmusApp.Avalonia.ViewModels
             OpenYandexCommand = ReactiveCommand.Create(OpenYandex, this.IsValid());
             OpenGoogleCommand = ReactiveCommand.Create(OpenGoogle, this.IsValid());
             OpenOSMCommand = ReactiveCommand.Create(OpenOSM, this.IsValid());
+
+            RenderQr();
         }
         public ReactiveCommand<Unit, Unit> OpenYandexCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenGoogleCommand { get; set; }
@@ -124,6 +134,31 @@ namespace LacmusApp.Avalonia.ViewModels
             catch (Exception e)
             {
                 Log.Error(e,$"Unable to ope url {url}.");
+            }
+        }
+
+        private void RenderQr()
+        {
+            using (var generator = new QRCodeGenerator())
+            {
+                var osmLink =
+                    $"https://www.openstreetmap.org/?mlat={Latitude.Replace(',', '.')}&mlon={Longitude.Replace(',', '.')}" +
+                    $"#map=15/{Latitude.Replace(',', '.')}/{Longitude.Replace(',', '.')}";
+                var qr = generator.CreateQrCode(osmLink, ECCLevel.L);
+                var info = new SKImageInfo(128, 128);
+                using (var surface = SKSurface.Create(info))
+                {
+                    surface.Canvas.Render(qr, info.Width, info.Height);
+                    var image = surface.Snapshot();
+                    var skBitmap = SKBitmap.FromImage(image);
+                    var bitmap = new Bitmap(
+                        skBitmap.ColorType.ToPixelFormat(),
+                        skBitmap.GetPixels(),
+                        new PixelSize(skBitmap.Width, skBitmap.Height), 
+                        SkiaPlatform.DefaultDpi, 
+                        skBitmap.RowBytes);
+                    QrImage = new ImageBrush(bitmap);
+                }
             }
         }
     }

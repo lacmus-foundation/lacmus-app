@@ -46,7 +46,7 @@ public class PhotoSaver
         using (var pb = new ProgressBar())
         {
             var photoViewModels = photos as PhotoViewModel[] ?? photos.ToArray();
-            foreach (var photo in photoViewModels)
+            await Parallel.ForEachAsync(photoViewModels, async (photo, _) =>
             {
                 try
                 {
@@ -55,25 +55,26 @@ public class PhotoSaver
 
                     if (saveParams.SaveCrop)
                         await SaveCrops(photo, dir);
-                
+
                     if (saveParams.SaveImage)
                         await SaveImage(photo, dir);
 
                     if (saveParams.SaveDrawImage)
                         await SaveDrawImage(photo, dir);
-                
+
                     if (saveParams.SaveGeoPosition)
                         await SaveGeoPosition(photo, dir);
-                    
+
                     count++;
-                    Notify?.Invoke(Enums.Status.Working, $"Working | {(int)((double) count / photoViewModels.Length * 100)} %, [{count} of {photoViewModels.Length}]");
+                    Notify?.Invoke(Enums.Status.Working,
+                        $"Working | {(int)((double)count / photoViewModels.Length * 100)} %, [{count} of {photoViewModels.Length}]");
                     pb.Report((double)count / photoViewModels.Length, $"Processed {count} of {photoViewModels.Length}");
                 }
                 catch (Exception e)
                 {
-                    Log.Warning(e,$"Image from {photo.Path} is skipped!");
+                    Log.Warning(e, $"Image from {photo.Path} is skipped!");
                 }
-            }
+            });
         }
     }
 

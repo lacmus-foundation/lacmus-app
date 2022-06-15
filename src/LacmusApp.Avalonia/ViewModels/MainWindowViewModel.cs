@@ -341,7 +341,10 @@ namespace LacmusApp.Avalonia.ViewModels
                 var photoLoader = new PhotoLoader(_window);
                 photoLoader.Notify += (status, statusString) =>
                 {
-                    _applicationStatusManager.ChangeCurrentAppStatus(status, statusString);
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        _applicationStatusManager.ChangeCurrentAppStatus(status, statusString);
+                    });
                 };
                 var photos = await photoLoader.ReadAllFromDirByPhoto();
                 if(!photos.Any())
@@ -371,10 +374,16 @@ namespace LacmusApp.Avalonia.ViewModels
             {
                 _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, "");
                 var photoLoader = new PhotoLoader(_window);
+                
+                
                 photoLoader.Notify += (status, statusString) =>
                 {
-                    _applicationStatusManager.ChangeCurrentAppStatus(status, statusString);
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        _applicationStatusManager.ChangeCurrentAppStatus(status, statusString);
+                    });
                 };
+                
                 var photos = await photoLoader.ReadAllFromDirByAnnotation();
                 if(!photos.Any())
                 {

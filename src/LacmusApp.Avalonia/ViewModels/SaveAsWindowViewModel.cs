@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Threading;
 using DynamicData;
 using LacmusApp.Avalonia.Managers;
 using LacmusApp.Avalonia.Models;
@@ -94,6 +95,14 @@ namespace LacmusApp.Avalonia.ViewModels
                     SaveDrawImage = IsSaveDrawImage,
                     SaveGeoPosition = IsSaveGeoPosition
                 };
+                photoSaver.Notify += (status, statusString) =>
+                {
+                    Dispatcher.UIThread.Post(() =>
+                    {
+                        _applicationStatusManager.ChangeCurrentAppStatus(status, statusString);
+                    });
+                };
+                
                 await photoSaver.SaveAs(saveParams, photoViewModels, OutputPath);
                 
                 Log.Information($"Saved {photoViewModels.Length} photos.");
