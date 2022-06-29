@@ -1,8 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Reactive;
 using System.Runtime.InteropServices;
 using Avalonia;
@@ -11,7 +9,6 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Skia;
 using DynamicData;
-using LacmusApp.Avalonia.Models;
 using LacmusApp.Avalonia.Services;
 using LacmusApp.Image.Models;
 using ReactiveUI;
@@ -21,7 +18,7 @@ using ReactiveUI.Validation.Helpers;
 using Serilog;
 using SkiaSharp;
 using SkiaSharp.QrCode;
-using SkiaSharp.QrCode.Image;
+
 
 namespace LacmusApp.Avalonia.ViewModels
 {

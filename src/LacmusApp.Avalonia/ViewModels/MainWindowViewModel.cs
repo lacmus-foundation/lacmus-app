@@ -342,7 +342,7 @@ namespace LacmusApp.Avalonia.ViewModels
                 photoLoader.Notify += (status, statusString) =>
                 {
                     Dispatcher.UIThread.Post(() =>
-                    {
+                    { 
                         _applicationStatusManager.ChangeCurrentAppStatus(status, statusString);
                     });
                 };
