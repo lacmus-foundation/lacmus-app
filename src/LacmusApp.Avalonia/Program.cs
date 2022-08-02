@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
 using Avalonia;
-using Avalonia.Media;
 using Avalonia.ReactiveUI;
-using LacmusApp.Image.Models;
 using Serilog;
 
 namespace LacmusApp.Avalonia

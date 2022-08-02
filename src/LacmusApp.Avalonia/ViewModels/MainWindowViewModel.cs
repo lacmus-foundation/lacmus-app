@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
@@ -21,6 +23,7 @@ using ReactiveUI.Fody.Helpers;
 using LacmusApp.Avalonia.Managers;
 using LacmusApp.Avalonia.Models;
 using LacmusApp.Avalonia.Services;
+using LacmusApp.Avalonia.Services.IO;
 using LacmusApp.Avalonia.Views;
 using LacmusApp.Image.Enums;
 using LacmusApp.Screens.Interfaces;
@@ -566,7 +569,7 @@ namespace LacmusApp.Avalonia.ViewModels
             }
             catch (Exception ex)
             {
-                //Log.Error(ex, "Unable to update ui.");
+                Log.Error(ex, "Unable to update ui.");
             }
         }
 

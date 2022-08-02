@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive.Linq;
+using System.Security.Cryptography;
 using Avalonia.Media;
 using LacmusApp.Avalonia.Models;
 using ReactiveUI;
@@ -16,7 +17,7 @@ namespace LacmusApp.Avalonia.ViewModels
         public PhotoViewModel(int index)
         {
             Index = index;
-            
+
             _boundBoxes = this.WhenAnyValue(x => x.Detections)
                 .Select(x =>
                     x.Select(
@@ -24,6 +25,7 @@ namespace LacmusApp.Avalonia.ViewModels
                         .ToList())
                 .ToProperty(this, x => x.BoundBoxes);
         }
+        public new string Name { get; set; }
         public int Index { get; }
         public IEnumerable<BoundBox> BoundBoxes => _boundBoxes.Value;
     }
