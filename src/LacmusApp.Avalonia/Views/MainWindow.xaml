@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:LacmusApp.Avalonia.ViewModels;assembly=LacmusApp.Avalonia"
         xmlns:models="clr-namespace:LacmusApp.Avalonia.Models"
+        xmlns:convert="clr-namespace:LacmusApp.Avalonia.Converters"
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel, IsDesignTimeCreatable=False}"
         xmlns:paz="clr-namespace:Avalonia.Controls.PanAndZoom;assembly=Avalonia.Controls.PanAndZoom"
         Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
@@ -11,6 +12,10 @@
         Title="Lacmus"
         Width="800"
         Height="600">
+  <Window.Resources>
+    <convert:BoundingBoxColourConverter x:Key="myConverter"/>
+  </Window.Resources>
+  
   <NativeMenu.Menu>
     <NativeMenu>
       <NativeMenuItem Header="About Lacmus" Command="{Binding AboutCommand}"/>
@@ -196,7 +201,7 @@
                         VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                         MinZoomX="0.05"
                         MinZoomY="0.05"
-                        >
+        >
           <ItemsControl
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
@@ -228,7 +233,7 @@
               <DataTemplate DataType="{x:Type models:BoundBox}">
                 <Polygon
                   Points="{Binding Points}"
-                  Stroke="Red" 
+                  Stroke="{Binding $parent[Window].DataContext.SettingsViewModel.BoundingBoxColour, Converter={StaticResource myConverter}}" 
                   StrokeThickness="10"
                   IsVisible="{Binding #bShowBorder.IsChecked, Mode=OneWay}"/>
               </DataTemplate>
