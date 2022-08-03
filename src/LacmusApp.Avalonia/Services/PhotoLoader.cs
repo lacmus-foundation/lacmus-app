@@ -117,8 +117,8 @@ namespace LacmusApp.Avalonia.Services
                                     Detections = annotation.GetDetections(),
                                     Height = height,
                                     Width = width,
-                                    Path = path,
-                                    Name = GetNameFromPath(path),
+                                    Path = photoPath,
+                                    Name = GetNameFromPath(photoPath),
                                     Latitude = latitude,
                                     Longitude = longitude,
                                     ExifDataCollection = metadata

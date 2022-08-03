@@ -303,6 +303,7 @@ namespace LacmusApp.Avalonia.ViewModels
                             count++;
                             Console.WriteLine($"\tProgress: {(double) count / _photos.Items.Count() * 100} %");
                             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / _photos.Items.Count() * 100)} %, [{count} of {_photos.Items.Count()}]");
+                            PhotoViewModel.Detections = PhotoCollection[SelectedIndex].Detections;
                         }
                         catch (Exception e)
                         {
