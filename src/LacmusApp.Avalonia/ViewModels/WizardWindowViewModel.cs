@@ -1,5 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.Reactive;
+using System.Reactive.Linq;
+using System.Runtime.Intrinsics.X86;
 using Avalonia.Controls;
 using DynamicData;
 using ReactiveUI;
@@ -20,8 +24,6 @@ namespace LacmusApp.Avalonia.ViewModels
         private readonly SecondWizardViewModel _secondWizardViewModel;
         private readonly ThirdWizardViewModel _thirdWizardViewModel;
         private readonly FourthWizardViewModel _fourthWizardViewModel;
-        private IObservable<bool> canGoBack;
-        private IObservable<bool> canGoNext;
         public RoutingState Router => _router;
             
         // The command that navigates a user to first view model.
@@ -32,10 +34,6 @@ namespace LacmusApp.Avalonia.ViewModels
 
         [Reactive] public string NextButtonText { get; private set; } = "Next";
         [Reactive] public string BackButtonText { get; private set; } = "Back";
-        [Reactive] public string InputPath { get; set; } = string.Empty;
-        [Reactive] public string OutputPath { get; set; } = string.Empty;
-        [Reactive] private bool CanGoNext { get; set; }
-        [Reactive] private bool CanGoBack { get; set; }
         [Reactive] public LocalizationContext LocalizationContext { get; set; }
 
         public WizardWindowViewModel(WizardWindow window,
@@ -53,15 +51,43 @@ namespace LacmusApp.Avalonia.ViewModels
             _fourthWizardViewModel = new FourthWizardViewModel(this, settingsViewModel, manager,
                 photos, selectedIndex, LocalizationContext);
 
-            canGoNext = this
-                .WhenAnyValue(x => x.CanGoNext);
-            canGoBack = this.
-                WhenAnyValue(x => x.CanGoBack);
+            var isNext = this.WhenAnyValue(
+                x => x.Router.NavigationStack.Count,
+                x => x._firstWizardViewModel.ValidationContext.IsValid,
+                x => x._secondWizardViewModel.ValidationContext.IsValid,
+                x => x._thirdWizardViewModel.Status,
+                x => x._fourthWizardViewModel.Status,
+                (cnt, is1, is2, is3, is4) =>
+                {
+                    return cnt switch
+                    {
+                        0 => true,
+                        1 => is1,
+                        2 => is2,
+                        3 => is3 == "Ready",
+                        4 => is4 == "done.",
+                        _ => false
+                    };
+                });
             
-            CanGoNext = true;
-            CanGoBack = false;
-            GoNext = ReactiveCommand.Create(Next, canGoNext);
-            GoBack = ReactiveCommand.Create(Back, canGoBack);
+            var isBack = this.WhenAnyValue(
+                x => x.Router.NavigationStack.Count,
+                x => x._fourthWizardViewModel.Status,
+                (cnt, status) =>
+                {
+                    return cnt switch
+                    {
+                        0 => false,
+                        1 => true,
+                        2 => true,
+                        3 => true,
+                        4 => status == "done.",
+                        _ => false
+                    };
+                });
+            
+            GoNext = ReactiveCommand.Create(Next, isNext);
+            GoBack = ReactiveCommand.Create(Back, isBack);
 
             BackButtonText = LocalizationContext.WizardBackButtonText;
             NextButtonText = LocalizationContext.WizardNextButtonText;
@@ -74,24 +100,19 @@ namespace LacmusApp.Avalonia.ViewModels
             switch (Router.NavigationStack.Count)
             {
                 case 0:
-                    CanGoBack = false;
                     break;
                 case 1:
-                    CanGoBack = false;
+                    Router.NavigateBack.Execute();
                     break;
                 case 2:
-                    CanGoBack = true;
                     Router.NavigateBack.Execute();
-                    CanGoBack = false;
                     break;
                 case 3:
-                    CanGoBack = true;
                     NextButtonText = LocalizationContext.WizardNextButtonText;
                     BackButtonText = LocalizationContext.WizardBackButtonText;
                     Router.NavigateBack.Execute();
                     break;
                 case 4:
-                    CanGoBack = false;
                     Router.NavigationStack.Clear();
                     Router.Navigate.Execute(_firstWizardViewModel);
                     NextButtonText = LocalizationContext.WizardNextButtonText;
@@ -102,30 +123,19 @@ namespace LacmusApp.Avalonia.ViewModels
 
         private async void Next()
         {
-            CanGoNext = CanGoNextUpdate();
-            CanGoBack = CanGoBackUpdate();
-            if (!CanGoNext)
-            {
-                CanGoNext = true;
-                return;
-            }
-
             switch (Router.NavigationStack.Count)
             {
                 case 0:
-                    CanGoBack = false;
                     Router.Navigate.Execute(_firstWizardViewModel);
                     NextButtonText = LocalizationContext.WizardNextButtonText;
                     BackButtonText = LocalizationContext.WizardBackButtonText;
                     break;
                 case 1:
-                    CanGoBack = true;
                     Router.Navigate.Execute(_secondWizardViewModel);
                     NextButtonText = LocalizationContext.WizardNextButtonText;
                     BackButtonText = LocalizationContext.WizardBackButtonText;
                     break;
                 case 2:
-                    CanGoBack = true;
                     Router.Navigate.Execute(_thirdWizardViewModel);
                     _thirdWizardViewModel.UpdateModelStatus();
                     NextButtonText = LocalizationContext.WizardPredictAllButtonText;
@@ -135,46 +145,17 @@ namespace LacmusApp.Avalonia.ViewModels
                     Router.Navigate.Execute(_fourthWizardViewModel);
                     NextButtonText = LocalizationContext.WizardFinishButtonText;
                     BackButtonText = LocalizationContext.WizardRepeatButtonText;
-                    CanGoNext = false;
-                    CanGoBack = false;
                     await _fourthWizardViewModel.OpenFile(_firstWizardViewModel.InputPath);
                     await _fourthWizardViewModel.PredictAll();
-                    await _fourthWizardViewModel.SaveAll(_secondWizardViewModel.OutputPath);
-                    CanGoNext = true;
-                    CanGoBack = true;
+                    await _fourthWizardViewModel.SaveAll(_secondWizardViewModel);
                     break;
                 case 4:
-                    CanGoBack = true;
                     Router.NavigationStack.Clear();
                     _window.Close();
                     NextButtonText = LocalizationContext.WizardNextButtonText;
                     BackButtonText = LocalizationContext.WizardBackButtonText;
                     break;
             }
-        }
-        public bool CanGoNextUpdate()
-        {
-            if (_router.NavigationStack.Count == 0)
-                return true;
-            if (_router.NavigationStack.Count == 1 && _firstWizardViewModel.ValidationContext.IsValid)
-                return true;
-            if (_router.NavigationStack.Count == 2 && _secondWizardViewModel.ValidationContext.IsValid)
-                return true;
-            if (_router.NavigationStack.Count == 3 && _thirdWizardViewModel.Status == "Ready")
-                return true;
-            if (_router.NavigationStack.Count == 4 && _fourthWizardViewModel.Status == "done.")
-                return true;
-            return false;
-        }
-        public bool CanGoBackUpdate()
-        {
-            if (_router.NavigationStack.Count == 0)
-                return false;
-            if (_router.NavigationStack.Count == 1)
-                return false;
-            if (_router.NavigationStack.Count == 4 && _fourthWizardViewModel.Status != "done.")
-                return false;
-            return true;
         }
     }
 }

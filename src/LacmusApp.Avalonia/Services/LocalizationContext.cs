@@ -975,7 +975,7 @@ namespace LacmusApp.Avalonia.Services
                     WizardSecondDescription1 = "Now select the output to save by clicking the 'Save photos' button or specifying the full path to the input folder in the text box below.";
                     WizardSecondDescription2 = "After processing is complete, the application will save photos and XML files with the description of recognized objects in the specified folder. You can view saved objects at any time by selecting a saved folder from the 'file - import from xml' menu.";
                     WizardSecondOutputWatermark = "Enter output path here.";
-                    WizardSecondSavePhotosButton = "Save photos";
+                    WizardSecondSavePhotosButton = "Select output path";
                     //Page 3
                     WizardThirdHeader = "Step 3: Setup ml model";
                     WizardThirdDescription1 = "Before proceeding, make sure that the selected configuration of the neural network model is correct.";
@@ -1145,7 +1145,7 @@ namespace LacmusApp.Avalonia.Services
                     WizardSecondDescription1 = "Теперь выберите папку для сохранения результатов, нажав на кнопку 'Сохранить фотографии' или введя полный путь к выходной папке в текстовом поле ниже.";
                     WizardSecondDescription2 = "После завершения процесса обработки приложение сохранит результаты в выбранную папку. Вы сможете вновь открыть и просмотреть результаты в любой момент, выбрав меню 'Файл - Импортировать из XML'.";
                     WizardSecondOutputWatermark = "Введите путь к выходной папке сюда.";
-                    WizardSecondSavePhotosButton = "Сохранить фотографии";
+                    WizardSecondSavePhotosButton = "Выбрать папку для сохранения";
                     //Page 3
                     WizardThirdHeader = "Шаг 3: сконфигурируйте ml модель";
                     WizardThirdDescription1 = "Перед началом обработки убедитесь, что ml модель сконфигурирована правильно и готова к использованию.";

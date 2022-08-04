@@ -86,7 +86,7 @@ namespace LacmusApp.Avalonia.ViewModels
                             {
                                 var (brush, height, width) = await reader.Read(stream);
                                 var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
-                                    ImageMetadataReader.ReadMetadata(stream));
+                                    ImageMetadataReader.ReadMetadata(path));
                                 var photoViewModel = new PhotoViewModel(id)
                                 {
                                     Brush = brush,
@@ -132,10 +132,6 @@ namespace LacmusApp.Avalonia.ViewModels
             try
             {
                 Status = "starting ml model...";
-                //load config
-                var confDir = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus");
-                var configPath = Path.Join(confDir,"appConfig-v2.json");
-                
                 var plugin = _settingsViewModel.Plugin;
                 if (string.IsNullOrEmpty(plugin.Tag))
                     throw new Exception("No such plugin");
@@ -178,7 +174,7 @@ namespace LacmusApp.Avalonia.ViewModels
             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Ready, "");
         }
         
-        public async Task SaveAll(string outputPath)
+        public async Task SaveAll(SecondWizardViewModel viewModel)
         {
             try
             {
@@ -193,14 +189,18 @@ namespace LacmusApp.Avalonia.ViewModels
                 Status = "saving results...";
                 try
                 {
-                    var viewModels = _photos.Items as PhotoViewModel[] ?? _photos.Items.ToArray();
+                    var photosToSave = Filter(_photos.Items, viewModel.FilterIndex);
+                    var viewModels = photosToSave as PhotoViewModel[] ?? photosToSave.ToArray();
                     var saver = new PhotoSaver(new Window());
                     var saveParams = new SaveAsParams()
                     {
-                        SaveImage = true,
-                        SaveXml = true
+                        SaveImage = viewModel.IsSaveImage,
+                        SaveXml = viewModel.IsSaveXml,
+                        SaveCrop = viewModel.IsSaveCrop,
+                        SaveDrawImage = viewModel.IsSaveDrawImage,
+                        SaveGeoPosition = viewModel.IsSaveGeoPosition
                     };
-                    await saver.SaveAs(saveParams, viewModels, outputPath);
+                    await saver.SaveAs(saveParams, viewModels, viewModel.OutputPath);
                     OutputProgress = 100.0;
                 }
                 catch (Exception e)
@@ -227,6 +227,31 @@ namespace LacmusApp.Avalonia.ViewModels
         {
             return Directory.GetFiles(dirPath, "*.*",
                 isRecursive ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
+        }
+        private IEnumerable<PhotoViewModel> Filter(IEnumerable<PhotoViewModel> sourceList, int fitlerType)
+        {
+            List<PhotoViewModel> resList = new List<PhotoViewModel>();
+            foreach (var item in sourceList)
+            {
+                switch (fitlerType)
+                {
+                    case 0:
+                        resList.Add(item);
+                        break;
+                    case 1:
+                        if(item.IsHasObjects)
+                            resList.Add(item);
+                        break;
+                    case 2:
+                        if(item.IsFavorite)
+                            resList.Add(item);
+                        break;
+                    default:
+                        throw new Exception($"invalid filter index {fitlerType}");
+                }
+            }
+
+            return resList;
         }
     }
 }

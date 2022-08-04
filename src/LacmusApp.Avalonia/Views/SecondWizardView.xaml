@@ -22,6 +22,21 @@
                          Text="{Binding OutputPath, Mode=TwoWay}" />
                 <Button Content="{Binding LocalizationContext.WizardSecondSavePhotosButton}"
                         Command="{Binding SavePhotos}"/>
+                <ComboBox Margin="0 2 0 5" SelectedIndex="{Binding FilterIndex, Mode=TwoWay}">
+                    <ComboBoxItem Content="{Binding LocalizationContext.AllPhotos}" />
+                    <ComboBoxItem Content="{Binding LocalizationContext.PhotosWithObject}" />
+                    <ComboBoxItem Content="{Binding LocalizationContext.FavoritePhotos}" />
+                </ComboBox>
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSaveImage, Mode=TwoWay}"
+                          Content="{Binding LocalizationContext.SaveAsSourcePhotos}" />
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSaveXml, Mode=TwoWay}"
+                          Content="{Binding LocalizationContext.SaveAsXmlAnnotations}" />
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSaveDrawImage, Mode=TwoWay}"
+                          Content="{Binding LocalizationContext.SaveAsDrawBbox}" />
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSaveCrop, Mode=TwoWay}"
+                          Content="{Binding LocalizationContext.SaveAsCrops}" />
+                <CheckBox Margin="0 2" IsChecked="{Binding IsSaveGeoPosition, Mode=TwoWay}"
+                          Content="{Binding LocalizationContext.SaveAsPosition}" />
             </StackPanel>
         </Border>
     </StackPanel>
