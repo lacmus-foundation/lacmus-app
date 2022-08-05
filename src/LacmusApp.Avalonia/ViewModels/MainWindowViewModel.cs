@@ -124,7 +124,16 @@ namespace LacmusApp.Avalonia.ViewModels
         {
             IncreaseCanvasCommand = ReactiveCommand.Create(IncreaseCanvas);
             ShrinkCanvasCommand = ReactiveCommand.Create(ShrinkCanvas);
+            UpCanvasCommand = ReactiveCommand.Create(UpCanvas);
+            DownCanvasCommand = ReactiveCommand.Create(DownCanvas);
+            LeftCanvasCommand = ReactiveCommand.Create(LeftCanvas);
+            RightCanvasCommand = ReactiveCommand.Create(RightCanvas);
             ResetCanvasCommand = ReactiveCommand.Create(ResetCanvas);
+            ToggleBboxBorderCommand = ReactiveCommand.Create(() =>
+            {
+                IsShowBorder = !IsShowBorder;
+            });
+            
             PredictAllCommand = ReactiveCommand.Create(PredictAll, canExecute);
             OpenFileCommand = ReactiveCommand.Create(OpenFile, canExecute);
             SaveAllCommand = ReactiveCommand.Create(SaveAll, canExecute);
@@ -170,13 +179,19 @@ namespace LacmusApp.Avalonia.ViewModels
         [Reactive] public double CanvasWidth { get; set; } = 500;
         [Reactive] public double CanvasHeight { get; set; } = 500;
         [Reactive] public LocalizationContext LocalizationContext {get; set;}
+        [Reactive] public bool IsShowBorder { get; set; } = true;
 
         public ReactiveCommand<Unit, Unit> PredictAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> NextImageCommand { get; }
         public ReactiveCommand<Unit, Unit> PrevImageCommand { get; }
         public ReactiveCommand<Unit, Unit> ShrinkCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> UpCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> DownCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> LeftCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> RightCanvasCommand { get; set; }
         public ReactiveCommand<Unit, Unit> IncreaseCanvasCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ResetCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> ToggleBboxBorderCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenFileCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
@@ -324,12 +339,29 @@ namespace LacmusApp.Avalonia.ViewModels
 
         private void ShrinkCanvas()
         {
-            Zoomer.Zoom(0.8);
+            Zoomer.ZoomOut();
         }
 
         private void IncreaseCanvas()
         {
-            Zoomer.Zoom(1.2);
+            Zoomer.ZoomIn();
+        }
+        
+        private void UpCanvas()
+        {
+            Zoomer.MoveUp();
+        }
+        private void DownCanvas()
+        {
+            Zoomer.MoveDown();
+        }
+        private void LeftCanvas()
+        {
+            Zoomer.MoveLeft();
+        }
+        private void RightCanvas()
+        {
+            Zoomer.MoveRight();
         }
         
         private void ResetCanvas()

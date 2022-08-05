@@ -94,6 +94,36 @@ namespace LacmusApp.Avalonia.Services
             get { return _shrink; }
             set { this.RaiseAndSetIfChanged(ref _shrink, value); }
         }
+        private string _moveTo;
+        [Reactive] public string MoveTo
+        {
+            get { return _moveTo; }
+            set { this.RaiseAndSetIfChanged(ref _moveTo, value); }
+        }
+        private string _up;
+        [Reactive] public string Up
+        {
+            get { return _up; }
+            set { this.RaiseAndSetIfChanged(ref _up, value); }
+        }
+        private string _down;
+        [Reactive] public string Down
+        {
+            get { return _down; }
+            set { this.RaiseAndSetIfChanged(ref _down, value); }
+        }
+        private string _left;
+        [Reactive] public string Left
+        {
+            get { return _left; }
+            set { this.RaiseAndSetIfChanged(ref _left, value); }
+        }
+        private string _right;
+        [Reactive] public string Right
+        {
+            get { return _right; }
+            set { this.RaiseAndSetIfChanged(ref _right, value); }
+        }
         private string _reset;
         [Reactive] public string Reset
         {
@@ -925,6 +955,11 @@ namespace LacmusApp.Avalonia.Services
                     PredictAll="Predict All";
                     Increase="Increase";
                     Shrink="Shrink";
+                    MoveTo = "Move image...";
+                    Up="Up";
+                    Down="Down";
+                    Left="Left";
+                    Right="Right";
                     Reset="Reset";
                     Next="Next";
                     Previous="Previous";
@@ -1095,6 +1130,11 @@ namespace LacmusApp.Avalonia.Services
                     PredictAll="Обработать все";
                     Increase="Увеличить";
                     Shrink="Уменьшить";
+                    MoveTo = "Подвинуть изображение...";
+                    Up="Вверх";
+                    Down="Вниз";
+                    Left="Вправо";
+                    Right="Влево";
                     Reset="Сбросить";
                     Next="Следующее";
                     Previous="Предыдущее";

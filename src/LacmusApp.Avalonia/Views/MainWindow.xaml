@@ -32,29 +32,46 @@
     <StackPanel Grid.Row="0">
       <Menu>
         <MenuItem Name="mFile" Header="{Binding LocalizationContext.File}">
-          <MenuItem Name="mFileOpen" Header="{Binding LocalizationContext.OpenDirectory}" Command="{Binding OpenFileCommand}"/>
-          <MenuItem Name="mFileImportAll" Header="{Binding LocalizationContext.ImportAllFromXml}" Command="{Binding ImportAllCommand}"/>
-          <MenuItem Name="mFileSave" Header="{Binding LocalizationContext.SaveAll}" Command="{Binding SaveAllCommand}"/>
-          <MenuItem Name="mFileSaveAs" Header="{Binding LocalizationContext.SaveAs}" Command="{Binding SaveAsCommand}"/>
+          <MenuItem Name="mFileOpen" HotKey="Ctrl+O" Header="{Binding LocalizationContext.OpenDirectory}" Command="{Binding OpenFileCommand}"/>
+          <MenuItem Name="mFileImportAll" HotKey="Ctrl+Shift+O" Header="{Binding LocalizationContext.ImportAllFromXml}" Command="{Binding ImportAllCommand}"/>
+          <MenuItem Name="mFileSave" HotKey="Ctrl+S" Header="{Binding LocalizationContext.SaveAll}" Command="{Binding SaveAllCommand}"/>
+          <MenuItem Name="mFileSaveAs" HotKey="Ctrl+Shift+S" Header="{Binding LocalizationContext.SaveAs}" Command="{Binding SaveAsCommand}"/>
           <Separator></Separator>
-          <MenuItem Name="mWizard" Header="{Binding LocalizationContext.Wizard}" Command="{Binding OpenWizardCommand}"/>
+          <MenuItem Name="mWizard" HotKey="Ctrl+W" Header="{Binding LocalizationContext.Wizard}" Command="{Binding OpenWizardCommand}"/>
           <MenuItem Name="mSettings" Header="{Binding LocalizationContext.Settings}" Command="{Binding OpenSettingsWindowCommand}"/>
           <MenuItem Name="mFileExit" Header="{Binding LocalizationContext.Exit}" Command="{Binding ExitCommand}"/>
         </MenuItem>
         <MenuItem Name="mImage" Header="{Binding LocalizationContext.Image}">
-          <MenuItem Name="mImagePredictAll" Header="{Binding LocalizationContext.PredictAll}" Command="{Binding PredictAllCommand}"/>
+          <MenuItem Name="mImagePredictAll" HotKey="Ctrl+P" Header="{Binding LocalizationContext.PredictAll}" Command="{Binding PredictAllCommand}"/>
           <Separator></Separator>
-          <MenuItem Name="mImageIncrease" Header="{Binding LocalizationContext.Increase}" Command="{Binding IncreaseCanvasCommand}"/>
-          <MenuItem Name="mImageShrink" Header="{Binding LocalizationContext.Shrink}" Command="{Binding ShrinkCanvasCommand}"/>
-          <MenuItem Name="mImageReset" Header="{Binding LocalizationContext.Reset}" Command="{Binding ResetCanvasCommand}"/>
+          <MenuItem Name="mImageIncrease" HotKey="Ctrl++" Header="{Binding LocalizationContext.Increase}" Command="{Binding IncreaseCanvasCommand}"/>
+          <MenuItem Name="mImageShrink" HotKey="Ctrl+-" Header="{Binding LocalizationContext.Shrink}" Command="{Binding ShrinkCanvasCommand}"/>
+          <MenuItem Name="mImageReset" HotKey="Ctrl+R" Header="{Binding LocalizationContext.Reset}" Command="{Binding ResetCanvasCommand}"/>
+          <MenuItem Name="mImageMove" Header="{Binding LocalizationContext.MoveTo}">
+            <MenuItem Name="mImageUp" HotKey="Ctrl+Up" Header="{Binding LocalizationContext.Up}" Command="{Binding UpCanvasCommand}"/>
+            <MenuItem Name="mImageDowm" HotKey="Ctrl+Down" Header="{Binding LocalizationContext.Down}" Command="{Binding DownCanvasCommand}"/>
+            <MenuItem Name="mImageLeft" HotKey="Ctrl+Left" Header="{Binding LocalizationContext.Left}" Command="{Binding LeftCanvasCommand}"/>
+            <MenuItem Name="mImageRight" HotKey="Ctrl+Right" Header="{Binding LocalizationContext.Right}" Command="{Binding RightCanvasCommand}"/>
+          </MenuItem>
+          <MenuItem Name="mImageBorder" HotKey="Ctrl+B" Header="{Binding LocalizationContext.Border}" Command="{Binding ToggleBboxBorderCommand}">
+            <MenuItem.Icon>
+              <CheckBox BorderThickness="0"
+                        IsHitTestVisible="False"
+                        IsChecked="{Binding IsShowBorder}"
+                        />
+            </MenuItem.Icon>
+          </MenuItem>
           <Separator></Separator>
-          <MenuItem Name="mImageNext" Header="{Binding LocalizationContext.Next}" Command="{Binding NextImageCommand}"/>
-          <MenuItem Name="mImagePrev" Header="{Binding LocalizationContext.Previous}" Command="{Binding PrevImageCommand}"/>
+          <MenuItem Name="mImageNext" HotKey="Ctrl+Shift+Right" Header="{Binding LocalizationContext.Next}" Command="{Binding NextImageCommand}"/>
+          <MenuItem Name="mImagePrev" HotKey="Ctrl+Shift+Left" Header="{Binding LocalizationContext.Previous}" Command="{Binding PrevImageCommand}"/>
           <Separator></Separator>
+          <MenuItem Name="mImageGeo" HotKey="Ctrl+G" Header="{Binding LocalizationContext.ShowGeoPosition}" Command="{Binding ShowGeoDataCommand}"/>
+          <MenuItem Name="mImageFavorite" HotKey="Ctrl+F" Header="{Binding LocalizationContext.FavoritesStateString}" Command="{Binding AddToFavoritesCommand}">
+          </MenuItem>
           <MenuItem Name="mBugReport" Header="{Binding LocalizationContext.BugReport}" Command="{Binding OpenBugReportCommand}"/>
         </MenuItem>
         <MenuItem Name="mHelp" Header="{Binding LocalizationContext.Help}">
-          <MenuItem Name="mHelpOpen" Header="{Binding LocalizationContext.OpenUserGuide}" Command="{Binding HelpCommand}"/>
+          <MenuItem Name="mHelpOpen" HotKey="F1" Header="{Binding LocalizationContext.OpenUserGuide}" Command="{Binding HelpCommand}"/>
           <Separator></Separator>
           <MenuItem Name="mHelpAbout" Header="{Binding LocalizationContext.About}" Command="{Binding AboutCommand}"/>
           <MenuItem Name="mHelpCheckUpdates" Header="{Binding LocalizationContext.CheckUpdate}" Command="{Binding CheckUpdateCommand}"/>
@@ -81,7 +98,7 @@
           <Button Name="bImagePrev" Margin="1" Command="{Binding PrevImageCommand}" Content="{Binding LocalizationContext.Previous}"></Button>
           <Button Name="bImageNext" Margin="1" Command="{Binding NextImageCommand}" Content="{Binding LocalizationContext.Next}"></Button>
           <Button Name="bWizard" Command="{Binding OpenWizardCommand}" Content="{Binding LocalizationContext.Wizard}"></Button>
-          <ToggleButton Padding="8" Margin="1" Name="bShowBorder" IsChecked="True" Content="{Binding LocalizationContext.Border}" />
+          <ToggleButton Padding="8" Margin="1" Name="bShowBorder" IsChecked="{Binding IsShowBorder, Mode=TwoWay}" Content="{Binding LocalizationContext.Border}" />
         </StackPanel>
       </ToolTip>
     </StackPanel>
@@ -196,9 +213,9 @@
         </Grid>
       </Grid>
       <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Hidden" VerticalScrollBarVisibility="Hidden">
-        <paz:ZoomBorder Name="zoomBorder" Stretch="None" ZoomSpeed="1.2" 
-                        ClipToBounds="False" Focusable="True"
-                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+        <paz:ZoomBorder Name="zoomBorder" Stretch="Uniform" ZoomSpeed="1.2" 
+                        ClipToBounds="False" Focusable="False"
+                        VerticalAlignment="Center" HorizontalAlignment="Center"
                         MinZoomX="0.05"
                         MinZoomY="0.05"
         >
@@ -213,6 +230,8 @@
               <ItemsPanelTemplate>
                 <Canvas
                   Background="{Binding PhotoViewModel.Brush}"
+                  Width="{Binding CanvasWidth}"
+                  Height="{Binding CanvasHeight}"
                   />
               </ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
