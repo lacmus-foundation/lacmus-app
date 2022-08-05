@@ -537,7 +537,6 @@ namespace LacmusApp.Avalonia.ViewModels
                 ContentTitle = "Exit",
                 ContentMessage = "Do you really want to exit?",
                 Icon = Icon.Info,
-                Style = Style.None,
                 ShowInCenter = true,
                 ButtonDefinitions = ButtonEnum.YesNo
             });
@@ -651,7 +650,6 @@ namespace LacmusApp.Avalonia.ViewModels
                                     ContentTitle = "Update",
                                     ContentMessage = msg,
                                     Icon = MessageBox.Avalonia.Enums.Icon.Info,
-                                    Style = Style.None,
                                     ShowInCenter = true
                                 });
                                 var result = await msgbox.Show();
@@ -685,7 +683,6 @@ namespace LacmusApp.Avalonia.ViewModels
                 ContentTitle = "Need to restart",
                 ContentMessage = msg,
                 Icon = MessageBox.Avalonia.Enums.Icon.Info,
-                Style = Style.None,
                 ShowInCenter = true
             });
             var result = await msgbox.Show();
