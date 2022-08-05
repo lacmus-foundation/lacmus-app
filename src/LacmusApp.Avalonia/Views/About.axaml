@@ -36,7 +36,7 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock FontWeight="Heavy" Text="{x:Static l:About.PoweredBy}" />
-                            <TextBlock Text="Immers Cloud and ODS." />
+                            <TextBlock Text="ODS." />
                         </StackPanel>
                         <TextBlock TextWrapping="Wrap" FontWeight="Light" Text="{x:Static l:About.LisenseText}" />
                         <Grid>
