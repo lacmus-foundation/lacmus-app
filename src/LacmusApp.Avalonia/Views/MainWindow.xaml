@@ -6,6 +6,7 @@
         xmlns:convert="clr-namespace:LacmusApp.Avalonia.Converters"
         d:DataContext="{d:DesignInstance vm:MainWindowViewModel, IsDesignTimeCreatable=False}"
         xmlns:paz="clr-namespace:Avalonia.Controls.PanAndZoom;assembly=Avalonia.Controls.PanAndZoom"
+        xmlns:i="clr-namespace:Projektanker.Icons.Avalonia;assembly=Projektanker.Icons.Avalonia"
         Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
         x:Class="LacmusApp.Avalonia.Views.MainWindow"
         UseLayoutRounding="True"
@@ -32,21 +33,21 @@
     <StackPanel Grid.Row="0">
       <Menu>
         <MenuItem Name="mFile" Header="{Binding LocalizationContext.File}">
-          <MenuItem Name="mFileOpen" HotKey="Ctrl+O" InputGesture="Ctrl+O" Header="{Binding LocalizationContext.OpenDirectory}" Command="{Binding OpenFileCommand}"/>
-          <MenuItem Name="mFileImportAll" HotKey="Ctrl+Shift+O" InputGesture="Ctrl+Shift+O" Header="{Binding LocalizationContext.ImportAllFromXml}" Command="{Binding ImportAllCommand}"/>
-          <MenuItem Name="mFileSave" HotKey="Ctrl+S" InputGesture="Ctrl+S" Header="{Binding LocalizationContext.SaveAll}" Command="{Binding SaveAllCommand}"/>
+          <MenuItem Name="mFileOpen" HotKey="Ctrl+O" InputGesture="Ctrl+O" Header="{Binding LocalizationContext.OpenDirectory}" Command="{Binding OpenFileCommand}" i:MenuItem.Icon="fa-solid fa-file"/>
+          <MenuItem Name="mFileImportAll" HotKey="Ctrl+Shift+O" InputGesture="Ctrl+Shift+O" Header="{Binding LocalizationContext.ImportAllFromXml}" Command="{Binding ImportAllCommand}" i:MenuItem.Icon="fa-solid fa-file-import"/>
+          <MenuItem Name="mFileSave" HotKey="Ctrl+S" InputGesture="Ctrl+S" Header="{Binding LocalizationContext.SaveAll}" Command="{Binding SaveAllCommand}" i:MenuItem.Icon="fa-solid fa-floppy-disk"/>
           <MenuItem Name="mFileSaveAs" HotKey="Ctrl+Shift+S" InputGesture="Ctrl+Shift+S" Header="{Binding LocalizationContext.SaveAs}" Command="{Binding SaveAsCommand}"/>
           <Separator></Separator>
-          <MenuItem Name="mWizard" HotKey="Ctrl+W" InputGesture="Ctrl+W" Header="{Binding LocalizationContext.Wizard}" Command="{Binding OpenWizardCommand}"/>
-          <MenuItem Name="mSettings" Header="{Binding LocalizationContext.Settings}" Command="{Binding OpenSettingsWindowCommand}"/>
-          <MenuItem Name="mFileExit" Header="{Binding LocalizationContext.Exit}" Command="{Binding ExitCommand}"/>
+          <MenuItem Name="mWizard" HotKey="Ctrl+W" InputGesture="Ctrl+W" Header="{Binding LocalizationContext.Wizard}" Command="{Binding OpenWizardCommand}" i:MenuItem.Icon="fa-solid fa-wand-magic-sparkles"/>
+          <MenuItem Name="mSettings" Header="{Binding LocalizationContext.Settings}" Command="{Binding OpenSettingsWindowCommand}" i:MenuItem.Icon="fa-solid fa-screwdriver-wrench"/>
+          <MenuItem Name="mFileExit" Header="{Binding LocalizationContext.Exit}" Command="{Binding ExitCommand}" i:MenuItem.Icon="fa-solid fa-right-from-bracket"/>
         </MenuItem>
         <MenuItem Name="mImage" Header="{Binding LocalizationContext.Image}">
-          <MenuItem Name="mImagePredictAll" HotKey="Ctrl+P" InputGesture="Ctrl+P" Header="{Binding LocalizationContext.PredictAll}" Command="{Binding PredictAllCommand}"/>
+          <MenuItem Name="mImagePredictAll" HotKey="Ctrl+P" InputGesture="Ctrl+P" Header="{Binding LocalizationContext.PredictAll}" Command="{Binding PredictAllCommand}" i:MenuItem.Icon="fa-solid fa-crosshairs"/>
           <Separator></Separator>
-          <MenuItem Name="mImageIncrease" HotKey="Ctrl++" InputGesture="Ctrl++" Header="{Binding LocalizationContext.Increase}" Command="{Binding IncreaseCanvasCommand}"/>
-          <MenuItem Name="mImageShrink" HotKey="Ctrl+-" InputGesture="Ctrl+-" Header="{Binding LocalizationContext.Shrink}" Command="{Binding ShrinkCanvasCommand}"/>
-          <MenuItem Name="mImageReset" HotKey="Ctrl+R" InputGesture="Ctrl+R" Header="{Binding LocalizationContext.Reset}" Command="{Binding ResetCanvasCommand}"/>
+          <MenuItem Name="mImageIncrease" HotKey="Ctrl++" InputGesture="Ctrl++" Header="{Binding LocalizationContext.Increase}" Command="{Binding IncreaseCanvasCommand}" i:MenuItem.Icon="fa-solid fa-plus"/>
+          <MenuItem Name="mImageShrink" HotKey="Ctrl+-" InputGesture="Ctrl+-" Header="{Binding LocalizationContext.Shrink}" Command="{Binding ShrinkCanvasCommand}" i:MenuItem.Icon="fa-solid fa-minus"/>
+          <MenuItem Name="mImageReset" HotKey="Ctrl+R" InputGesture="Ctrl+R" Header="{Binding LocalizationContext.Reset}" Command="{Binding ResetCanvasCommand}" i:MenuItem.Icon="fa-solid fa-arrow-rotate-left"/>
           <MenuItem Name="mImageMove" Header="{Binding LocalizationContext.MoveTo}">
             <MenuItem Name="mImageUp" HotKey="Ctrl+Up" InputGesture="Ctrl+Up" Header="{Binding LocalizationContext.Up}" Command="{Binding UpCanvasCommand}"/>
             <MenuItem Name="mImageDowm" HotKey="Ctrl+Down" InputGesture="Ctrl+Down" Header="{Binding LocalizationContext.Down}" Command="{Binding DownCanvasCommand}"/>
@@ -62,18 +63,18 @@
             </MenuItem.Icon>
           </MenuItem>
           <Separator></Separator>
-          <MenuItem Name="mImageNext" HotKey="Ctrl+Shift+Right" InputGesture="Ctrl+Shift+Right" Header="{Binding LocalizationContext.Next}" Command="{Binding NextImageCommand}"/>
-          <MenuItem Name="mImagePrev" HotKey="Ctrl+Shift+Left" InputGesture="Ctrl+Shift+Left" Header="{Binding LocalizationContext.Previous}" Command="{Binding PrevImageCommand}"/>
+          <MenuItem Name="mImageNext" HotKey="Ctrl+Shift+Right" InputGesture="Ctrl+Shift+Right" Header="{Binding LocalizationContext.Next}" Command="{Binding NextImageCommand}" i:MenuItem.Icon="fa-solid fa-arrow-right"/>
+          <MenuItem Name="mImagePrev" HotKey="Ctrl+Shift+Left" InputGesture="Ctrl+Shift+Left" Header="{Binding LocalizationContext.Previous}" Command="{Binding PrevImageCommand}" i:MenuItem.Icon="fa-solid fa-arrow-left"/>
           <Separator></Separator>
-          <MenuItem Name="mImageGeo" HotKey="Ctrl+G" InputGesture="Ctrl+G" Header="{Binding LocalizationContext.ShowGeoPosition}" Command="{Binding ShowGeoDataCommand}"/>
-          <MenuItem Name="mImageFavorite" HotKey="Ctrl+F" InputGesture="Ctrl+F" Header="{Binding LocalizationContext.FavoritesStateString}" Command="{Binding AddToFavoritesCommand}">
+          <MenuItem Name="mImageGeo" HotKey="Ctrl+G" InputGesture="Ctrl+G" Header="{Binding LocalizationContext.ShowGeoPosition}" Command="{Binding ShowGeoDataCommand}" i:MenuItem.Icon="fa-solid fa-map-location-dot"/>
+          <MenuItem Name="mImageFavorite" HotKey="Ctrl+F" InputGesture="Ctrl+F" Header="{Binding LocalizationContext.FavoritesStateString}" Command="{Binding AddToFavoritesCommand}" i:MenuItem.Icon="fa-solid fa-heart">
           </MenuItem>
-          <MenuItem Name="mBugReport" Header="{Binding LocalizationContext.BugReport}" Command="{Binding OpenBugReportCommand}"/>
+          <MenuItem Name="mBugReport" Header="{Binding LocalizationContext.BugReport}" Command="{Binding OpenBugReportCommand}" i:MenuItem.Icon="fa-solid fa-bug"/>
         </MenuItem>
         <MenuItem Name="mHelp" Header="{Binding LocalizationContext.Help}">
-          <MenuItem Name="mHelpOpen" HotKey="F1" InputGesture="F1" Header="{Binding LocalizationContext.OpenUserGuide}" Command="{Binding HelpCommand}"/>
+          <MenuItem Name="mHelpOpen" HotKey="F1" InputGesture="F1" Header="{Binding LocalizationContext.OpenUserGuide}" Command="{Binding HelpCommand}" i:MenuItem.Icon="fa-solid fa-book-atlas"/>
           <Separator></Separator>
-          <MenuItem Name="mHelpAbout" Header="{Binding LocalizationContext.About}" Command="{Binding AboutCommand}"/>
+          <MenuItem Name="mHelpAbout" Header="{Binding LocalizationContext.About}" Command="{Binding AboutCommand}" i:MenuItem.Icon="fa-solid fa-circle-info"/>
           <MenuItem Name="mHelpCheckUpdates" Header="{Binding LocalizationContext.CheckUpdate}" Command="{Binding CheckUpdateCommand}"/>
         </MenuItem>
       </Menu>
@@ -86,19 +87,19 @@
             </Style>
           </StackPanel.Styles>
           <!-- <Button Name="bSignIn" Command="{Binding SignInCommand}">Suin In</Button> -->
-          <Button Name="bOpen" Margin="1" Command="{Binding OpenFileCommand}" Content="{Binding LocalizationContext.OpenDirectory}"></Button>
+          <Button Name="bOpen" i:Attached.Icon="fa-regular fa-folder-open" Margin="1" Command="{Binding OpenFileCommand}" ToolTip.Tip="{Binding LocalizationContext.OpenDirectory}"></Button>
           <Button Name="bPredict" Margin="1" Command="{Binding PredictAllCommand}" Content="{Binding LocalizationContext.PredictAll}"></Button>
           <Separator/>
-          <Button Name="bSave" Margin="1" Command="{Binding SaveAllCommand}" Content="{Binding LocalizationContext.SaveAll}"></Button>
+          <Button Name="bSave" i:Attached.Icon="fa-solid fa-floppy-disk" Margin="1" Command="{Binding SaveAllCommand}" ToolTip.Tip="{Binding LocalizationContext.SaveAll}"></Button>
           <Separator/>
-          <Button Name="bImageIncrease" Margin="1" Command="{Binding IncreaseCanvasCommand}" Content="{Binding LocalizationContext.Increase}"></Button>
-          <Button Name="bImageShrink" Margin="1" Command="{Binding ShrinkCanvasCommand}" Content="{Binding LocalizationContext.Shrink}"></Button>
-          <Button Name="bImageReset" Margin="1" Command="{Binding ResetCanvasCommand}"  Content="{Binding LocalizationContext.Reset}"></Button>
+          <Button Name="bImageIncrease" i:Attached.Icon="fa-solid fa-plus" Margin="1" Command="{Binding IncreaseCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Increase}"></Button>
+          <Button Name="bImageShrink" i:Attached.Icon="fa-solid fa-minus" Margin="1" Command="{Binding ShrinkCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Shrink}"></Button>
+          <Button Name="bImageReset" i:Attached.Icon="fa-solid fa-arrow-rotate-left" Margin="1" Command="{Binding ResetCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Reset}"></Button>
           <Separator/>
-          <Button Name="bImagePrev" Margin="1" Command="{Binding PrevImageCommand}" Content="{Binding LocalizationContext.Previous}"></Button>
-          <Button Name="bImageNext" Margin="1" Command="{Binding NextImageCommand}" Content="{Binding LocalizationContext.Next}"></Button>
+          <Button Name="bImagePrev" i:Attached.Icon="fa-solid fa-arrow-left" Margin="1" Command="{Binding PrevImageCommand}" ToolTip.Tip="{Binding LocalizationContext.Previous}"></Button>
+          <Button Name="bImageNext" i:Attached.Icon="fa-solid fa-arrow-right" Margin="1" Command="{Binding NextImageCommand}" ToolTip.Tip="{Binding LocalizationContext.Next}"></Button>
           <Button Name="bWizard" Command="{Binding OpenWizardCommand}" Content="{Binding LocalizationContext.Wizard}"></Button>
-          <ToggleButton Padding="8" Margin="1" Name="bShowBorder" IsChecked="{Binding IsShowBorder, Mode=TwoWay}" Content="{Binding LocalizationContext.Border}" />
+          <ToggleButton Padding="8" Margin="1" Name="bShowBorder" i:Attached.Icon="fa-solid fa-border-top-left" IsChecked="{Binding IsShowBorder, Mode=TwoWay}" ToolTip.Tip="{Binding LocalizationContext.Border}" />
         </StackPanel>
       </ToolTip>
     </StackPanel>
