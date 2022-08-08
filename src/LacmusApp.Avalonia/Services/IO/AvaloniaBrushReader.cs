@@ -16,7 +16,15 @@ namespace LacmusApp.Avalonia.Services.IO
     {
         private LoadType _loadType;
         public AvaloniaBrushReader(LoadType loadType) => _loadType = loadType;
+
         public async Task<(ImageBrush, int, int)> Read(Stream stream)
+        {
+            //return await Dispatcher.UIThread.InvokeAsync(async () => await ReadFromStream(stream));
+            //return await ReadFromStream(stream);
+            return await Task.Run(async () => await ReadFromStream(stream));
+        }
+        
+        public async Task<(ImageBrush, int, int)> ReadFromStream(Stream stream)
         {
             switch (_loadType)
             {

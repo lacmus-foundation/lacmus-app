@@ -158,7 +158,6 @@ namespace LacmusApp.Avalonia.ViewModels
                 ContentTitle = "Need to restart",
                 ContentMessage = msg,
                 Icon = MessageBox.Avalonia.Enums.Icon.Info,
-                Style = Style.None,
                 ShowInCenter = true
             });
             var result = await msgbox.Show();

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
@@ -21,6 +23,7 @@ using ReactiveUI.Fody.Helpers;
 using LacmusApp.Avalonia.Managers;
 using LacmusApp.Avalonia.Models;
 using LacmusApp.Avalonia.Services;
+using LacmusApp.Avalonia.Services.IO;
 using LacmusApp.Avalonia.Views;
 using LacmusApp.Image.Enums;
 using LacmusApp.Screens.Interfaces;
@@ -121,7 +124,16 @@ namespace LacmusApp.Avalonia.ViewModels
         {
             IncreaseCanvasCommand = ReactiveCommand.Create(IncreaseCanvas);
             ShrinkCanvasCommand = ReactiveCommand.Create(ShrinkCanvas);
+            UpCanvasCommand = ReactiveCommand.Create(UpCanvas);
+            DownCanvasCommand = ReactiveCommand.Create(DownCanvas);
+            LeftCanvasCommand = ReactiveCommand.Create(LeftCanvas);
+            RightCanvasCommand = ReactiveCommand.Create(RightCanvas);
             ResetCanvasCommand = ReactiveCommand.Create(ResetCanvas);
+            ToggleBboxBorderCommand = ReactiveCommand.Create(() =>
+            {
+                IsShowBorder = !IsShowBorder;
+            });
+            
             PredictAllCommand = ReactiveCommand.Create(PredictAll, canExecute);
             OpenFileCommand = ReactiveCommand.Create(OpenFile, canExecute);
             SaveAllCommand = ReactiveCommand.Create(SaveAll, canExecute);
@@ -167,13 +179,19 @@ namespace LacmusApp.Avalonia.ViewModels
         [Reactive] public double CanvasWidth { get; set; } = 500;
         [Reactive] public double CanvasHeight { get; set; } = 500;
         [Reactive] public LocalizationContext LocalizationContext {get; set;}
+        [Reactive] public bool IsShowBorder { get; set; } = true;
 
         public ReactiveCommand<Unit, Unit> PredictAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> NextImageCommand { get; }
         public ReactiveCommand<Unit, Unit> PrevImageCommand { get; }
         public ReactiveCommand<Unit, Unit> ShrinkCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> UpCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> DownCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> LeftCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> RightCanvasCommand { get; set; }
         public ReactiveCommand<Unit, Unit> IncreaseCanvasCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ResetCanvasCommand { get; set; }
+        public ReactiveCommand<Unit, Unit> ToggleBboxBorderCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenFileCommand { get; set; }
         public ReactiveCommand<Unit, Unit> SaveAllCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ImportAllCommand { get; set; }
@@ -300,6 +318,7 @@ namespace LacmusApp.Avalonia.ViewModels
                             count++;
                             Console.WriteLine($"\tProgress: {(double) count / _photos.Items.Count() * 100} %");
                             _applicationStatusManager.ChangeCurrentAppStatus(Enums.Status.Working, $"Working | {(int)((double) count / _photos.Items.Count() * 100)} %, [{count} of {_photos.Items.Count()}]");
+                            PhotoViewModel.Detections = PhotoCollection[SelectedIndex].Detections;
                         }
                         catch (Exception e)
                         {
@@ -320,12 +339,29 @@ namespace LacmusApp.Avalonia.ViewModels
 
         private void ShrinkCanvas()
         {
-            Zoomer.Zoom(0.8);
+            Zoomer.ZoomOut();
         }
 
         private void IncreaseCanvas()
         {
-            Zoomer.Zoom(1.2);
+            Zoomer.ZoomIn();
+        }
+        
+        private void UpCanvas()
+        {
+            Zoomer.MoveUp();
+        }
+        private void DownCanvas()
+        {
+            Zoomer.MoveDown();
+        }
+        private void LeftCanvas()
+        {
+            Zoomer.MoveLeft();
+        }
+        private void RightCanvas()
+        {
+            Zoomer.MoveRight();
         }
         
         private void ResetCanvas()
@@ -501,7 +537,6 @@ namespace LacmusApp.Avalonia.ViewModels
                 ContentTitle = "Exit",
                 ContentMessage = "Do you really want to exit?",
                 Icon = Icon.Info,
-                Style = Style.None,
                 ShowInCenter = true,
                 ButtonDefinitions = ButtonEnum.YesNo
             });
@@ -566,7 +601,7 @@ namespace LacmusApp.Avalonia.ViewModels
             }
             catch (Exception ex)
             {
-                //Log.Error(ex, "Unable to update ui.");
+                Log.Error(ex, "Unable to update ui.");
             }
         }
 
@@ -615,7 +650,6 @@ namespace LacmusApp.Avalonia.ViewModels
                                     ContentTitle = "Update",
                                     ContentMessage = msg,
                                     Icon = MessageBox.Avalonia.Enums.Icon.Info,
-                                    Style = Style.None,
                                     ShowInCenter = true
                                 });
                                 var result = await msgbox.Show();
@@ -649,7 +683,6 @@ namespace LacmusApp.Avalonia.ViewModels
                 ContentTitle = "Need to restart",
                 ContentMessage = msg,
                 Icon = MessageBox.Avalonia.Enums.Icon.Info,
-                Style = Style.None,
                 ShowInCenter = true
             });
             var result = await msgbox.Show();

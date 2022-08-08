@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Globalization;
 using System.IO;
 using Avalonia;
-using Avalonia.Media;
 using Avalonia.ReactiveUI;
-using LacmusApp.Image.Models;
+using Projektanker.Icons.Avalonia;
+using Projektanker.Icons.Avalonia.FontAwesome;
 using Serilog;
 
 namespace LacmusApp.Avalonia
@@ -67,7 +66,9 @@ namespace LacmusApp.Avalonia
                 .With(new Win32PlatformOptions {EnableMultitouch = true, AllowEglInitialization = true})
                 .With(new SkiaOptions{ MaxGpuResourceSizeBytes = 1024 * 1024 * 80})
                 .UseReactiveUI()
-                .LogToDebug();
+                .LogToTrace()
+                .WithIcons(container => container
+                    .Register<FontAwesomeIconProvider>());
         }
         
         /*

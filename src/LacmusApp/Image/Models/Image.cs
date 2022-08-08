@@ -6,6 +6,7 @@ using LacmusApp.Image.Interfaces;
 using LacmusPlugin;
 using ReactiveUI;
 using ReactiveUI.Fody.Helpers;
+using Serilog;
 
 namespace LacmusApp.Image.Models
 {
@@ -20,7 +21,7 @@ namespace LacmusApp.Image.Models
             _isHasObjects = this.WhenAnyValue(x => x.Detections)
                 .Select(x => x.Any())
                 .ToProperty(this, x => x.IsHasObjects);
-            
+
             _name = this.WhenAnyValue(x => x.Path)
                 .Select(x =>
                 {
@@ -51,7 +52,7 @@ namespace LacmusApp.Image.Models
         public float Longitude { get; set; }
         public IEnumerable<ExifData> ExifDataCollection { get; set; }
         public TBrush Brush { get; set; }
-        public string Path { get; set; } = "";
+        public string Path { get; set; }
         public string Name => _name.Value;
         [Reactive] public IEnumerable<IObject> Detections { get; set; }
         public bool IsHasObjects => _isHasObjects.Value;

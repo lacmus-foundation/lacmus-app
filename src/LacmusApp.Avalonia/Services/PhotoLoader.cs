@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using LacmusApp.Avalonia.Extensions;
@@ -10,7 +11,6 @@ using LacmusApp.Avalonia.Services.Files;
 using LacmusApp.Avalonia.Services.IO;
 using LacmusApp.Avalonia.ViewModels;
 using LacmusApp.Image.Enums;
-using LacmusApp.Image.Models;
 using LacmusApp.Image.Services;
 using LacmusPlugin;
 using MetadataExtractor;
@@ -60,6 +60,7 @@ namespace LacmusApp.Avalonia.Services
                                 Height = height,
                                 Width = width,
                                 Path = path,
+                                Name = GetNameFromPath(path),
                                 Latitude = latitude,
                                 Longitude = longitude,
                                 ExifDataCollection = metadata
@@ -116,7 +117,8 @@ namespace LacmusApp.Avalonia.Services
                                     Detections = annotation.GetDetections(),
                                     Height = height,
                                     Width = width,
-                                    Path = path,
+                                    Path = photoPath,
+                                    Name = GetNameFromPath(photoPath),
                                     Latitude = latitude,
                                     Longitude = longitude,
                                     ExifDataCollection = metadata
@@ -144,7 +146,7 @@ namespace LacmusApp.Avalonia.Services
             {
                 using (var photoStream = File.OpenRead(path))
                 {
-                    var (brush, height, width) = await reader.Read(photoStream);
+                    var (brush, height, width) = await reader.ReadFromStream(photoStream);
                     var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
                         ImageMetadataReader.ReadMetadata(path));
                     return new PhotoViewModel(index)
@@ -154,12 +156,34 @@ namespace LacmusApp.Avalonia.Services
                         Height = height,
                         Width = width,
                         Path = path,
+                        Name = GetNameFromPath(path),
                         Latitude = latitude,
                         Longitude = longitude,
                         ExifDataCollection = metadata
                     };
                 }
             }
+        }
+
+        private string GetNameFromPath(string path)
+        {
+            var name = System.IO.Path.GetFileName(path);
+            if (name is {Length: <= 15})
+                return name;
+
+            if (name != null)
+            {
+                var digitName = Regex.Replace(name, @"[^\d]", "");
+                if (!string.IsNullOrWhiteSpace(digitName))
+                    name = digitName;
+            }
+
+            if (name is { Length: > 15 })
+            {
+                name = name.Substring(0, 3) + "{~}" + name.Substring(name.Length - 10);
+            }
+            
+            return name;
         }
     }
 }

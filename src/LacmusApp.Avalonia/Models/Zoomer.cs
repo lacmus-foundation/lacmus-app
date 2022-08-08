@@ -14,37 +14,37 @@ namespace LacmusApp.Avalonia.Models
             _zoomBorder.PanButton = ButtonName.Left;
             _zoomBorder.EnablePan = true;
         }
-
-        public static void Zoom(double scale)
+        
+        public static void ZoomIn()
         {
-            _zoomBorder?.ZoomTo(scale, 0, 0, false);
+            _zoomBorder?.ZoomIn();
         }
-
-        public static void MoveTo(double x, double y)
+        
+        public static void ZoomOut()
         {
-            /* Thanks to @wieslawsoltes https://github.com/wieslawsoltes/PanAndZoom/issues/27 */
-            _zoomBorder?.Pan(0,0, false);
-            _zoomBorder?.PanDelta(x,y, false);
+            _zoomBorder?.ZoomOut();
         }
-
-        public static double GetZoomX()
+        
+        public static void MoveUp()
         {
-            return _zoomBorder?.ZoomX ?? 1;
+            _zoomBorder?.PanDelta(0, 25, false);
         }
-        public static double GetZoomY()
+        public static void MoveDown()
         {
-            return _zoomBorder?.ZoomY ?? 1;
+            _zoomBorder?.PanDelta(0, -25, false);
+        }
+        public static void MoveLeft()
+        {
+            _zoomBorder?.PanDelta(25, 0, false);
+        }
+        public static void MoveRight()
+        {
+            _zoomBorder?.PanDelta(-25, 0, false);
         }
 
         public static void Reset()
         {
-            _zoomBorder?.Fill();
-        }
-        
-        public static event EventHandler<KeyEventArgs> KeyDown
-        {
-            add => _zoomBorder.KeyDown+=value;
-            remove => _zoomBorder.KeyDown+=value; 
+            _zoomBorder?.Uniform();
         }
     }
 }
