@@ -79,28 +79,34 @@
         </MenuItem>
       </Menu>
       <ToolTip>
-        <StackPanel Orientation="Horizontal">
-          <StackPanel.Styles>
+        <DockPanel>
+          <DockPanel.Styles>
             <Style Selector="Button">
               <Setter Property="Padding" Value="8" />
               <Setter Property="Margin" Value="1" />
             </Style>
-          </StackPanel.Styles>
-          <!-- <Button Name="bSignIn" Command="{Binding SignInCommand}">Suin In</Button> -->
+          </DockPanel.Styles>
           <Button Name="bOpen" i:Attached.Icon="fa-regular fa-folder-open" Margin="1" Command="{Binding OpenFileCommand}" ToolTip.Tip="{Binding LocalizationContext.OpenDirectory}"></Button>
-          <Button Name="bPredict" Margin="1" Command="{Binding PredictAllCommand}" Content="{Binding LocalizationContext.PredictAll}"></Button>
-          <Separator/>
+          <Button Name="bPredict" ToolTip.Tip="{Binding LocalizationContext.PredictAll}" Margin="1" Command="{Binding PredictAllCommand}">
+            <StackPanel Orientation="Horizontal">
+              <i:Icon Value="fa-solid fa-circle-chevron-right"/>
+              <Label Margin="5 1 1 1" Padding="0" Content="{Binding LocalizationContext.PredictAll}"/>
+            </StackPanel>
+          </Button>
           <Button Name="bSave" i:Attached.Icon="fa-solid fa-floppy-disk" Margin="1" Command="{Binding SaveAllCommand}" ToolTip.Tip="{Binding LocalizationContext.SaveAll}"></Button>
-          <Separator/>
-          <Button Name="bImageIncrease" i:Attached.Icon="fa-solid fa-plus" Margin="1" Command="{Binding IncreaseCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Increase}"></Button>
+          <Button Name="bImageIncrease" Margin="5 1 1 1" i:Attached.Icon="fa-solid fa-plus" Command="{Binding IncreaseCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Increase}"></Button>
           <Button Name="bImageShrink" i:Attached.Icon="fa-solid fa-minus" Margin="1" Command="{Binding ShrinkCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Shrink}"></Button>
-          <Button Name="bImageReset" i:Attached.Icon="fa-solid fa-arrow-rotate-left" Margin="1" Command="{Binding ResetCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Reset}"></Button>
-          <Separator/>
-          <Button Name="bImagePrev" i:Attached.Icon="fa-solid fa-arrow-left" Margin="1" Command="{Binding PrevImageCommand}" ToolTip.Tip="{Binding LocalizationContext.Previous}"></Button>
+          <Button Name="bImageReset" i:Attached.Icon="fa-solid fa-arrow-rotate-left" Command="{Binding ResetCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Reset}"></Button>
+          <Button Name="bImagePrev" Margin="5 1 1 1" i:Attached.Icon="fa-solid fa-arrow-left" Command="{Binding PrevImageCommand}" ToolTip.Tip="{Binding LocalizationContext.Previous}"></Button>
           <Button Name="bImageNext" i:Attached.Icon="fa-solid fa-arrow-right" Margin="1" Command="{Binding NextImageCommand}" ToolTip.Tip="{Binding LocalizationContext.Next}"></Button>
-          <Button Name="bWizard" Command="{Binding OpenWizardCommand}" Content="{Binding LocalizationContext.Wizard}"></Button>
-          <ToggleButton Padding="8" Margin="1" Name="bShowBorder" i:Attached.Icon="fa-solid fa-border-top-left" IsChecked="{Binding IsShowBorder, Mode=TwoWay}" ToolTip.Tip="{Binding LocalizationContext.Border}" />
-        </StackPanel>
+          <ToggleButton Padding="8" Margin="5 1 1 1" Name="bShowBorder" i:Attached.Icon="fa-solid fa-border-top-left" IsChecked="{Binding IsShowBorder, Mode=TwoWay}" ToolTip.Tip="{Binding LocalizationContext.Border}" />
+          <Button Name="bWizard" Command="{Binding OpenWizardCommand}" ToolTip.Tip="{Binding LocalizationContext.Wizard}" HorizontalAlignment="Right">
+            <StackPanel Orientation="Horizontal">
+              <i:Icon Value="fa-solid fa-wand-magic-sparkles"/>
+              <Label Margin="5 0 0 0" Padding="0" Content="{Binding LocalizationContext.Wizard}"/>
+            </StackPanel>
+          </Button>
+        </DockPanel>
       </ToolTip>
     </StackPanel>
     <!-- Grid 1 -->
