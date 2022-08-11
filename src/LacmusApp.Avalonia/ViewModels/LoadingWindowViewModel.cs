@@ -2,6 +2,8 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Reactive;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using LacmusApp.Appearance.Enums;
@@ -83,8 +85,16 @@ namespace LacmusApp.Avalonia.ViewModels
                 logModel,
                 settingsViewModel,
                 themeManager);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                var logWindow = new LogWindow(logModel, themeManager);
+                logWindow.Show();
+            }
             
             window.Show();
+            window.Closing += (sender, args) => Environment.Exit(0);
+            
             _window.Close();
         }
         
