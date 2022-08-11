@@ -1,0 +1,5 @@
+#!/bin/bash
+FILE=/usr/bin/lacmus
+if [ -f "$FILE" ]; then
+    rm /usr/bin/lacmus
+fi

@@ -22,12 +22,36 @@ jobs:
           echo "restoring packeges"
           dotnet restore src/LacmusApp.sln
           echo -n "building for linux"
-          dotnet publish --framework net6.0 --runtime="linux-x64" -c Release -o bin src/LacmusApp.sln
-          mv bin/LacmusApp.Avalonia bin/LacmusApp
+          dotnet publish --framework net6.0 --runtime="linux-x64" -c Release -o bin/lacmus src/LacmusApp.sln
+          mv bin/lacmus/LacmusApp.Avalonia bin/lacmus/LacmusApp
+          echo "creating deb"
+          mkdir -p bin/deb/usr/local/share/LacmusApp
+          mkdir -p bin/deb/usr/share/applications
+          mkdir -p bin/deb/usr/share/doc/lacmus
+          mkdir -p bin/deb/usr/share/pixmaps
+          mkdir -p bin/deb/DEBIAN
+          cp -r bin/lacmus/* bin/deb/usr/local/share/LacmusApp/
+          cp -p packages/linux/lacmus.desktop bin/deb/usr/share/applications/
+          cp -p packages/linux/copyright bin/deb/usr/share/doc/lacmus/
+          cp -p packages/linux/lacmus.png bin/deb/usr/share/pixmaps/
+          cp -p packages/linux/deb/* bin/deb/DEBIAN/
         shell: bash
+      - uses: jiro4989/build-deb-action@v2
+        with:
+          package: lacmus
+          package_root: bin/deb
+          maintainer: gosha20777 <gosha20777@live.ru>
+          version: '0.6.0'
+          arch: 'amd64'
+          desc: sample desc
       - uses: actions/upload-artifact@v3
         with:
           name: artifact-linux
           path: |
             bin/
+      - uses: actions/upload-artifact@v3
+        with:
+          name: artifact-deb
+          path: |
+            ./*.deb
   

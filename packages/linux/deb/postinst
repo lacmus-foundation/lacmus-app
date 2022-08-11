@@ -1,0 +1,6 @@
+#!/bin/bash
+FILE=/usr/bin/lacmus
+if [ -f "$FILE" ]; then
+    rm /usr/bin/lacmus
+fi
+ln -s /usr/local/share/LacmusApp/LacmusApp /usr/bin/lacmus

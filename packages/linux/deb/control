@@ -1,0 +1,12 @@
+Package: lacmus
+Version: 0.6.0-1
+Provides: lacmus
+Maintainer: gosha20777 <gosha20777@live.ru>
+Architecture: amd64
+License: GPL-3
+Section: utils
+Description: Lacmus help to find lost people in Search and Rescue operations.
+ Lacmus is a cross-platform application which use computer vision and neural networks and written with C#, .NET Core, ReactiveUI and Avalonia.
+Installed-Size: 128000
+Priority: optional
+X-Source: https://github.com/lacmus-foundation/lacmus-app/
