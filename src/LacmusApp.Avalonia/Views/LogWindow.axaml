@@ -12,11 +12,30 @@
         Width="700"
         Height="450">
     <Border Classes="Card">
+        <Border.Styles>
+            <Style Selector="TextBox">
+                <Setter Property="Background" Value="{Binding $parent[Border].Background}" />
+            </Style>
+            <Style Selector="TextBox:pointerover /template/ Border">
+                <Setter Property="Background" Value="{Binding $parent[Border].Background}" />
+            </Style>
+            <Style Selector="TextBox:focus /template/ Border">
+                <Setter Property="Background" Value="{Binding $parent[Border].Background}" />
+            </Style>
+            <Style Selector="TextBox.Badge">
+                <Setter Property="Background" Value="{Binding $parent[Border].Background}"/>
+            </Style>
+            <Style Selector="TextBox.PrimaryBadge">
+                <Setter Property="Background" Value="{Binding $parent[Border].Background}"/>
+            </Style>
+        </Border.Styles>
         <TextBox
             x:Name="LogBox"
             TextWrapping="Wrap"
             FontFamily="Source Code Pro"
             Text="{Binding LogText}"
+            IsReadOnly="True"
+            Focusable="False"
         >
         </TextBox>
     </Border>
