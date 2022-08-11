@@ -21,15 +21,6 @@ namespace LacmusApp.Avalonia
             Console.WriteLine("------------------------------------");
             //Resources.Console.Culture = new CultureInfo("ru");
             //Console.WriteLine(Resources.Console.Greeting);
-            
-            var logPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus", "log.log");
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console()
-                .WriteTo.File(logPath,
-                    rollingInterval: RollingInterval.Day,
-                    rollOnFileSizeLimit: true)
-                .CreateLogger();
             try
             {
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);

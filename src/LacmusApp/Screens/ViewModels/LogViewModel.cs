@@ -16,7 +16,7 @@ public class LogViewModel : ReactiveObject, ILogViewModel, ILogEventSink
     public LogViewModel()
     {
         LogText = "";
-        var template = "{Timestamp:HH:mm:ss} {Level:u3}: {Message:lj}{NewLine}";
+        var template = "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}";
         _formatter = new MessageTemplateTextFormatter(template);
     }
 

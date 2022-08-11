@@ -44,5 +44,5 @@ Global
 		{CE9AEE7D-D447-4728-86DE-44E636B84EEC}.Release|x64.Build.0 = Release|Any CPU
 		{CE9AEE7D-D447-4728-86DE-44E636B84EEC}.Release|x86.ActiveCfg = Release|Any CPU
 		{CE9AEE7D-D447-4728-86DE-44E636B84EEC}.Release|x86.Build.0 = Release|Any CPU
-		EndGlobalSection
+	EndGlobalSection
 EndGlobal

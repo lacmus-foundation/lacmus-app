@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:LacmusApp.Screens.Interfaces;assembly=LacmusApp"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="LacmusApp.Avalonia.Views.LogWindow"
+        d:DataContext="{d:DesignInstance vm:ILogViewModel, IsDesignTimeCreatable=False}"
+        x:DataType="vm:ILogViewModel"
+        Icon="resm:LacmusApp.Avalonia.Assets.avalonia-logo.ico"
+        Title="Log"
+        Width="700"
+        Height="450">
+    <Border Classes="Card">
+        <TextBox
+            x:Name="LogBox"
+            TextWrapping="Wrap"
+            FontFamily="Source Code Pro"
+            Text="{Binding LogText}"
+        >
+        </TextBox>
+    </Border>
+</Window>

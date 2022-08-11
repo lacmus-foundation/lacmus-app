@@ -33,6 +33,17 @@ namespace LacmusApp.Avalonia.ViewModels
 
         private async void Init()
         {
+            var logModel = new LogViewModel();
+            var logPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus", "log.log");
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.File(logPath,
+                    rollingInterval: RollingInterval.Day,
+                    rollOnFileSizeLimit: true)
+                .WriteTo.Sink(logModel)
+                .CreateLogger();
+            
             var confDir = Path.Join(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), 
                 "lacmus");
@@ -54,6 +65,7 @@ namespace LacmusApp.Avalonia.ViewModels
             }
             
             var window = new MainWindow();
+            
             await Task.Delay(1000);
             var dialog = new AvaloniaPluginDialog(window);
             var pluginManager = new PluginManager(
@@ -68,6 +80,7 @@ namespace LacmusApp.Avalonia.ViewModels
             
             window.DataContext = new MainWindowViewModel(
                 window,
+                logModel,
                 settingsViewModel,
                 themeManager);
             
