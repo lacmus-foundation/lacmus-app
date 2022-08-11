@@ -1,12 +1,7 @@
 ---
-name: release
+name: release linux
 
 on: [push]
-
-env:
-  APP_NAME: 'lacmus'
-  MAINTAINER: 'gosha20777'
-  DESC: 'Lacmus help to find lost people in Search and Rescue operations. Lacmus is a cross-platform application which use computer vision and neural networks and written with C#, .NET Core, ReactiveUI and Avalonia.'
 
 jobs:
   build-artifact:
@@ -22,12 +17,17 @@ jobs:
         with:
           nim-version: ${{ matrix.dotnet_version}}
       - run: cd src && dotnet build --configuration Release
-      - name: Create artifact
-        run: ./mk-release.sh
+      - name: Create artifact linux
+        run: |
+          echo "restoring packeges"
+          dotnet restore src/LacmusApp.sln
+          echo -n "building for linux"
+          dotnet publish --framework net6.0 --runtime="linux-x64" -c Release -o bin src/LacmusApp.sln
+          mv bin/LacmusApp.Avalonia bin/LacmusApp
         shell: bash
       - uses: actions/upload-artifact@v3
         with:
-          name: artifact-${{ matrix.os }}
+          name: artifact-linux
           path: |
-            bin/app/*.zip
+            bin/
   
