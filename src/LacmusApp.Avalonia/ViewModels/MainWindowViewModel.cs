@@ -40,6 +40,7 @@ namespace LacmusApp.Avalonia.ViewModels
     {
         private readonly ApplicationStatusManager _applicationStatusManager;
         private readonly Window _window;
+        private readonly ILogViewModel _logViewModel;
         private ThemeManager _themeManager;
         private SettingsViewModel _settingsViewModel;
         
@@ -49,9 +50,10 @@ namespace LacmusApp.Avalonia.ViewModels
         SourceList<PhotoViewModel> _photos { get; set; } = new SourceList<PhotoViewModel>();
         private ReadOnlyObservableCollection<PhotoViewModel> _photoCollection;
         
-        public MainWindowViewModel(Window window, SettingsViewModel settingsViewModel, ThemeManager themeManager)
+        public MainWindowViewModel(Window window, ILogViewModel logViewModel, SettingsViewModel settingsViewModel, ThemeManager themeManager)
         {
             _window = window;
+            _logViewModel = logViewModel;
             _themeManager = themeManager;
             _settingsViewModel = settingsViewModel;
 
@@ -109,6 +111,12 @@ namespace LacmusApp.Avalonia.ViewModels
 
             // Add here newer commands
             SetupCommand(CanSetup(), canSwitchBoundBox);
+
+            OpenLogWindowCommand = ReactiveCommand.Create(() =>
+            {
+                LogWindow logWindow = new LogWindow(_logViewModel, _themeManager);
+                logWindow.Show();
+            });
 
             LocalizationContext = new LocalizationContext();
             
@@ -208,7 +216,8 @@ namespace LacmusApp.Avalonia.ViewModels
         public ReactiveCommand<Unit, Unit> CheckUpdateCommand { get; set; }
         public ReactiveCommand<Unit, Unit> ExitCommand { get; set; }
         public ReactiveCommand<Unit, Unit> OpenWizardCommand { get; set; }
-        public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand{get; set;}
+        public ReactiveCommand<Unit, Unit> OpenSettingsWindowCommand{ get; set; }
+        public ReactiveCommand<Unit, Unit> OpenLogWindowCommand{ get; set; }
 
         public ISettingsViewModel SettingsViewModel => _settingsViewModel;
 

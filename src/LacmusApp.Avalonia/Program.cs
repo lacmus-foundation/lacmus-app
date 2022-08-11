@@ -13,7 +13,7 @@ namespace LacmusApp.Avalonia
         private static void Main(string[] args)
         {
             Console.WriteLine($"Lacmus desktop application. Version {GetVersion()} beta.");
-            Console.WriteLine("Copyright (c) 2020 Lacmus Foundation <gosha20777@live.ru>.");
+            Console.WriteLine("Copyright (c) 2022 Lacmus Foundation <gosha20777@live.ru>.");
             Console.WriteLine("Github page: https://github.com/lacmus-foundation.");
             Console.WriteLine("Powered by ODS <https://ods.ai>.");
             Console.WriteLine("This program comes with ABSOLUTELY NO WARRANTY;");
@@ -21,15 +21,6 @@ namespace LacmusApp.Avalonia
             Console.WriteLine("------------------------------------");
             //Resources.Console.Culture = new CultureInfo("ru");
             //Console.WriteLine(Resources.Console.Greeting);
-            
-            var logPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus", "log.log");
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console()
-                .WriteTo.File(logPath,
-                    rollingInterval: RollingInterval.Day,
-                    rollOnFileSizeLimit: true)
-                .CreateLogger();
             try
             {
                 BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);

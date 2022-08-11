@@ -40,6 +40,7 @@
           <Separator></Separator>
           <MenuItem Name="mWizard" HotKey="Ctrl+W" InputGesture="Ctrl+W" Header="{Binding LocalizationContext.Wizard}" Command="{Binding OpenWizardCommand}" i:MenuItem.Icon="fa-solid fa-wand-magic-sparkles"/>
           <MenuItem Name="mSettings" Header="{Binding LocalizationContext.Settings}" Command="{Binding OpenSettingsWindowCommand}" i:MenuItem.Icon="fa-solid fa-screwdriver-wrench"/>
+          <MenuItem Name="mLog" Header="{Binding LocalizationContext.Log}" Command="{Binding OpenLogWindowCommand}" i:MenuItem.Icon="fa-solid fa-rectangle-list"/>
           <MenuItem Name="mFileExit" Header="{Binding LocalizationContext.Exit}" Command="{Binding ExitCommand}" i:MenuItem.Icon="fa-solid fa-right-from-bracket"/>
         </MenuItem>
         <MenuItem Name="mImage" Header="{Binding LocalizationContext.Image}">

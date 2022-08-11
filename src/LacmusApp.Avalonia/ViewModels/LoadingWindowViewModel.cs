@@ -2,6 +2,8 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Reactive;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using LacmusApp.Appearance.Enums;
@@ -33,6 +35,17 @@ namespace LacmusApp.Avalonia.ViewModels
 
         private async void Init()
         {
+            var logModel = new LogViewModel();
+            var logPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "lacmus", "log.log");
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .WriteTo.File(logPath,
+                    rollingInterval: RollingInterval.Day,
+                    rollOnFileSizeLimit: true)
+                .WriteTo.Sink(logModel)
+                .CreateLogger();
+            
             var confDir = Path.Join(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), 
                 "lacmus");
@@ -54,6 +67,7 @@ namespace LacmusApp.Avalonia.ViewModels
             }
             
             var window = new MainWindow();
+            
             await Task.Delay(1000);
             var dialog = new AvaloniaPluginDialog(window);
             var pluginManager = new PluginManager(
@@ -68,10 +82,19 @@ namespace LacmusApp.Avalonia.ViewModels
             
             window.DataContext = new MainWindowViewModel(
                 window,
+                logModel,
                 settingsViewModel,
                 themeManager);
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                var logWindow = new LogWindow(logModel, themeManager);
+                logWindow.Show();
+            }
             
             window.Show();
+            window.Closing += (sender, args) => Environment.Exit(0);
+            
             _window.Close();
         }
         

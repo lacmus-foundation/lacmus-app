@@ -34,6 +34,12 @@ namespace LacmusApp.Avalonia.Services
             get { return _settings; }
             set { this.RaiseAndSetIfChanged(ref _settings, value); }
         }
+        private string _log;
+        [Reactive] public string Log
+        {
+            get { return _log; }
+            set { this.RaiseAndSetIfChanged(ref _log, value); }
+        }
         private string _exit;
         [Reactive] public string Exit
         {
@@ -943,6 +949,7 @@ namespace LacmusApp.Avalonia.Services
                     SaveAs="Save As";
                     Wizard="Wizard";
                     Settings="Settings";
+                    Log="Show log";
                     Exit="Exit";
                     //Model
                     Model="Model";
@@ -1118,6 +1125,7 @@ namespace LacmusApp.Avalonia.Services
                     SaveAs="Сохранить как...";
                     Wizard="Помощник";
                     Settings="Настройки";
+                    Log="Открыть лог";
                     Exit="Выход";
                     //Model
                     Model="Модель";
