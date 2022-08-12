@@ -1,10 +1,10 @@
 ---
-name: release linux
+name: Make Release
 
 on: [push]
 
 jobs:
-  build-artifact:
+  linux-artefact:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -35,6 +35,15 @@ jobs:
           cp -p packages/linux/copyright bin/deb/usr/share/doc/lacmus/
           cp -p packages/linux/lacmus.png bin/deb/usr/share/pixmaps/
           cp -p packages/linux/deb/* bin/deb/DEBIAN/
+          echo "creating rpm"
+          mkdir -p bin/rpm/usr/local/share/LacmusApp
+          mkdir -p bin/rpm/usr/share/applications
+          mkdir -p bin/rpm/usr/share/doc/lacmus
+          mkdir -p bin/rpm/usr/share/pixmaps
+          cp -r bin/lacmus/* bin/rpm/usr/local/share/LacmusApp/
+          cp -p packages/linux/lacmus.desktop bin/rpm/usr/share/applications/
+          cp -p packages/linux/copyright bin/rpm/usr/share/doc/lacmus/
+          cp -p packages/linux/lacmus.png bin/rpm/usr/share/pixmaps/
         shell: bash
       - uses: jiro4989/build-deb-action@v2
         with:
@@ -43,6 +52,15 @@ jobs:
           maintainer: gosha20777 <gosha20777@live.ru>
           version: '0.6.0'
           arch: 'amd64'
+          desc: sample desc
+      - uses: jiro4989/build-rpm-action@v2
+        with:
+          summary: sample desc
+          package: lacmus
+          package_root: bin/rpm
+          maintainer: gosha20777 <gosha20777@live.ru>
+          version: '0.6.0'
+          arch: 'x86_64'
           desc: sample desc
       - uses: actions/upload-artifact@v3
         with:
@@ -54,4 +72,11 @@ jobs:
           name: artifact-deb
           path: |
             ./*.deb
+      - uses: actions/upload-artifact@v3
+        with:
+          name: artifact-rpm
+          path: |
+            ./*.rpm
+            !./*-debuginfo-*.rpm
+      
   
