@@ -69,7 +69,7 @@ jobs:
           dotnet zip --framework net6.0 -c Release --runtime="win-x64" -o ../../bin/windows LacmusApp.Avalonia.csproj
           dotnet publish --framework net6.0 -c Release --runtime="win-x64" -o ../../bin/windows/app LacmusApp.Avalonia.csproj
           cd ../../
-          wget https://github.com/lacmus-foundation/inno-setup-gihtub-action/releases/download/v.1.0.0/innoSetupCli.zip -O bin/windows/installer/temp.zip
+          curl -L --output bin/windows/installer/temp.zip https://github.com/lacmus-foundation/inno-setup-gihtub-action/releases/download/v.1.0.0/innoSetupCli.zip
           unzip bin/windows/installer/temp.zip -d bin/windows/installer
           ./bin/windows/installer/ISCC.exe packages/windows/script.iss
         shell: bash
