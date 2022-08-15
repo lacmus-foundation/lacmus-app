@@ -18,6 +18,17 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>lacmus</PackageTags>
   </PropertyGroup>
+  <PropertyGroup>
+    <CFBundleName>Lacmus</CFBundleName> <!-- Also defines .app file name -->
+    <CFBundleDisplayName>Lacmus</CFBundleDisplayName>
+    <CFBundleIdentifier>com.example</CFBundleIdentifier>
+    <CFBundleVersion>0.7.0</CFBundleVersion>
+    <CFBundlePackageType>APPL</CFBundlePackageType>
+    <CFBundleExecutable>LacmusApp.Avalonia</CFBundleExecutable>
+    <CFBundleIconFile>..\..\packages\osx\LacmusApp.icns</CFBundleIconFile> <!-- Will be copied from output directory -->
+    <NSPrincipalClass>NSApplication</NSPrincipalClass>
+    <NSHighResolutionCapable>true</NSHighResolutionCapable>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
       <DependentUpon>%(Filename)</DependentUpon>
