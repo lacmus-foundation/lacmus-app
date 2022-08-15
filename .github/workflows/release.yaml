@@ -14,69 +14,72 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v1
-        with:
-          nim-version: ${{ matrix.dotnet_version}}
       - run: cd src && dotnet build --configuration Release
       - name: Create artifact linux
         run: |
-          echo "restoring packeges"
+          dotnet tool install --global dotnet-rpm
+          dotnet tool install --global dotnet-deb
+          dotnet tool install --global dotnet-tarball
+          echo "building packeges"
           dotnet restore src/LacmusApp.sln
-          echo -n "building for linux"
-          dotnet publish --framework net6.0 --runtime="linux-x64" -c Release -o bin/lacmus src/LacmusApp.sln
-          mv bin/lacmus/LacmusApp.Avalonia bin/lacmus/LacmusApp
-          echo "creating deb"
-          mkdir -p bin/deb/usr/local/share/LacmusApp
-          mkdir -p bin/deb/usr/share/applications
-          mkdir -p bin/deb/usr/share/doc/lacmus
-          mkdir -p bin/deb/usr/share/pixmaps
-          mkdir -p bin/deb/DEBIAN
-          cp -r bin/lacmus/* bin/deb/usr/local/share/LacmusApp/
-          cp -p packages/linux/lacmus.desktop bin/deb/usr/share/applications/
-          cp -p packages/linux/copyright bin/deb/usr/share/doc/lacmus/
-          cp -p packages/linux/lacmus.png bin/deb/usr/share/pixmaps/
-          cp -p packages/linux/deb/* bin/deb/DEBIAN/
-          echo "creating rpm"
-          mkdir -p bin/rpm/usr/local/share/LacmusApp
-          mkdir -p bin/rpm/usr/share/applications
-          mkdir -p bin/rpm/usr/share/doc/lacmus
-          mkdir -p bin/rpm/usr/share/pixmaps
-          cp -r bin/lacmus/* bin/rpm/usr/local/share/LacmusApp/
-          cp -p packages/linux/lacmus.desktop bin/rpm/usr/share/applications/
-          cp -p packages/linux/copyright bin/rpm/usr/share/doc/lacmus/
-          cp -p packages/linux/lacmus.png bin/rpm/usr/share/pixmaps/
+          mkdir -p bin/linux
+          cd src/LacmusApp.Avalonia
+          dotnet rpm install
+          dotnet deb install
+          dotnet tarball install
+          dotnet rpm --framework net6.0 -c Release --runtime="linux-x64" -o ../../bin/linux LacmusApp.Avalonia.csproj
+          dotnet deb --framework net6.0 -c Release --runtime="linux-x64" -o ../../bin/linux LacmusApp.Avalonia.csproj
+          dotnet tarball --framework net6.0 -c Release --runtime="linux-x64" -o ../../bin/linux LacmusApp.Avalonia.csproj
         shell: bash
-      - uses: jiro4989/build-deb-action@v2
-        with:
-          package: lacmus
-          package_root: bin/deb
-          maintainer: gosha20777 <gosha20777@live.ru>
-          version: '0.6.0'
-          arch: 'amd64'
-          desc: sample desc
-      - uses: jiro4989/build-rpm-action@v2
-        with:
-          summary: sample desc
-          package: lacmus
-          package_root: bin/rpm
-          maintainer: gosha20777 <gosha20777@live.ru>
-          version: '0.6.0'
-          arch: 'x86_64'
-          desc: sample desc
       - uses: actions/upload-artifact@v3
         with:
-          name: artifact-linux
+          name: artifact-linux-deb
           path: |
-            bin/
+            ./bin/linux/*.deb
       - uses: actions/upload-artifact@v3
         with:
-          name: artifact-deb
+          name: artifact-linux-rpm
           path: |
-            ./*.deb
+            ./bin/linux/*.rpm
       - uses: actions/upload-artifact@v3
         with:
-          name: artifact-rpm
+          name: artifact-linux-tar
           path: |
-            ./*.rpm
-            !./*-debuginfo-*.rpm
-      
-  
+            ./bin/linux/*.tar.gz
+  windows-artefact:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        dotnet_version: ['6.0.x']
+        os:
+          - windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-dotnet@v1
+      - name: Create artifact windows
+        run: |
+          dotnet tool install --global dotnet-zip
+          echo "building packeges"
+          dotnet restore src/LacmusApp.sln
+          mkdir -p bin/windows
+          mkdir -p bin/windows/app
+          mkdir -p bin/windows/installer
+          cd src/LacmusApp.Avalonia
+          dotnet zip install
+          dotnet zip --framework net6.0 -c Release --runtime="win-x64" -o ../../bin/windows LacmusApp.Avalonia.csproj
+          dotnet publish --framework net6.0 -c Release --runtime="win-x64" -o ../../bin/windows/app LacmusApp.Avalonia.csproj
+          cd ../../
+          wget https://github.com/lacmus-foundation/inno-setup-gihtub-action/releases/download/v.1.0.0/innoSetupCli.zip -O bin/windows/installer/temp.zip
+          unzip bin/windows/installer/temp.zip -d bin/windows/installer
+          ./bin/windows/installer/ISCC.exe packages/windows/script.iss
+        shell: bash
+      - uses: actions/upload-artifact@v3
+        with:
+          name: artifact-windows-zip
+          path: |
+            ./bin/windows/lacmusSetup.zip
+      - uses: actions/upload-artifact@v3
+        with:
+          name: artifact-windows-setup
+          path: |
+            ./bin/windows/lacmusSetup.exe
