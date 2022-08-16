@@ -23,6 +23,7 @@
     <CFBundleDisplayName>Lacmus</CFBundleDisplayName>
     <CFBundleIdentifier>com.example</CFBundleIdentifier>
     <CFBundleVersion>0.7.0</CFBundleVersion>
+    <CFBundleShortVersionString>0.7.0</CFBundleShortVersionString>
     <CFBundlePackageType>APPL</CFBundlePackageType>
     <CFBundleExecutable>LacmusApp.Avalonia</CFBundleExecutable>
     <CFBundleIconFile>..\..\packages\osx\LacmusApp.icns</CFBundleIconFile> <!-- Will be copied from output directory -->
