@@ -97,12 +97,12 @@ jobs:
         run: |
           dotnet tool install --global dotnet-zip
           echo "building packeges"
-          dotnet restore -r osx-x64 src/LacmusApp.sln
+          dotnet restore src/LacmusApp.sln
           mkdir -p bin/osx
           cd src/LacmusApp.Avalonia
           dotnet zip install
-          dotnet add package Dotnet.Bundle
           dotnet zip --framework net6.0 -c Release --runtime="osx-x64" -p:UseAppHost=true -o ../../bin/osx LacmusApp.Avalonia.csproj
+          dotnet add package Dotnet.Bundle
           dotnet msbuild LacmusApp.Avalonia.csproj -t:BundleApp -p:RuntimeIdentifier=osx-x64 -property:Configuration=Release -p:UseAppHost=true -p:OutputPath=../../bin/osx
         shell: bash
       - uses: actions/upload-artifact@v3
