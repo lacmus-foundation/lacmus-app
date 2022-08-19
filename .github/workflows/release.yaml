@@ -95,16 +95,13 @@ jobs:
       - uses: actions/setup-dotnet@v1
       - name: Create artifact osx
         run: |
+          bash packages/osx/build-osx.sh
           dotnet tool install --global dotnet-tarball
           echo "building packeges"
           dotnet restore src/LacmusApp.sln
-          mkdir -p bin/osx
           cd src/LacmusApp.Avalonia
           dotnet tarball install
           dotnet tarball --framework net6.0 -c Release --runtime="osx-x64" -o ../../bin/osx LacmusApp.Avalonia.csproj
-          echo "build app"
-          dotnet add package Dotnet.Bundle
-          dotnet msbuild LacmusApp.Avalonia.csproj -t:BundleApp -p:RuntimeIdentifier=osx-x64 -property:Configuration=Release -p:UseAppHost=true -p:OutputPath=../../bin/osx
         shell: bash
       - uses: actions/upload-artifact@v3
         with:
@@ -115,4 +112,4 @@ jobs:
         with:
           name: artifact-osx-app
           path: |
-            ./bin/osx/*.app
+            ./bin/osx/*.zip
