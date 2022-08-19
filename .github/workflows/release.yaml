@@ -3,8 +3,8 @@ name: Make Release
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    branches:
+      - 'releases/**'
 
 jobs:
   linux-artefact:
