@@ -1,7 +1,10 @@
 ---
 name: Make Release
 
-on: [push]
+on:
+  push:
+    tags:
+      - 'v*.*.*'
 
 jobs:
   linux-artefact:
