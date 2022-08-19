@@ -89,7 +89,7 @@ jobs:
       matrix:
         dotnet_version: ['6.0.x']
         os:
-          - ubuntu-latest
+          - osx-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v1
