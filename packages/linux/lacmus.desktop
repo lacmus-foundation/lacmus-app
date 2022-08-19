@@ -1,0 +1,15 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Lacmus
+StartupWMClass=Lacmus
+Comment=Lacmus Desktop Application
+GenericName=Program for searching and saving people
+Name[ru]=Lacmus
+GenericName[ru]=Приложение Lacmus
+Comment[ru]=Программа для поиска и спасения людей
+Exec=/usr/share/LacmusApp.Avalonia/LacmusApp.Avalonia
+Icon=/usr/share/pixmaps/lacmus.png
+Terminal=true
+Type=Application
+Categories=ImageProcessing;Photography;Utility;
+MimeType=image/jpeg;image/png;image/xml;image/bmp;text/xml;

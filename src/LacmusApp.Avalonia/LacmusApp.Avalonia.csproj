@@ -2,9 +2,33 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
+    <RuntimeIdentifiers>linux-x64;win-x64;osx-x64</RuntimeIdentifiers>
     <Company>Lacmus Foundation</Company>
-    <AssemblyVersion>0.6.0</AssemblyVersion>
-    <FileVersion>0.6.0</FileVersion>
+    <AssemblyVersion>0.7.0</AssemblyVersion>
+    <FileVersion>0.7.0</FileVersion>
+    <Version>0.7.0</Version>
+    <Authors>gosha20777</Authors>
+    <Copyright>Copyright (c) Lacmus Foundation 2022</Copyright>
+    <Description>Lacmus help to find lost people in Search and Rescue operations. Lacmus is a cross-platform application which use computer vision and neural networks and written with C#, .NET Core, ReactiveUI and Avalonia.</Description>
+    <PackageId>LacmusApp.Avalonia</PackageId>
+    <Title>Lacmus Application</Title>
+    <PackageProjectUrl>https://lacmus.ml/</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/lacmus-foundation/lacmus-app/blob/master/LICENSE</PackageLicenseUrl>
+    <RepositoryUrl>https://github.com/lacmus-foundation/lacmus-app</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>lacmus</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup>
+    <CFBundleName>Lacmus</CFBundleName> <!-- Also defines .app file name -->
+    <CFBundleDisplayName>Lacmus</CFBundleDisplayName>
+    <CFBundleIdentifier>com.example</CFBundleIdentifier>
+    <CFBundleVersion>0.7.0</CFBundleVersion>
+    <CFBundleShortVersionString>0.7.0</CFBundleShortVersionString>
+    <CFBundlePackageType>APPL</CFBundlePackageType>
+    <CFBundleExecutable>LacmusApp.Avalonia</CFBundleExecutable>
+    <CFBundleIconFile>..\..\packages\osx\LacmusApp.icns</CFBundleIconFile> <!-- Will be copied from output directory -->
+    <NSPrincipalClass>NSApplication</NSPrincipalClass>
+    <NSHighResolutionCapable>true</NSHighResolutionCapable>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="**\*.xaml.cs">
@@ -31,6 +55,7 @@
     <PackageReference Include="Avalonia.Native" Version="0.10.17" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.17" />
     <PackageReference Include="Citrus.Avalonia" Version="1.6.1" />
+    <PackageReference Include="Dotnet.Bundle" Version="0.9.13" />
     <PackageReference Include="Flurl" Version="3.0.6" />
     <PackageReference Include="LacmusPlugin" Version="2.0.3" />
     <PackageReference Include="MessageBox.Avalonia" Version="2.0.2" />
@@ -57,5 +82,16 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LacmusApp\LacmusApp.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\packages\linux\lacmus.desktop" CopyToPublishDirectory="Always">
+	   <LinuxPath>/usr/share/applications/lacmus.desktop</LinuxPath>
+    </Content>
+    <Content Include="..\..\packages\linux\lacmus.png" CopyToPublishDirectory="Always">
+	   <LinuxPath>/usr/share/pixmaps/lacmus.png</LinuxPath>
+    </Content>
+    <Content Include="..\..\packages\linux\copyright" CopyToPublishDirectory="Always">
+	   <LinuxPath>/usr/share/doc/lacmus/copyright</LinuxPath>
+    </Content>
   </ItemGroup>
 </Project>

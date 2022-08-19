@@ -48,7 +48,7 @@
           <Separator></Separator>
           <MenuItem Name="mImageIncrease" HotKey="Ctrl++" InputGesture="Ctrl++" Header="{Binding LocalizationContext.Increase}" Command="{Binding IncreaseCanvasCommand}" i:MenuItem.Icon="fa-solid fa-plus"/>
           <MenuItem Name="mImageShrink" HotKey="Ctrl+-" InputGesture="Ctrl+-" Header="{Binding LocalizationContext.Shrink}" Command="{Binding ShrinkCanvasCommand}" i:MenuItem.Icon="fa-solid fa-minus"/>
-          <MenuItem Name="mImageReset" HotKey="Ctrl+R" InputGesture="Ctrl+R" Header="{Binding LocalizationContext.Reset}" Command="{Binding ResetCanvasCommand}" i:MenuItem.Icon="fa-solid fa-arrow-rotate-left"/>
+          <MenuItem Name="mImageReset" HotKey="Ctrl+R" InputGesture="Ctrl+R" Header="{Binding LocalizationContext.Reset}" Command="{Binding ResetCanvasCommand}" i:MenuItem.Icon="fa-solid fa-compress"/>
           <MenuItem Name="mImageMove" Header="{Binding LocalizationContext.MoveTo}">
             <MenuItem Name="mImageUp" HotKey="Ctrl+Up" InputGesture="Ctrl+Up" Header="{Binding LocalizationContext.Up}" Command="{Binding UpCanvasCommand}"/>
             <MenuItem Name="mImageDowm" HotKey="Ctrl+Down" InputGesture="Ctrl+Down" Header="{Binding LocalizationContext.Down}" Command="{Binding DownCanvasCommand}"/>
@@ -97,7 +97,7 @@
           <Button Name="bSave" i:Attached.Icon="fa-solid fa-floppy-disk" Margin="1" Command="{Binding SaveAllCommand}" ToolTip.Tip="{Binding LocalizationContext.SaveAll}"></Button>
           <Button Name="bImageIncrease" Margin="5 1 1 1" i:Attached.Icon="fa-solid fa-plus" Command="{Binding IncreaseCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Increase}"></Button>
           <Button Name="bImageShrink" i:Attached.Icon="fa-solid fa-minus" Margin="1" Command="{Binding ShrinkCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Shrink}"></Button>
-          <Button Name="bImageReset" i:Attached.Icon="fa-solid fa-arrow-rotate-left" Command="{Binding ResetCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Reset}"></Button>
+          <Button Name="bImageReset" i:Attached.Icon="fa-solid fa-compress" Command="{Binding ResetCanvasCommand}" ToolTip.Tip="{Binding LocalizationContext.Reset}"></Button>
           <Button Name="bImagePrev" Margin="5 1 1 1" i:Attached.Icon="fa-solid fa-arrow-left" Command="{Binding PrevImageCommand}" ToolTip.Tip="{Binding LocalizationContext.Previous}"></Button>
           <Button Name="bImageNext" i:Attached.Icon="fa-solid fa-arrow-right" Margin="1" Command="{Binding NextImageCommand}" ToolTip.Tip="{Binding LocalizationContext.Next}"></Button>
           <ToggleButton Padding="8" Margin="5 1 1 1" Name="bShowBorder" i:Attached.Icon="fa-solid fa-border-top-left" IsChecked="{Binding IsShowBorder, Mode=TwoWay}" ToolTip.Tip="{Binding LocalizationContext.Border}" />
