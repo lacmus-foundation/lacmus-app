@@ -52,7 +52,7 @@ namespace LacmusApp.Appearance.Models
                             OperatingSystem.OsxAmd64
                         }
                     },
-                    Repository = "http://api.lacmus.ml",
+                    Repository = "http://api.lacmus.tech",
                     Theme = Theme.Light,
                     PredictionThreshold = 0.15f,
                     BoundingBoxColour = BoundingBoxColour.Red
