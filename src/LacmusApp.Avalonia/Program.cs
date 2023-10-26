@@ -12,7 +12,7 @@ namespace LacmusApp.Avalonia
     {
         private static void Main(string[] args)
         {
-            Console.WriteLine($"Lacmus desktop application. Version {GetVersion()} beta.");
+            Console.WriteLine($"Lacmus desktop application. Version {GetVersion()}.");
             Console.WriteLine("Copyright (c) 2022 Lacmus Foundation <gosha20777@live.ru>.");
             Console.WriteLine("Github page: https://github.com/lacmus-foundation.");
             Console.WriteLine("Powered by ODS <https://ods.ai>.");

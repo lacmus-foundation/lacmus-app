@@ -11,11 +11,11 @@ namespace LacmusApp.Avalonia.Appearence.ViewModels
             {
                 var revision = $"preview-{version?.Revision}";
                 
-                Version = $"{version?.Major}.{version?.Minor}.{version?.Build} {revision} beta";
+                Version = $"{version?.Major}.{version?.Minor}.{version?.Build} {revision}";
             }
             else
             {
-                Version = $"{version.Major}.{version.Minor}.{version.Build} beta";
+                Version = $"{version.Major}.{version.Minor}.{version.Build}";
             }
         }
         

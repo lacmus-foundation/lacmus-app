@@ -4,15 +4,15 @@
     <TargetFramework>net6.0</TargetFramework>
     <RuntimeIdentifiers>linux-x64;win-x64;osx-x64</RuntimeIdentifiers>
     <Company>Lacmus Foundation</Company>
-    <AssemblyVersion>0.7.0</AssemblyVersion>
-    <FileVersion>0.7.0</FileVersion>
+    <AssemblyVersion>1.0.0</AssemblyVersion>
+    <FileVersion>1.0.0</FileVersion>
     <Version>0.7.0</Version>
     <Authors>gosha20777</Authors>
     <Copyright>Copyright (c) Lacmus Foundation 2022</Copyright>
     <Description>Lacmus help to find lost people in Search and Rescue operations. Lacmus is a cross-platform application which use computer vision and neural networks and written with C#, .NET Core, ReactiveUI and Avalonia.</Description>
     <PackageId>LacmusApp.Avalonia</PackageId>
     <Title>Lacmus Application</Title>
-    <PackageProjectUrl>https://lacmus.ml/</PackageProjectUrl>
+    <PackageProjectUrl>https://lacmus.tech/</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/lacmus-foundation/lacmus-app/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/lacmus-foundation/lacmus-app</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

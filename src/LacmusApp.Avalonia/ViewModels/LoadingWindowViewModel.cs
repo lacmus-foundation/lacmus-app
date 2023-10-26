@@ -71,7 +71,7 @@ namespace LacmusApp.Avalonia.ViewModels
             await Task.Delay(1000);
             var dialog = new AvaloniaPluginDialog(window);
             var pluginManager = new PluginManager(
-                Path.Join(confDir, "plugins"), "http://api.lacmus.ml");
+                Path.Join(confDir, "plugins"), "http://api.lacmus.tech");
             var themeManager = new ThemeManager(window);
             themeManager.UseTheme(config.Theme);
             var settingsViewModel = new SettingsViewModel(
@@ -103,7 +103,7 @@ namespace LacmusApp.Avalonia.ViewModels
             var revision = "";
             if (typeof(Program).Assembly.GetName().Version.Revision != 0)
                 revision = $"preview-{typeof(Program).Assembly.GetName().Version.Revision}";
-            return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build}.{revision} beta";
+            return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build}.{revision}";
         }
     }
 }
