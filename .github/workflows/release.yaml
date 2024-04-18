@@ -61,7 +61,7 @@ jobs:
       - uses: actions/setup-dotnet@v1
       - name: Create artifact windows
         run: |
-          dotnet tool install --global dotnet-zip
+          dotnet tool install --global dotnet-zip-net8
           echo "building packeges"
           dotnet restore src/LacmusApp.sln
           mkdir -p bin/windows
