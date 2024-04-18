@@ -22,7 +22,7 @@ namespace LacmusApp.Screens.ViewModels
             });
             OpenSiteCommand = ReactiveCommand.Create(() =>
             {
-                manager.OpenLink("https://lacmus-foundation.github.io/");
+                manager.OpenLink("https://lacmus.ml/");
             });
         }
         

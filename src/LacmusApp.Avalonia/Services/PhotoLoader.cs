@@ -51,7 +51,7 @@ namespace LacmusApp.Avalonia.Services
                         using (var stream = File.OpenRead(path))
                         {
                             var (brush, height, width) = await reader.Read(stream);
-                            var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
+                            var (metadata, latitude, longitude, altitude) = ExifConvertor.ConvertExif(
                                 ImageMetadataReader.ReadMetadata(path));
                             var photoViewModel = new PhotoViewModel(index)
                             {
@@ -63,6 +63,7 @@ namespace LacmusApp.Avalonia.Services
                                 Name = GetNameFromPath(path),
                                 Latitude = latitude,
                                 Longitude = longitude,
+                                Altitude = altitude,
                                 ExifDataCollection = metadata
                             };
                             photoList.Add(photoViewModel);
@@ -109,7 +110,7 @@ namespace LacmusApp.Avalonia.Services
                             using (var photoStream = File.OpenRead(photoPath))
                             {
                                 var (brush, height, width) = await reader.Read(photoStream);
-                                var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
+                                var (metadata, latitude, longitude, altitude) = ExifConvertor.ConvertExif(
                                     ImageMetadataReader.ReadMetadata(photoPath));
                                 var photoViewModel = new PhotoViewModel(index)
                                 {
@@ -121,6 +122,7 @@ namespace LacmusApp.Avalonia.Services
                                     Name = GetNameFromPath(photoPath),
                                     Latitude = latitude,
                                     Longitude = longitude,
+                                    Altitude = altitude,
                                     ExifDataCollection = metadata
                                 };
                                 photoList.Add(photoViewModel);
@@ -147,7 +149,7 @@ namespace LacmusApp.Avalonia.Services
                 using (var photoStream = File.OpenRead(path))
                 {
                     var (brush, height, width) = await reader.ReadFromStream(photoStream);
-                    var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
+                    var (metadata, latitude, longitude, altitude) = ExifConvertor.ConvertExif(
                         ImageMetadataReader.ReadMetadata(path));
                     return new PhotoViewModel(index)
                     {
@@ -159,6 +161,7 @@ namespace LacmusApp.Avalonia.Services
                         Name = GetNameFromPath(path),
                         Latitude = latitude,
                         Longitude = longitude,
+                        Altitude = altitude,
                         ExifDataCollection = metadata
                     };
                 }

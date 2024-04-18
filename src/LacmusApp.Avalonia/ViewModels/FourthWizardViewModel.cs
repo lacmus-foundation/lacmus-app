@@ -85,7 +85,7 @@ namespace LacmusApp.Avalonia.ViewModels
                             await using (var stream = File.OpenRead(path))
                             {
                                 var (brush, height, width) = await reader.Read(stream);
-                                var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
+                                var (metadata, latitude, longitude, altitude) = ExifConvertor.ConvertExif(
                                     ImageMetadataReader.ReadMetadata(path));
                                 var photoViewModel = new PhotoViewModel(id)
                                 {
@@ -96,6 +96,7 @@ namespace LacmusApp.Avalonia.ViewModels
                                     Path = path,
                                     Latitude = latitude,
                                     Longitude = longitude,
+                                    Altitude = altitude,
                                     ExifDataCollection = metadata
                                 };
                                 

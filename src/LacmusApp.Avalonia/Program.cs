@@ -12,7 +12,7 @@ namespace LacmusApp.Avalonia
     {
         private static void Main(string[] args)
         {
-            Console.WriteLine($"Lacmus desktop application. Version {GetVersion()} beta.");
+            Console.WriteLine($"Lacmus desktop application. Version {GetVersion()}.");
             Console.WriteLine("Copyright (c) 2022 Lacmus Foundation <gosha20777@live.ru>.");
             Console.WriteLine("Github page: https://github.com/lacmus-foundation.");
             Console.WriteLine("Powered by ODS <https://ods.ai>.");
@@ -33,10 +33,9 @@ namespace LacmusApp.Avalonia
 
         public static string GetVersion()
         {
-            var revision = "";
             if (typeof(Program).Assembly.GetName().Version.Revision != 0)
-                revision = $"preview-{typeof(Program).Assembly.GetName().Version.Revision}";
-            return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build}.{revision}";
+                 return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build} preview-{typeof(Program).Assembly.GetName().Version.Revision}";
+            return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build}";
         }
         
         private static AppBuilder BuildAvaloniaApp()

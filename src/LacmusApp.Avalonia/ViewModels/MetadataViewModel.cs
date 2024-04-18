@@ -29,12 +29,14 @@ namespace LacmusApp.Avalonia.ViewModels
         public ReadOnlyObservableCollection<ExifData> MetaDataCollection => _metaDataCollection;
         [Reactive] public string Latitude { get; set; } = "N/A";
         [Reactive] public string Longitude { get; set; } = "N/A";
+        [Reactive] public string Altitude { get; set; } = "N/A";
         [Reactive] public ImageBrush QrImage { get; set; }
         [Reactive] public LocalizationContext LocalizationContext { get; set; }
         public MetadataViewModel(Window window, PhotoViewModel photoViewModel, LocalizationContext localizationContext)
         {
             Latitude = $"{photoViewModel.Latitude}";
             Longitude = $"{photoViewModel.Longitude}";
+            Altitude = $"{photoViewModel.Altitude} m";
             
             _metaDataList.AddRange(photoViewModel.ExifDataCollection);
 
@@ -53,6 +55,10 @@ namespace LacmusApp.Avalonia.ViewModels
                 viewModel => viewModel.Longitude,
                 x => x != "N/A",
                 path => $"Cannot parse gps longitude");
+            this.ValidationRule(
+                viewModel => viewModel.Altitude,
+                x => x != "N/A",
+                path => $"Cannot parse gps altitude");
 
             OpenYandexCommand = ReactiveCommand.Create(OpenYandex, this.IsValid());
             OpenGoogleCommand = ReactiveCommand.Create(OpenGoogle, this.IsValid());
@@ -82,30 +88,6 @@ namespace LacmusApp.Avalonia.ViewModels
                     $"#map=15/{Latitude.Replace(',', '.')}/{Longitude.Replace(',', '.')}");
         }
         
-        private string TranslateGeoTag(string tag)
-        {
-            try
-            {
-                if (!tag.Contains('°'))
-                    return tag;
-                tag = tag.Replace('°', ';');
-                tag = tag.Replace('\'', ';');
-                tag = tag.Replace('"', ';');
-                tag = tag.Replace(" ", "");
-
-                var splitTag = tag.Split(';');
-                var grad = float.Parse(splitTag[0]);
-                var min = float.Parse(splitTag[1]);
-                var sec = float.Parse(splitTag[2]);
-
-                var result = grad + min / 60 + sec / 3600;
-                return $"{result}";
-            }
-            catch
-            {
-                return "N/A";
-            }
-        }
         private void OpenUrl(string url)
         {
             try
@@ -134,6 +116,7 @@ namespace LacmusApp.Avalonia.ViewModels
             }
         }
 
+        [Obsolete("Obsolete")]
         private void RenderQr()
         {
             using (var generator = new QRCodeGenerator())
