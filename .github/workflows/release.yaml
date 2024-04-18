@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        dotnet_version: ['6.0.x']
+        dotnet_version: ['8.0.x']
         os:
           - ubuntu-latest
     steps:
@@ -30,9 +30,9 @@ jobs:
           dotnet rpm install
           dotnet deb install
           dotnet tarball install
-          dotnet rpm --framework net6.0 -c Release --runtime="linux-x64" -o ../../bin/linux LacmusApp.Avalonia.csproj
-          dotnet deb --framework net6.0 -c Release --runtime="linux-x64" -o ../../bin/linux LacmusApp.Avalonia.csproj
-          dotnet tarball --framework net6.0 -c Release --runtime="linux-x64" -o ../../bin/linux LacmusApp.Avalonia.csproj
+          dotnet rpm --framework net8.0 -c Release --runtime="linux-x64" -o ../../bin/linux LacmusApp.Avalonia.csproj
+          dotnet deb --framework net8.0 -c Release --runtime="linux-x64" -o ../../bin/linux LacmusApp.Avalonia.csproj
+          dotnet tarball --framework net8.0 -c Release --runtime="linux-x64" -o ../../bin/linux LacmusApp.Avalonia.csproj
         shell: bash
       - uses: actions/upload-artifact@v3
         with:
@@ -53,7 +53,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        dotnet_version: ['6.0.x']
+        dotnet_version: ['8.0.x']
         os:
           - windows-latest
     steps:
@@ -69,8 +69,8 @@ jobs:
           mkdir -p bin/windows/installer
           cd src/LacmusApp.Avalonia
           dotnet zip install
-          dotnet zip --framework net6.0 -c Release --runtime="win-x64" -o ../../bin/windows LacmusApp.Avalonia.csproj
-          dotnet publish --framework net6.0 -c Release --runtime="win-x64" -o ../../bin/windows/app LacmusApp.Avalonia.csproj
+          dotnet zip --framework net8.0 -c Release --runtime="win-x64" -o ../../bin/windows LacmusApp.Avalonia.csproj
+          dotnet publish --framework net8.0 -c Release --runtime="win-x64" -o ../../bin/windows/app LacmusApp.Avalonia.csproj
           cd ../../
           curl -L --output bin/windows/installer/temp.zip https://github.com/lacmus-foundation/inno-setup-gihtub-action/releases/download/v.1.0.0/innoSetupCli.zip
           unzip bin/windows/installer/temp.zip -d bin/windows/installer
@@ -90,7 +90,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        dotnet_version: ['6.0.x']
+        dotnet_version: ['8.0.x']
         os:
           - osx-latest
     steps:
@@ -104,7 +104,7 @@ jobs:
           dotnet restore src/LacmusApp.sln
           cd src/LacmusApp.Avalonia
           dotnet tarball install
-          dotnet tarball --framework net6.0 -c Release --runtime="osx-x64" -o ../../bin/osx LacmusApp.Avalonia.csproj
+          dotnet tarball --framework net8.0 -c Release --runtime="osx-x64" -o ../../bin/osx LacmusApp.Avalonia.csproj
         shell: bash
       - uses: actions/upload-artifact@v3
         with:
