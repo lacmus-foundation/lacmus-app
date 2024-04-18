@@ -20,8 +20,8 @@ jobs:
       - run: cd src && dotnet build --configuration Release
       - name: Create artifact linux
         run: |
-          dotnet tool install --global dotnet-rpm8
-          dotnet tool install --global dotnet-deb8
+          dotnet tool install --global dotnet-rpm-net8
+          dotnet tool install --global dotnet-deb-net8
           dotnet tool install --global dotnet-tarball-net8
           echo "building packeges"
           dotnet restore src/LacmusApp.sln
