@@ -12,7 +12,7 @@
     <Description>Lacmus help to find lost people in Search and Rescue operations. Lacmus is a cross-platform application which use computer vision and neural networks and written with C#, .NET Core, ReactiveUI and Avalonia.</Description>
     <PackageId>LacmusApp.Avalonia</PackageId>
     <Title>Lacmus Application</Title>
-    <PackageProjectUrl>https://lacmus.tech/</PackageProjectUrl>
+    <PackageProjectUrl>https://lacmus.ml/</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/lacmus-foundation/lacmus-app/blob/master/LICENSE</PackageLicenseUrl>
     <RepositoryUrl>https://github.com/lacmus-foundation/lacmus-app</RepositoryUrl>
     <RepositoryType>git</RepositoryType>

@@ -71,7 +71,7 @@ namespace LacmusApp.Avalonia.ViewModels
             await Task.Delay(1000);
             var dialog = new AvaloniaPluginDialog(window);
             var pluginManager = new PluginManager(
-                Path.Join(confDir, "plugins"), "http://api.lacmus.tech");
+                Path.Join(confDir, "plugins"), "http://api.lacmus.ml");
             var themeManager = new ThemeManager(window);
             themeManager.UseTheme(config.Theme);
             var settingsViewModel = new SettingsViewModel(

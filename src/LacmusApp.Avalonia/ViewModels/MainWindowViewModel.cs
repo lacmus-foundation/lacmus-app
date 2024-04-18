@@ -499,13 +499,13 @@ namespace LacmusApp.Avalonia.ViewModels
             switch (_settingsViewModel.Language)
             {
                 case Language.English:
-                    OpenUrl("https://docs.lacmus.tech");
+                    OpenUrl("https://docs.lacmus.ml");
                     break;
                 case Language.Russian:
-                    OpenUrl("https://docs.lacmus.tech/v/russian/");
+                    OpenUrl("https://docs.lacmus.ml/v/russian/");
                     break;
                 default:
-                    OpenUrl("https://docs.lacmus.tech");
+                    OpenUrl("https://docs.lacmus.ml");
                     break;
             }
         }

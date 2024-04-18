@@ -8,7 +8,7 @@ Cross-platform application that searches for lost people in the forest using obj
 
 ## Docs
 
-You can find more documentation here: [Rus](https://docs.lacmus.tech/v/russian) [Eng](https://docs.lacmus.tech)
+You can find more documentation here: [Rus](https://docs.lacmus.ml/v/russian) [Eng](https://docs.lacmus.ml)
 
 ### System requirements and supported platforms
 
