@@ -100,10 +100,9 @@ namespace LacmusApp.Avalonia.ViewModels
         
         private static string GetVersion()
         {
-            var revision = "";
             if (typeof(Program).Assembly.GetName().Version.Revision != 0)
-                revision = $"preview-{typeof(Program).Assembly.GetName().Version.Revision}";
-            return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build}.{revision}";
+                return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build} preview-{typeof(Program).Assembly.GetName().Version.Revision}";
+            return $"{typeof(Program).Assembly.GetName().Version.Major}.{typeof(Program).Assembly.GetName().Version.Minor}.{typeof(Program).Assembly.GetName().Version.Build}";
         }
     }
 }
