@@ -99,7 +99,7 @@ jobs:
       - name: Create artifact osx
         run: |
           bash packages/osx/build-osx.sh
-          dotnet tool install --global dotnet-tarball
+          dotnet tool install --global dotnet-tarball-net8
           echo "building packeges"
           dotnet restore src/LacmusApp.sln
           cd src/LacmusApp.Avalonia
