@@ -50,6 +50,7 @@ namespace LacmusApp.Image.Models
         public int Width { get; set; }
         public float Latitude { get; set; }
         public float Longitude { get; set; }
+        public float Altitude { get; set; }
         public IEnumerable<ExifData> ExifDataCollection { get; set; }
         public TBrush Brush { get; set; }
         public string Path { get; set; }

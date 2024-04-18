@@ -45,6 +45,11 @@
                                 <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataLongitude}" />
                                 <TextBlock Text="{Binding Longitude}" />
                             </StackPanel>
+                            
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock FontWeight="Heavy" Text="{Binding LocalizationContext.MetadataAltitude}" />
+                                <TextBlock Text="{Binding Altitude}" />
+                            </StackPanel>
                         </StackPanel>
                         <Canvas Grid.Column="1" 
                             Width="128" 

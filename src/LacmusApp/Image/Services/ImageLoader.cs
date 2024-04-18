@@ -28,7 +28,7 @@ namespace LacmusApp.Image.Services
 
             await using (var stream = File.OpenRead(path))
             {
-                var (metadata, latitude, longitude) = ExifConvertor.ConvertExif(
+                var (metadata, latitude, longitude, altitude) = ExifConvertor.ConvertExif(
                     ImageMetadataReader.ReadMetadata(stream));
                 var (imageBrush, width, height) = await _brushReader.Read(stream);
 
@@ -43,6 +43,7 @@ namespace LacmusApp.Image.Services
                     IsWatched = false,
                     Latitude = latitude,
                     Longitude = longitude,
+                    Altitude = altitude,
                     Path = path
                 };
             }
