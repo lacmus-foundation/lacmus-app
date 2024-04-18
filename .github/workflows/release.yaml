@@ -92,7 +92,7 @@ jobs:
       matrix:
         dotnet_version: ['8.0.x']
         os:
-          - osx-latest
+          - macOS-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-dotnet@v1
