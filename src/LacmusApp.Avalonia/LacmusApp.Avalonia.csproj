@@ -6,7 +6,7 @@
     <Company>Lacmus Foundation</Company>
     <AssemblyVersion>1.0.0</AssemblyVersion>
     <FileVersion>1.0.0</FileVersion>
-    <Version>0.7.0</Version>
+    <Version>1.0.0</Version>
     <Authors>gosha20777</Authors>
     <Copyright>Copyright (c) Lacmus Foundation 2022</Copyright>
     <Description>Lacmus help to find lost people in Search and Rescue operations. Lacmus is a cross-platform application which use computer vision and neural networks and written with C#, .NET Core, ReactiveUI and Avalonia.</Description>
@@ -22,8 +22,8 @@
     <CFBundleName>Lacmus</CFBundleName> <!-- Also defines .app file name -->
     <CFBundleDisplayName>Lacmus</CFBundleDisplayName>
     <CFBundleIdentifier>com.example</CFBundleIdentifier>
-    <CFBundleVersion>0.7.0</CFBundleVersion>
-    <CFBundleShortVersionString>0.7.0</CFBundleShortVersionString>
+    <CFBundleVersion>1.0.0</CFBundleVersion>
+    <CFBundleShortVersionString>1.0.0</CFBundleShortVersionString>
     <CFBundlePackageType>APPL</CFBundlePackageType>
     <CFBundleExecutable>LacmusApp.Avalonia</CFBundleExecutable>
     <CFBundleIconFile>..\..\packages\osx\LacmusApp.icns</CFBundleIconFile> <!-- Will be copied from output directory -->
