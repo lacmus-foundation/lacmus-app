@@ -7,7 +7,7 @@ CERT_NAME="" # Name of certification to sign the application
 echo "********** Start building $APP_NAME **********"
 
 # Get application version
-VERSION="1.0.0"
+VERSION="1.0.1"
 if [ "$?" != "0" ]; then
     echo "Unable to get version of $APP_NAME"
     exit
