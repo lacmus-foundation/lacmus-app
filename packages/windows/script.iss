@@ -1,5 +1,5 @@
 #define MyAppName "Lacmus Application"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "Lacmus Foundation"
 #define MyAppURL "https://lacmus.ml/"
 #define MyAppExeName "LacmusApp.Avalonia.exe"
