@@ -53,7 +53,7 @@ for i in "${!RID_LIST[@]}"; do
 
     # copy .app directory to output directoty
     echo "Creating app bundle..."
-    mv ./LacmusApp.Avalonia/bin/$CONFIG/net6.0/$RID/publish/Lacmus.app ../bin/osx/$PUB_PLATFORM/Lacmus.app
+    mv ./LacmusApp.Avalonia/bin/$CONFIG/net8.0/$RID/publish/Lacmus.app ../bin/osx/$PUB_PLATFORM/Lacmus.app
     if [ "$?" != "0" ]; then
         exit
     fi
